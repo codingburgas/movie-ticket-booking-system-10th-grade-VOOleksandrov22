@@ -1,7 +1,10 @@
+#include <iostream>
+#include <vector>
+
 #include "../menu/menu.h"
+#include "app.h"
+
 
 int main() {
-	Menu* menu = new Menu;
-
-	menu
+	App* app = new App();
 }

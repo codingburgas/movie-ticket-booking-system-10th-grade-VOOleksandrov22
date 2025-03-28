@@ -3,6 +3,7 @@
 #include <windows.h>
 #include "menu.h"
 
+
 const std::vector<std::string>& Menu::getOptions() {
 	return options;
 }
@@ -11,33 +12,34 @@ void Menu::setOptions(const std::vector<std::string>& newOptions) {
 }
 
 void displayChoices(Menu* menu, const int& highlightIndex) {
-    system("cls"); // Clear the console screen
+    system("cls");
     for (int i = 0; i < menu->getOptions().size(); ++i) {
         if (i == highlightIndex) {
-            std::cout << "> "; // Highlighted option
+            std::cout << " >  " << menu->getOptions()[i] << "\n"; // Highlighted option
         }
         else {
-            std::cout << "  "; // Non-highlighted option
+            std::cout << "  " << menu->getOptions()[i] << "\n"; // Non-highlighted option
         }
-        std::cout << menu->getOptions()[i] << "\n";
     }
 }
 
 size_t Menu::getChoice() {
+
+
     int highlightIndex = 0;
 
-    while (!exit) {
+    while (true) {
         displayChoices(this, highlightIndex);
         char key = _getch();
 
         switch (key) {
-            case 72: // Up arrow key (ASCII code for UP key)
+            case 72: // Up arrow
                 if (highlightIndex > 0) highlightIndex--;
                 break;
-            case 80: // Down arrow key (ASCII code for DOWN key)
+            case 80: // Down arrow
                 if (highlightIndex < options.size() - 1) highlightIndex++;
                 break;
-            case 13:
+            case 13: // Enter
                 system("cls");
                 return highlightIndex;
 

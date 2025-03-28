@@ -1,0 +1,3 @@
+C:/Users/Oleksandr Vinichenko/source/repos/movie-ticket-booking-system-10th-grade-VOOleksandrov22/db_cpp/CMakeFiles/db_cpp.dir
+C:/Users/Oleksandr Vinichenko/source/repos/movie-ticket-booking-system-10th-grade-VOOleksandrov22/db_cpp/CMakeFiles/ALL_BUILD.dir
+C:/Users/Oleksandr Vinichenko/source/repos/movie-ticket-booking-system-10th-grade-VOOleksandrov22/db_cpp/CMakeFiles/ZERO_CHECK.dir

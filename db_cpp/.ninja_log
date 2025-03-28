@@ -1,0 +1,6 @@
+# ninja log v5
+8	421	7647228230804498	build.ninja	b730ed367e0990bf
+7	402	7647234205380511	build.ninja	b730ed367e0990bf
+3	2291	7647240470456651	CMakeFiles/db_cpp.dir/database.cpp.obj	dc8c79bfaf696902
+12	2314	7647240470676642	CMakeFiles/db_cpp.dir/DBModel.cpp.obj	a8a48e43cad266cf
+2314	2900	7647240476554206	libdb_cpp.a	3be66ec2773a27c
