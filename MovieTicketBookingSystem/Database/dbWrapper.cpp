@@ -7,4 +7,7 @@ DbWrapper::DbWrapper(std::string url, std::string username, std::string password
 
 	std::string userTableName = "User";
 	user = new DB::DBModel(userTableName, db, emptyString);
+
+	std::string sessionTableName = "Session";
+	session = new DB::DBModel(sessionTableName, db, emptyString);
 }

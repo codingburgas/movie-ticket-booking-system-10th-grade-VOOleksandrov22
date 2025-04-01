@@ -76,7 +76,7 @@ CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO:STRING=/debug /INCREMENTAL
 CMAKE_INSTALL_PREFIX:PATH=C:/Program Files/CompileLibrary
 
 //Path to a program.
-CMAKE_LINKER:FILEPATH=C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.16.27023/bin/HostX86/x64/link.exe
+CMAKE_LINKER:FILEPATH=C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.43.34808/bin/Hostx86/x64/link.exe
 
 //Flags used by the linker during the creation of modules.
 CMAKE_MODULE_LINKER_FLAGS:STRING=/machine:x64
@@ -230,7 +230,7 @@ CMAKE_GENERATOR:INTERNAL=Visual Studio 15 2017 Win64
 //Name of generator platform.
 CMAKE_GENERATOR_PLATFORM:INTERNAL=
 //Name of generator toolset.
-CMAKE_GENERATOR_TOOLSET:INTERNAL=
+CMAKE_GENERATOR_TOOLSET:INTERNAL=v143
 //Source directory with the top level CMakeLists.txt file for this
 // project
 CMAKE_HOME_DIRECTORY:INTERNAL=C:/Users/Oleksandr Vinichenko/source/repos/movie-ticket-booking-system-10th-grade-VOOleksandrov22/db_cpp

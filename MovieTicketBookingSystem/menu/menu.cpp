@@ -12,7 +12,6 @@ void Menu::setOptions(const std::vector<std::string>& newOptions) {
 }
 
 void displayChoices(Menu* menu, const int& highlightIndex) {
-    system("cls");
     for (int i = 0; i < menu->getOptions().size(); ++i) {
         if (i == highlightIndex) {
             std::cout << " >  " << menu->getOptions()[i] << "\n"; // Highlighted option
@@ -23,12 +22,14 @@ void displayChoices(Menu* menu, const int& highlightIndex) {
     }
 }
 
-size_t Menu::getChoice() {
+size_t Menu::getChoice(std::string question) {
 
 
     int highlightIndex = 0;
 
     while (true) {
+        system("cls");
+        std::cout << question << std::endl;
         displayChoices(this, highlightIndex);
         char key = _getch();
 
@@ -43,7 +44,6 @@ size_t Menu::getChoice() {
                 system("cls");
                 return highlightIndex;
 
-                
                 break;
                 
             default:

@@ -12,4 +12,5 @@ public:
 	
 	DB::Database* db;
 	DB::DBModel* user;
+	DB::DBModel* session;
 };

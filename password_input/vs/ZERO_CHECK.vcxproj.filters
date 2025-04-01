@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\Oleksandr Vinichenko\source\repos\movie-ticket-booking-system-10th-grade-VOOleksandrov22\password_input\vs\CMakeFiles\5c042ff38083293e55569f6e68d070f1\generate.stamp.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{5F4C1515-C37E-399E-8436-A8EF795AB0B6}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

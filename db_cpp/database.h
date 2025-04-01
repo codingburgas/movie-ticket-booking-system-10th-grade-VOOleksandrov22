@@ -15,6 +15,7 @@
 #include <cppconn/statement.h>
 #include <cppconn/resultset.h>
 
+using Row = std::map<std::string, std::string>;
 
 
 namespace DB {
@@ -57,7 +58,7 @@ namespace DB {
 
     const std::string columnProperties[6] = {"Field", "Type", "Null", "Key", "Default", "Extra"};
 
-    std::vector<std::map<std::string, std::string>> resultSetToVector(sql::ResultSet* res);
+    std::vector<Row> resultSetToVector(sql::ResultSet* res);
 
 }
 #endif //DB_H

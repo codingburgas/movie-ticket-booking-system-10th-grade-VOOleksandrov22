@@ -111,20 +111,21 @@ DB::Database::~Database() {
 }
 
 
-std::vector<std::map<std::string, std::string>> DB::resultSetToVector(sql::ResultSet* res) {
-    std::vector<std::map<std::string, std::string>> v;
+std::vector<Row> DB::resultSetToVector(sql::ResultSet* res) {
+    std::vector<Row> v = {};
 
     auto* metadata = res->getMetaData();
     int columnCount = metadata->getColumnCount();
     
 
     while (res->next()) {
-        std::map<std::string, std::string> row;
+        Row row = {};
         for (int i = 1; i <= columnCount; i++) {
             row[metadata->getColumnLabel(i)] = res->getString(i);
         }
         v.push_back(row);
     }
+
     return v;
 }
 

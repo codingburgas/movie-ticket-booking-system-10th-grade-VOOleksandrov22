@@ -11,5 +11,5 @@ public:
 	const std::vector<std::string>& getOptions();
 	void setOptions(const std::vector<std::string>&);
 
-	size_t getChoice();
+	size_t getChoice(std::string question="");
 };
