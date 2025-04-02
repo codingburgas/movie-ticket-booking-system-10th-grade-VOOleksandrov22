@@ -52,3 +52,45 @@ size_t Menu::getChoice(std::string question) {
     }
 }
 
+
+void displayChoices(const std::vector<std::string>& options, const int& highlightIndex) {
+    for (int i = 0; i < options.size(); ++i) {
+        if (i == highlightIndex) {
+            std::cout << " >  " << options[i] << "\n"; // Highlighted option
+        }
+        else {
+            std::cout << "  " << options[i] << "\n"; // Non-highlighted option
+        }
+    }
+}
+
+size_t Menu::getChoice(const std::vector<std::string>& options, std::string question) {
+
+
+    int highlightIndex = 0;
+
+    while (true) {
+        system("cls");
+        std::cout << question << std::endl;
+        displayChoices(options, highlightIndex);
+        char key = _getch();
+
+        switch (key) {
+        case 72: // Up arrow
+            if (highlightIndex > 0) highlightIndex--;
+            break;
+        case 80: // Down arrow
+            if (highlightIndex < options.size() - 1) highlightIndex++;
+            break;
+        case 13: // Enter
+            system("cls");
+            return highlightIndex;
+
+            break;
+
+        default:
+            break;
+        }
+    }
+}
+

@@ -40,7 +40,7 @@ bool Utils::File::writeJsonToFile(std::string filename, const json& data) {
 
     std::ofstream file(filename);
     if (!file.is_open()) {
-        std::cerr << "Error: Could not open file " << filename << " for writing." << std::endl;
+        //std::cerr << "Error: Could not open file " << filename << " for writing." << std::endl;
         return false;
     }
 
@@ -48,7 +48,7 @@ bool Utils::File::writeJsonToFile(std::string filename, const json& data) {
         file << data.dump(4);
     }
     catch (const std::exception& e) {
-        std::cerr << "Error: Failed to write JSON to file " << filename << " - " << e.what() << std::endl;
+        //std::cerr << "Error: Failed to write JSON to file " << filename << " - " << e.what() << std::endl;
         return false;
     }
 

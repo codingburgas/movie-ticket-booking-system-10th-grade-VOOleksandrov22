@@ -4,6 +4,10 @@
 #include <vector>
 #include <string>
 #include "user.h"
+#include "../nlohmann/json.hpp"
+#include "../Utils/utils.h";
+
+using json = nlohmann::json;
 
 
 class App;
