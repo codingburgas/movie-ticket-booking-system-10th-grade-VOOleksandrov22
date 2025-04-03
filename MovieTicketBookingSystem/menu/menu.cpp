@@ -2,6 +2,8 @@
 #include <conio.h>
 #include <windows.h>
 #include "menu.h"
+#include "../Colors/colors.h"
+
 
 
 const std::vector<std::string>& Menu::getOptions() {
@@ -11,16 +13,17 @@ void Menu::setOptions(const std::vector<std::string>& newOptions) {
 	options = newOptions;
 }
 
-void displayChoices(Menu* menu, const int& highlightIndex) {
-    for (int i = 0; i < menu->getOptions().size(); ++i) {
+void displayChoices(const std::vector<std::string>& options, const int& highlightIndex) {
+    for (int i = 0; i < options.size(); ++i) {
         if (i == highlightIndex) {
-            std::cout << " >  " << menu->getOptions()[i] << "\n"; // Highlighted option
+            std::cout << BOLD << YELLOW << " >  " << options[i] << RESET << "\n"; // Highlighted option
         }
         else {
-            std::cout << "  " << menu->getOptions()[i] << "\n"; // Non-highlighted option
+            std::cout << "  " << options[i] << "\n"; // Non-highlighted option
         }
     }
 }
+
 
 size_t Menu::getChoice(std::string question) {
 
@@ -30,7 +33,7 @@ size_t Menu::getChoice(std::string question) {
     while (true) {
         system("cls");
         std::cout << question << std::endl;
-        displayChoices(this, highlightIndex);
+        displayChoices(getOptions(), highlightIndex);
         char key = _getch();
 
         switch (key) {
@@ -53,16 +56,7 @@ size_t Menu::getChoice(std::string question) {
 }
 
 
-void displayChoices(const std::vector<std::string>& options, const int& highlightIndex) {
-    for (int i = 0; i < options.size(); ++i) {
-        if (i == highlightIndex) {
-            std::cout << " >  " << options[i] << "\n"; // Highlighted option
-        }
-        else {
-            std::cout << "  " << options[i] << "\n"; // Non-highlighted option
-        }
-    }
-}
+
 
 size_t Menu::getChoice(const std::vector<std::string>& options, std::string question) {
 
