@@ -1,8 +1,52 @@
 #include <iostream>
+#include <sstream>
+#include <format>
 #include "menu.h"
+#include "../Colors/colors.h"
 #include "../nlohmann/json.hpp"
 
 using json = nlohmann::json;
+
+
+void makeStringCertainLength(std::string& string, int size) {
+    int diff = size - string.size();
+
+    if (diff == 0) return;
+
+    if (diff > 0) {
+        int atBegin = diff / 2;
+        string = std::string(atBegin, ' ') + string + std::string(diff - atBegin, '*');
+    }
+    else {
+        string = string.substr(0, size - 1) + "…";
+    }
+}
+
+std::string regular(json& data) {
+    std::string text = data["data"]["text"].get<std::string>();
+    return std::format(
+        "╭───────╮\n"
+        "|       |\n"
+        "|{:^7}|\n"
+        "|       |\n"
+        "╰───────╯",
+        text
+    );
+}
+
+std::string highlight(json& data) {
+    std::string text = data["data"]["text"].get<std::string>();
+    return std::format(
+        "{}╭───────╮{}\n"
+        "{}|       |{}\n"
+        "{}|{:^7}|{}\n"
+        "{}|       |{}\n"
+        "{}╰───────╯{}",
+        RED, RESET, RED, RESET, RED, text, RESET, RED, RESET, RED, RESET
+    );
+}
+
+
 
 int main() {
     json data = json::parse(R"(
@@ -49,15 +93,14 @@ int main() {
         ]
     ])");
 
-    // Fix: Explicitly declare lambdas as function pointers
-    auto highlight = [](json& data) -> std::string {
-        return "h|" + data["isVisible"].dump() + "|" + data["data"]["text"].get<std::string>();
-        };
 
-    auto regular = [](json& data) -> std::string {
-        return "r|" + data["isVisible"].dump() + "|" + data["data"]["text"].get<std::string>();
-        };
+   
 
-    Menu menu; // Avoid unnecessary heap allocation
-    menu.getChoice(data, highlight, regular, "Choose an option:");
+    
+
+    Menu menu;
+
+    int itemSize[2] = { 9, 5 };
+    menu.getChoice(data, highlight, regular, itemSize, "Choose an option:");
+
 }

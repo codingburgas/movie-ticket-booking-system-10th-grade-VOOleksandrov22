@@ -17,10 +17,11 @@ public:
 	size_t getChoice(std::string question="");
 
 
-	size_t getChoice(
+	size_t* getChoice(
 		json& data,
 		std::string(*getHighlightedItemAsString)(json&),
 		std::string(*getRegularItemAsString)(json&),
+		int itemSize[2],
 		std::string question = ""
 	);
 
