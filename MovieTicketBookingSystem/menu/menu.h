@@ -1,6 +1,9 @@
 #pragma once
 #include <iostream>
 #include <vector>
+#include "../nlohmann/json.hpp"
+
+using json = nlohmann::json;
 
 
 class Menu {
@@ -13,5 +16,14 @@ public:
 
 	size_t getChoice(std::string question="");
 
+
+	size_t getChoice(
+		json& data,
+		std::string(*getHighlightedItemAsString)(json&),
+		std::string(*getRegularItemAsString)(json&),
+		std::string question = ""
+	);
+
 	size_t getChoice(const std::vector<std::string>& options,std::string question = "");
+
 };
