@@ -30,5 +30,9 @@ public:
 	void login();
 
 	void signup();
+
+	void logout();
+
+	void mainLoop();
 	
 };
