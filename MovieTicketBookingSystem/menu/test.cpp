@@ -101,6 +101,13 @@ int main() {
     Menu menu;
 
     int itemSize[2] = { 9, 5 };
-    menu.getChoice(data, highlight, regular, itemSize, "Choose an option:");
+    try {
+        menu.getChoice(data, highlight, regular, itemSize, "Choose an option:");
+    }
+    catch (const std::exception& e) {
+        std::cout << "Error: " << e.what();
+        int i; std::cin >> i;
+    }
+    
 
 }

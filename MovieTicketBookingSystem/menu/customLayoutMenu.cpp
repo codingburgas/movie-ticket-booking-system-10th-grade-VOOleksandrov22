@@ -1,4 +1,5 @@
 #include <iostream>
+#include <string>
 #include <sstream>
 #include <conio.h>
 #include <windows.h>
@@ -6,7 +7,7 @@
 #include "../Colors/colors.h"
 
 
-std::string concatLinesFromVector(const std::vector<std::string>& strings) {
+std::string concatLinesFromVector(const std::vector<std::string>& strings, int itemSize[2]) {
     
     std::vector<std::istringstream> streams;
     for (const auto& str : strings) {
@@ -27,7 +28,7 @@ std::string concatLinesFromVector(const std::vector<std::string>& strings) {
                 hasMoreLines = true;
             }
             else {
-                line = "";
+                line = std::string(itemSize[0], ' ');
             }
             concatenatedLine += line;
         }
@@ -65,13 +66,17 @@ std::string concatLinesFromVector(const std::vector<std::string>& strings) {
 void displayChoices(
     json& data,
     const size_t* highlightPos,
+    int itemSize[2],
     std::string(*getHighlightedItemAsString)(json&),
     std::string(*getRegularItemAsString)(json&)
 ) {
     for (size_t i = 0; i < data.size(); i++) {
         std::vector<std::string> row = {};
         for (size_t j = 0; j < data[i].size(); j++) {
-
+            if (!data[i][j]["isVisible"]) {
+                row.push_back("");
+                continue;
+            }
             if (i == highlightPos[0] && j == highlightPos[1]) {
                 //row = concatenateLineByLine(row, getHighlightedItemAsString(data[i][j])) + "";
                 row.push_back(getHighlightedItemAsString(data[i][j]));
@@ -81,7 +86,7 @@ void displayChoices(
                 row.push_back(getRegularItemAsString(data[i][j]));
             }
         }
-        std::cout << concatLinesFromVector(row);
+        std::cout << concatLinesFromVector(row, itemSize);
 
     }
 }
@@ -92,6 +97,7 @@ bool setPosToNearestVisible(json& data, size_t pos[2], bool rightDirectionFirst 
 
     auto directionToRight = [&]() -> bool {
         for (size_t i = pos[1] + 1; i < data[row].size(); i++) {
+            if (i >= data[row].size()) break;
             if (data[row][i]["isVisible"]) pos[1] = i;
             return true;
         }
@@ -99,7 +105,8 @@ bool setPosToNearestVisible(json& data, size_t pos[2], bool rightDirectionFirst 
         };
 
     auto directionToLeft = [&]() -> bool {
-        for (size_t i = pos[1] - 1; i >= 0; i--) {
+        for (size_t i = pos[1] - 1; i != std::string::npos; i--) {
+            if (i == std::string::npos) break;
             if (data[row][i]["isVisible"]) pos[1] = i;
             return true;
         }
@@ -119,8 +126,8 @@ bool setPosToNearestVisible(json& data, size_t pos[2], bool rightDirectionFirst 
         res = directionToRight();
         if (res) return true;
     }
-
-    data.erase(row);
+    //std::cout << "YELLOW";
+    //data.erase(row);
 
     return false;
 }
@@ -154,7 +161,7 @@ size_t* Menu::getChoice(
     while (true) {
         system("cls");
         std::cout << question << std::endl;
-        displayChoices(data, highlightPos, getHighlightedItemAsString, getRegularItemAsString);
+        displayChoices(data, highlightPos, itemSize, getHighlightedItemAsString, getRegularItemAsString);
         char key = _getch();
 
 
