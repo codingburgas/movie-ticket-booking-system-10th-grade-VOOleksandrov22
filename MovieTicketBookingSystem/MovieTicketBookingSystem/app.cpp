@@ -1,6 +1,8 @@
 #include <iostream>
+#include <map>
 #include <vector>
 #include <cstdlib>
+#include <functional>
 #include "app.h"
 #include "config.h"
 
@@ -14,6 +16,8 @@
 #include "../../password_input/PasswordInput/include/options.h"
 #include "../../password_input/PasswordInput/include/passwordInput.h"
 
+using RedirectFunction = std::function<void()>;
+
 
 using json = nlohmann::json;
 
@@ -23,137 +27,41 @@ App::App()
 	menu(new Menu())
 {
 	loginBySavedSession();
+	mainLoop();
 }
 
-void App::loginBySavedSession() {
-	try {
-		json cache = Utils::File::readJsonFile(config->pathToCache);
-		if (!cache.contains("sessionId")) {
-			auth();
-			return;
-		}
-
-		int sessionId = cache["sessionId"];
-
-		std::string fields = "*";
-		std::string condition = "id=" + std::to_string(sessionId);
 
 
-		auto* res = db->session->select(fields, condition);
-		auto sessions = DB::resultSetToVector(res);
 
 
-		if (sessions.size() == 0) {
-			auth();
-			return;
-		}
 
-		bool validSessionFound = false;
-		int i = 0;
-		do {
-			if (Date(sessions[i]["expiresAt"]) > Date()) {
-				validSessionFound = true;
-				currentSession = new Session(this, sessions[i]);
-				std::cout << "Logged in as " << currentSession->getUser().getUsername() << std::endl;
-			}
-			i++;
-		} while (!validSessionFound && i < sessions.size());
-		if (!validSessionFound) auth();
+void App::mainLoop() {
+	bool running = true;
 
-	}
-	catch (const std::exception& e) {
-		std::cout << "Error: " << e.what() << std::endl;
-	}
-}
+	auto user = currentSession->getUser();
 
-void App::auth(std::string message) {
-	std::vector<std::string> loginOptions = { "Login", "Signup", "Exit" };
-	menu->setOptions(loginOptions);
-
-	
-	int choice = menu->getChoice(message + "Choose an option:");
-
-	switch (choice) {
-	case 0:
-		login();
-		break;
-	case 1:
-		signup();
-		break;
-	case 2:
-		exit(1);
-		break;
-	};
-}
-
-void App::login() {
-	std::cout << "Enter your username\n> ";
-	std::string username; std::getline(std::cin, username);
-
-	Options passwordInputOptions = {
-		.message = "Enter password for user \"" + username + "\"\n> ",
-		.doubleCheck = false,
-		.replaceSymbolsWith = '*',
+	std::map<std::string, RedirectFunction> redirects = {
+		{"Log out", [this]() -> void { this->logout(); } },
+		{"Exit",[]() -> void { exit(0); }},
 	};
 
-	std::string password = inputPassword(passwordInputOptions);
-
-	bool success = Session::initSession(this, username, password);
-
-	if (!success) {
-		auth("Incorrect credentials entered\n\n");
-	}
-
-	loginBySavedSession();
-}
-
-void App::signup() {
-	std::cout << "Enter your username\n> ";
-	std::string username; std::getline(std::cin, username);
-
-	Options passwordInputOptions = {
-		.message = "Enter password for user \"" + username + "\"\n> ",
-		.doubleCheck = true,
-		.doubleCheckMessage = "Reenter the password:\n> ",
-		.replaceSymbolsWith = '*',
+	std::vector<std::string> startingPageOptions = {
+		"Something",
+		"Log out",
+		"Exit"
 	};
 
-	std::string password;
-	try {
-		password = inputPassword(passwordInputOptions);
-	}
-	catch (std::runtime_error& e) {
-		int key = std::stoi(e.what());
-		switch (key) {
-		case 1: {
-			auth("Passwords didn't match! \n");
-			break;
-		}
-		case 2: {
-			auth("Validation failed! \n");
-			break;
-		}
-		default: {
-			auth("Unknown error occured! \n");
-			break;
-		}
-		}
+	if (currentSession->getUser().getIsAdmin()) {
+		auto elementBeforeLast = startingPageOptions.end() - 2;
+		startingPageOptions.insert(elementBeforeLast, "Admin Options");
 	}
 
-	int status = User::initUser(this, username, password);
-	switch (status) {
-	case 1:
-		Session::initSession(this, username, password);
-
-		loginBySavedSession();
-		break;
-	case 2:
-		auth("User with such username already exists!\n");
-		break;
-	default:
-		auth("Unknown error occured! \n");
-		break;
+	while (running) {
+		size_t choice = menu->getChoice(startingPageOptions, "");
+		if (redirects.find(startingPageOptions[choice]) != redirects.end()) {
+			redirects[startingPageOptions[choice]]();
+		}
+		else std::cerr << "Unexpected error occured!" << std::endl;
 	}
-	
 }
 
