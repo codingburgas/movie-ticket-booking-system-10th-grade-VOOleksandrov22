@@ -11,17 +11,20 @@ private:
 	const unsigned int id;
 	const std::string username;
 	const bool isAdmin;
+	const double balance;
 	
 public:
 
 
-	User(App* app, unsigned int id, std::string username, bool isAdmin) : app(app), id(id), username(username), isAdmin(isAdmin) {}
+	User(App* app, unsigned int id, std::string username, bool isAdmin, double balance) : app(app), id(id), username(username), isAdmin(isAdmin), balance(balance) {}
 	User(App* app, Row& data) 
 		: 
 		app(app), 
 		id(std::stoul(data["id"])), 
 		username(data["username"]), 
-		isAdmin((data["isAdmin"] == "1") ? true : false) {}
+		isAdmin((data["isAdmin"] == "1") ? true : false),
+		balance(std::stod(data["balance"]))
+	{}
 
 
 	App* app;
@@ -31,7 +34,9 @@ public:
 
 	unsigned int getId() const { return id; }
 
-	bool getIsAdmin() const { return isAdmin;  }
+	bool getIsAdmin() const { return isAdmin; }
+
+	double getBalance() const { return balance; }
 
 	/*
 	* 1 - success
