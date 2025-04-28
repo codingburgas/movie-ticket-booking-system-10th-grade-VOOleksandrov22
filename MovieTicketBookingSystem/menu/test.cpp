@@ -11,6 +11,7 @@ using json = nlohmann::json;
 #include <Windows.h>
 #include <fcntl.h>
 #include <io.h>
+// Setting UTF-8 encoding.
 bool enabled() {
     HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
     if (hOut == INVALID_HANDLE_VALUE)
@@ -46,6 +47,7 @@ void makeStringCertainLength(std::string& string, int size) {
     }
 }
 
+// FUNCTION WHICH CREATES REGULAR MENU ITEM ON GIVEN DATA
 std::string regular(json& data) {
     std::string text = data["data"]["text"].get<std::string>();
     return std::format(
@@ -58,6 +60,7 @@ std::string regular(json& data) {
     );
 }
 
+// FUNCTION WHICH CREATES HIGHLIGHTED MENU ITEM ON GIVEN DATA
 std::string highlight(json& data) {
     std::string text = data["data"]["text"].get<std::string>();
     return std::format(
