@@ -7,6 +7,30 @@
 
 using json = nlohmann::json;
 
+#ifdef _WIN32
+#include <Windows.h>
+#include <fcntl.h>
+#include <io.h>
+bool enabled() {
+    HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+    if (hOut == INVALID_HANDLE_VALUE)
+        return false;
+
+    SetConsoleOutputCP(CP_UTF8);
+
+    DWORD dwMode = 0;
+    if (!GetConsoleMode(hOut, &dwMode))
+        return false;
+
+    dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+    if (!SetConsoleMode(hOut, dwMode))
+        return false;
+
+    
+    return true;
+}
+#endif
+
 
 void makeStringCertainLength(std::string& string, int size) {
     int diff = size - string.size();
@@ -49,6 +73,10 @@ std::string highlight(json& data) {
 
 
 int main() {
+    #ifdef _WIN32
+    if (!enabled()) return 1;
+    #endif
+
     json data = json::parse(R"(
     [
         [
