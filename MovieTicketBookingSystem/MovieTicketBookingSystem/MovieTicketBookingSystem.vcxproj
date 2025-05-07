@@ -126,6 +126,8 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>D:\cpp_libraries\mysql-connector-c++-9.1.0-winx64\include\jdbc;../../db_cpp;../nlohmann;</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <BuildStlModules>true</BuildStlModules>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -159,6 +161,7 @@
   <ItemGroup>
     <ClCompile Include="app.cpp" />
     <ClCompile Include="auth.cpp" />
+    <ClCompile Include="dataFetch.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>

@@ -133,7 +133,7 @@ bool setPosToNearestVisible(json& data, size_t pos[2], bool rightDirectionFirst 
 }
 
 
-size_t* Menu::getChoice(
+std::pair<size_t, size_t> Menu::getChoice(
     json& data,
     std::string(*getHighlightedItemAsString)(json&),
     std::string(*getRegularItemAsString)(json&),
@@ -239,7 +239,7 @@ size_t* Menu::getChoice(
             break;
         case 13: // Enter
             system("cls");
-            return highlightPos;
+            return { highlightPos[0], highlightPos[1] };
 
             break;
 

@@ -34,5 +34,19 @@ public:
 	void logout();
 
 	void mainLoop();
+
+	void chooseCityMenu();
+
+	void chooseCinemaMenu(const std::string& city);
+
+	void chooseMovieMenu(const unsigned int& cinemaId);
+
+	void chooseSeatMenu(const unsigned int& movieId);
+
+	void bookTicket(Row& movie, const json& seatData)
+
+
+	std::vector<std::string> getCities();
+
 	
 };
