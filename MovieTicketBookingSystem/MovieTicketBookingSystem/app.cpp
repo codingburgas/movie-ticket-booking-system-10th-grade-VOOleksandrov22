@@ -77,7 +77,7 @@ void App::chooseCityMenu() {
 	std::vector<std::string> menuOptions = {};
 
 	for (auto& city : cities) {
-		std::string cinemaStatsQuery = "SELECT COUNT(*), AVG(rating) FROM Cinema WHERE city = '" + city + "';";
+		std::string cinemaStatsQuery = std::format("SELECT COUNT(*), AVG(rating) FROM Cinema WHERE city = '{}';", city);
 		auto res = db->db->execute(cinemaStatsQuery);
 
 		std::string option = city + " ";
@@ -133,14 +133,36 @@ void App::chooseCinemaMenu(const std::string& city) {
 }
 
 void App::chooseMovieMenu(const unsigned int& cinemaId) {
-	std::string moviesQuery = std::format("select * from Movie where cinema_id = {} AND startsAt > NOW();", cinemaId);
+	std::cout << cinemaId;
+	std::string sessionsQuery = std::format(
+		R"(select
+		ms.id as session_id,
+		ms.startsAt,
+		m.title,
+		m.rating,
+		m.description,
+		m.duration,
+		h.id as hall_id
+		from hall h
+		join moviesession ms on ms.hall_id = h.id and ms.startsAt > now()
+		join movie m on ms.movie_id = m.id
+		where h.cinema_id = {};)",
+		cinemaId
+	);
 
-	auto movies = DB::resultSetToVector(db->db->execute(moviesQuery));
+	auto sessions = DB::resultSetToVector(db->db->execute(sessionsQuery));
 
 	std::vector<std::string> menuOptions = {};
 
-	for (auto& movie : movies) {
-		std::string option = std::format("{}(IMDb {})\n{}\n\nStarts at: {}\n", movie["title"], movie["rating"], movie["description"], movie["startsAt"]);
+	for (auto& session : sessions) {
+		std::string option = std::format(
+			"{}(IMDb {})\n{}\n\nStarts at: {}\nDuration: {}",
+			session["title"],        
+			session["rating"],       
+			session["description"],  
+			session["startsAt"],     
+			session["duration"]      
+		);
 
 		menuOptions.push_back(option);
 	}
@@ -151,7 +173,7 @@ void App::chooseMovieMenu(const unsigned int& cinemaId) {
 
 	if (choice == menuOptions.size() - 1) return;
 
-	chooseSeatMenu(std::stoul(movies[choice]["id"]));
+	chooseSeatMenu(sessions[choice]);
 	
 
 	
@@ -184,26 +206,40 @@ std::string highlight(json& data) {
 	);
 }
 
-void App::chooseSeatMenu(const unsigned int& movieId) {
-	std::string movieQuery = std::format("select * from Movie where id = {}", movieId);
+void App::chooseSeatMenu(Row& session) {
+	std::string hallQuery = std::format("select * from Hall where id = {};", session["hall_id"]);
 
-	auto movie = DB::resultSetToVector(db->db->execute(movieQuery))[0];
+	auto hall = DB::resultSetToVector(db->db->execute(hallQuery))[0];
 
-	json seats = json::parse(movie["seats"]);
+	json seats = json::parse(hall["seats"]);
 
 	int itemSize[2] = { 9, 5 };
 	std::pair<size_t, size_t> seatChosen = menu->getChoice(seats,
 		highlight,
 		regular,
 		itemSize,
-		std::format("Choose a seat for a \"{}\" at {}!", movie["title"], movie["startsAt"])
+		std::format("Choose a seat for a \"{}\" at {}!", session["title"], session["startsAt"])
 	);
 
-	bookTicket(&movie, &seats[seatChosen.first][seatChosen.second]);
-	std::cout << std::format("You have chosen ({}, {})", seatChosen.first, seatChosen.second);
+	bookTicket(session, seats[seatChosen.first][seatChosen.second]);
+	//std::cout << std::format("You have chosen ({}, {})", seatChosen.first, seatChosen.second);
 }
 
 
-void App::bookTicket(Row& movie, const json& seatData) {
+/*
 
+seat structure:
+
+{
+	position: identifier for customer(e.g 12 or A5 or whatever)
+	booked: 0 for false and 1 for true
+	isVIP:  for false and 1 for true
+}
+
+*/
+
+void App::bookTicket(Row& movie, const json& seatData) {
+	std::cout << seatData.dump(4);
+	std::cout << "Confirm?";
+	int n; std::cin >> n;
 }
