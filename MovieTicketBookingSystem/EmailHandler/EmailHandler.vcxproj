@@ -21,8 +21,8 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{60a9460f-bb3e-434f-ba8e-26412c6242cc}</ProjectGuid>
-    <RootNamespace>MovieTicketBookingSystem</RootNamespace>
+    <ProjectGuid>{14925854-c6a2-4906-bd30-937320fb7e72}</ProjectGuid>
+    <RootNamespace>EmailHandler</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -70,6 +70,9 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Label="Vcpkg">
+    <VcpkgEnableManifest>true</VcpkgEnableManifest>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -104,16 +107,10 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>../../db_cpp;D:/cpp_libraries/mysql-connector-c++-9.1.0-winx64/include/jdbc;D:/cpp_libraries/mysql-connector-c++-9.1.0-winx64/include/jdbc/cppcon;../nlohmann;</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalHeaderUnitDependencies>
-      </AdditionalHeaderUnitDependencies>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>../../db_cpp;D:/cpp_libraries/mysql-connector-c++-9.1.0-winx64/lib64;</AdditionalLibraryDirectories>
-      <AdditionalDependencies>$(CoreLibraryDependencies);%(AdditionalDependencies);D:\cpp_libraries\mysql-connector-c++-9.1.0-winx64\lib64\vs14\mysqlcppconn.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -124,57 +121,19 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>D:\cpp_libraries\mysql-connector-c++-9.1.0-winx64\include\jdbc;../../db_cpp;../nlohmann;</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp20</LanguageStandard>
-      <LanguageStandard_C>stdc17</LanguageStandard_C>
-      <BuildStlModules>true</BuildStlModules>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>D:\cpp_libraries\mysql-connector-c++-9.1.0-winx64\lib64;</AdditionalLibraryDirectories>
-      <AdditionalDependencies>$(CoreLibraryDependencies);%(AdditionalDependencies);D:\cpp_libraries\mysql-connector-c++-9.1.0-winx64\lib64\vs14\mysqlcppconn.lib;</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\db_cpp\db_cpp.vcxproj">
-      <Project>{8c794490-a87a-363f-96e3-e3a1cc14a46b}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\..\password_input\vs\password_input.vcxproj">
-      <Project>{d874e380-1875-39e8-b765-aadf7b0c9fd4}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\Colors\Colors.vcxproj">
-      <Project>{f78d0a9a-4425-4d64-bcd7-664c98b27592}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\Database\Database.vcxproj">
-      <Project>{4704c50e-f6c9-446c-a9ea-e34bdac5127e}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\Date\Date.vcxproj">
-      <Project>{ea422478-3d6a-4086-99eb-9f6a31fca1db}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\EmailHandler\EmailHandler.vcxproj">
-      <Project>{14925854-c6a2-4906-bd30-937320fb7e72}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\menu\menu.vcxproj">
-      <Project>{18589191-2cfd-4c78-a40f-ae02441cc03d}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\Utils\Utils.vcxproj">
-      <Project>{2d8ea103-6d8b-4654-9090-7ed423719dbe}</Project>
-    </ProjectReference>
+    <ClCompile Include="test.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="app.cpp" />
-    <ClCompile Include="auth.cpp" />
-    <ClCompile Include="dataFetch.cpp" />
-    <ClCompile Include="main.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="app.h" />
-    <ClInclude Include="config.h" />
-    <ClInclude Include="session.h" />
-    <ClInclude Include="user.h" />
+    <ClInclude Include="email.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
