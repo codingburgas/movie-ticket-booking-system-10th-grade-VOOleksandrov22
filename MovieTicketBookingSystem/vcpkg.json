@@ -1,0 +1,8 @@
+{
+  "name": "movieticketbookingsystem",
+  "version-string": "1.0.0",
+  "builtin-baseline": "a9eee3b18df395dbb8be71a31bd78ea441056e42",
+  "dependencies": [
+    "curl"
+  ]
+}

@@ -14,5 +14,13 @@ public:
 	bool debugMode = true;
 
 	// DATABASE SETTINGS
+
+
+	// EMAIL SETTINGS
+
+	std::string projectEmail = "movieticketbookingsystemproj@gmail.com";
+	std::string projectEmailPassword = "vfuh ojjm beza vfms";
+
+	// EMAIL SETTINGS
 	Config() {}
 };
