@@ -5,7 +5,7 @@
 #include <functional>
 #include <format>
 #include "app.h"
-#include "config.h"
+#include "../Config/config.h"
 
 //#include <cppconn/resultset.h>
 #include "../nlohmann/json.hpp"

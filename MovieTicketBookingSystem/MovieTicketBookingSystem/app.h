@@ -2,7 +2,7 @@
 
 #include <iostream>
 #include <map>
-#include "config.h"
+#include "../Config/config.h"
 #include "../Database/dbWrapper.h"
 #include "../Menu/menu.h"
 
