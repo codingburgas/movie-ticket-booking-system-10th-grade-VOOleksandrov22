@@ -42,29 +42,37 @@ void App::mainLoop() {
 
 	auto user = currentSession->getUser();
 
-	std::map<std::string, RedirectFunction> redirects = {
+	std::vector<std::pair<std::string, RedirectFunction>> redirects = {
 		{"Buy a ticket", [this]() -> void { this->chooseCityMenu(); }},
 		{"Log out", [this]() -> void { this->logout(); } },
-		{"Exit",[]() -> void { exit(0); }},
+		{"Exit",[]() -> void {
+			system("cls");
+			std::cout << "\nTill next time! (^///^)\n";
+			exit(0);
+		}},
 	};
 
-	std::vector<std::string> startingPageOptions = {
+	/*std::vector<std::string> startingPageOptions = {
 		"Buy a ticket",
 		"Log out",
 		"Exit"
-	};
+	};*/
 
 	if (currentSession->getUser().getIsAdmin()) {
-		auto elementBeforeLast = startingPageOptions.end() - 2;
-		startingPageOptions.insert(elementBeforeLast, "Admin Options");
+		auto elementBeforeLast = redirects.end() - 2;
+		redirects.insert(elementBeforeLast,
+			{ "Admin panel", [this]() -> void { std::cout << "TO DO: make admin page"; } }
+		);
 	}
 
 	while (running) {
-		size_t choice = menu->getChoice(startingPageOptions, "");
-		if (redirects.find(startingPageOptions[choice]) != redirects.end()) {
-			redirects[startingPageOptions[choice]]();
+		std::vector<std::string> actions = {};
+		for (const auto& redirect : redirects) {
+			actions.push_back(redirect.first);
 		}
-		else std::cerr << "Unexpected error occured!" << std::endl;
+		size_t choice = menu->getChoice(actions, "Actions are:");
+
+		redirects[choice].second();
 	}
 }
 
