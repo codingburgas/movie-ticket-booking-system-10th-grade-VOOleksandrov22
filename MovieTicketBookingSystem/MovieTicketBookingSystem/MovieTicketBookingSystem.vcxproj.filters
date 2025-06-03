@@ -32,9 +32,6 @@
     <ClInclude Include="app.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="config.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="session.h">
       <Filter>Header Files</Filter>
     </ClInclude>

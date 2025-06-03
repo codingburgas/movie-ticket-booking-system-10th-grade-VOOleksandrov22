@@ -139,8 +139,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\db_cpp\db_cpp.vcxproj">
-      <Project>{8c794490-a87a-363f-96e3-e3a1cc14a46b}</Project>
+    <ProjectReference Include="..\..\db_cpp\vs\db_cpp.vcxproj">
+      <Project>{bb9f3f66-798a-35e3-8c3d-c7c750f8da30}</Project>
     </ProjectReference>
     <ProjectReference Include="..\..\password_input\vs\password_input.vcxproj">
       <Project>{d874e380-1875-39e8-b765-aadf7b0c9fd4}</Project>
@@ -172,7 +172,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="app.h" />
-    <ClInclude Include="config.h" />
     <ClInclude Include="session.h" />
     <ClInclude Include="user.h" />
   </ItemGroup>

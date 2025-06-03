@@ -5,12 +5,15 @@
 
 class Config {
 public:
+
+	std::string pathToCache = "cache/cache.json";
+
 	// DATABASE SETTINGS
 
-	std::string url = "url to mysql db";
-	std::string username = "username to log in with";
-	std::string password = "password to lg in with";
-	std::string schema = "db schema to use";
+	std::string url = "mysql://localhost:3306/";
+	std::string username = "root";
+	std::string password = "12345678";
+	std::string schema = "movieticketbookingsystem";
 	bool debugMode = true;
 
 	// DATABASE SETTINGS
@@ -22,5 +25,6 @@ public:
 	std::string projectEmailPassword = "vfuh ojjm beza vfms";
 
 	// EMAIL SETTINGS
+
 	Config() {}
 };
