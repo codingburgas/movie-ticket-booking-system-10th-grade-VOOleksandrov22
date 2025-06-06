@@ -98,6 +98,10 @@ std::string highlight(json& data) {
     );
 }
 
+bool skipCheck(json& data) {
+	return data["data"]["isBlank"].get<bool>();
+}
+
 
 
 int main() {
@@ -190,8 +194,11 @@ int main() {
     Menu menu;
 
     int itemSize[2] = { 9, 5 };
+
+
+
     try {
-        menu.getChoice(data, highlight, regular, itemSize, "Choose an option:");
+        menu.getChoice(data, highlight, regular, skipCheck, itemSize, "Choose an option:");
     }
     catch (const std::exception& e) {
         std::cout << "Error: " << e.what();

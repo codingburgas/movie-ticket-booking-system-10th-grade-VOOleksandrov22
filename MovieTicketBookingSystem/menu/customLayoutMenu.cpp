@@ -92,13 +92,13 @@ void displayChoices(
 }
 
 
-bool setPosToNearestVisible(json& data, size_t pos[2], bool rightDirectionFirst = true) {
+bool setPosToNearestVisible(json& data, bool(*skipCheck)(json&),size_t pos[2], bool rightDirectionFirst = true) {
     const size_t& row = pos[0];
 
     auto directionToRight = [&]() -> bool {
         for (size_t i = pos[1] + 1; i < data[row].size(); i++) {
             if (i >= data[row].size()) break;
-            if (data[row][i]["isVisible"]) pos[1] = i;
+            if (!skipCheck(data[row][i])) pos[1] = i;
             return true;
         }
         return false;
@@ -107,7 +107,7 @@ bool setPosToNearestVisible(json& data, size_t pos[2], bool rightDirectionFirst 
     auto directionToLeft = [&]() -> bool {
         for (size_t i = pos[1] - 1; i != std::string::npos; i--) {
             if (i == std::string::npos) break;
-            if (data[row][i]["isVisible"]) pos[1] = i;
+            if (!skipCheck(data[row][i])) pos[1] = i;
             return true;
         }
         return false;
@@ -137,6 +137,7 @@ std::pair<size_t, size_t> Menu::getChoice(
     json& data,
     std::string(*getHighlightedItemAsString)(json&),
     std::string(*getRegularItemAsString)(json&),
+    bool(*skipCheck)(json&),
     int itemSize[2],
     std::string question
 ) {
@@ -148,7 +149,7 @@ std::pair<size_t, size_t> Menu::getChoice(
     for (size_t i = 0; i < data.size(); i++) {
         if (set) break;
         for (size_t j = 0; j < data[i].size(); j++) {
-            if (data[i][j]["isVisible"]) {
+            if (!skipCheck(data[i][j])) {
                 highlightPos[0] = i;
                 highlightPos[1] = j;
 
@@ -170,10 +171,10 @@ std::pair<size_t, size_t> Menu::getChoice(
             if (highlightPos[0] > 0) highlightPos[0]--;
             else highlightPos[0] = data.size() - 1;
 
-            if (!data[highlightPos[0]][highlightPos[1]]["isVisible"]) {
+            if (skipCheck(data[highlightPos[0]][highlightPos[1]])) {
                 bool found = false;
                 while (!found) {
-                    found = setPosToNearestVisible(data, highlightPos);
+                    found = setPosToNearestVisible(data, skipCheck, highlightPos);
                     if (!found) {
                         highlightPos[0]--;
                         if (highlightPos[0] < 0) highlightPos[0] = data.size() - 1;
@@ -187,10 +188,10 @@ std::pair<size_t, size_t> Menu::getChoice(
             if (highlightPos[0] < data.size() - 1) highlightPos[0]++;
             else highlightPos[0] = 0;
 
-            if (!data[highlightPos[0]][highlightPos[1]]["isVisible"]) {
+            if (skipCheck(data[highlightPos[0]][highlightPos[1]])) {
                 bool found = false;
                 while (!found) {
-                    found = setPosToNearestVisible(data, highlightPos);
+                    found = setPosToNearestVisible(data, skipCheck, highlightPos);
                     if (!found) {
                         highlightPos[0]++;
                         if (highlightPos[0] >= data.size() - 1) highlightPos[0] = 0;
@@ -206,10 +207,10 @@ std::pair<size_t, size_t> Menu::getChoice(
                 highlightPos[1] = 0;
             }
 
-            if (!data[highlightPos[0]][highlightPos[1]]["isVisible"]) {
+            if (skipCheck(data[highlightPos[0]][highlightPos[1]])) {
                 bool found = false;
                 while (!found) {
-                    found = setPosToNearestVisible(data, highlightPos);
+                    found = setPosToNearestVisible(data, skipCheck, highlightPos);
                     if (!found) {
                         highlightPos[1]++;
                         if (highlightPos[1] >= data[highlightPos[0]].size() - 1) {
@@ -225,10 +226,10 @@ std::pair<size_t, size_t> Menu::getChoice(
             if (highlightPos[1] > 0) highlightPos[1]--;
             else highlightPos[1] = data[highlightPos[0]].size() - 1;
 
-            if (!data[highlightPos[0]][highlightPos[1]]["isVisible"]) {
+            if (skipCheck(data[highlightPos[0]][highlightPos[1]])) {
                 bool found = false;
                 while (!found) {
-                    found = setPosToNearestVisible(data, highlightPos, false);
+                    found = setPosToNearestVisible(data, skipCheck, highlightPos, false);
                     if (!found) {
                         highlightPos[1]--;
                         if (highlightPos[1] < 0) highlightPos[1] = data[highlightPos[0]].size() - 1;

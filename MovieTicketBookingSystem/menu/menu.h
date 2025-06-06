@@ -21,6 +21,7 @@ public:
 		json& data,
 		std::string(*getHighlightedItemAsString)(json&),
 		std::string(*getRegularItemAsString)(json&),
+		bool(*skipCheck)(json&),
 		int itemSize[2],
 		std::string question = ""
 	);
