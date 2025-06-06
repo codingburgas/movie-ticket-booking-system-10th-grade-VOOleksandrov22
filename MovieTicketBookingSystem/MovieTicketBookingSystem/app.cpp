@@ -144,7 +144,7 @@ void App::chooseMovieMenu(const unsigned int& cinemaId) {
 	std::cout << cinemaId;
 	std::string sessionsQuery = std::format(
 		R"(select
-		ms.id as session_id,
+		ms.id,
 		ms.startsAt,
 		m.title,
 		m.rating,
@@ -242,6 +242,7 @@ seat structure:
 	position: identifier for customer(e.g 12 or A5 or whatever)
 	booked: 0 for false and 1 for true
 	isVIP:  for false and 1 for true
+	isBlank: 0 for false and 1 for true (just for the space)
 }
 
 */
