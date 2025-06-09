@@ -74,10 +74,6 @@ void displayChoices(
     for (size_t i = 0; i < data.size(); i++) {
         std::vector<std::string> row = {};
         for (size_t j = 0; j < data[i].size(); j++) {
-            if (skipCheck(data[i][j])) {
-                row.push_back("");
-                continue;
-            }
             if (i == highlightPos[0] && j == highlightPos[1]) {
                 //row = concatenateLineByLine(row, getHighlightedItemAsString(data[i][j])) + "";
                 row.push_back(getHighlightedItemAsString(data[i][j]));

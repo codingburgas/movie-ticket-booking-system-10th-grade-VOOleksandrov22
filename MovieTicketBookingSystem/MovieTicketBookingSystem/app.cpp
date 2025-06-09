@@ -182,7 +182,7 @@ void App::chooseMovieMenu(const unsigned int& cinemaId) {
 
 	if (choice == menuOptions.size() - 1) return;
 
-	chooseSeatMenu(sessions[choice]);
+	bookTicket(sessions[choice]);
 	
 
 	
@@ -196,11 +196,11 @@ void App::chooseMovieMenu(const unsigned int& cinemaId) {
 std::string regular(json& data) {
 	if (data["data"]["isBlank"].get<bool>()) {
 		return
-			"            \n"
-			"            \n"
-			"            \n"
-			"            \n"
-			"            ";
+			"          \n"
+			"          \n"
+			"          \n"
+			"          \n"
+			"          ";
 	}
 
 	std::string text = data["data"]["text"].get<std::string>();
@@ -224,11 +224,11 @@ std::string regular(json& data) {
 std::string highlight(json& data) {
 	if (data["data"]["isBlank"].get<bool>()) {
 		return
-			"            \n"
-			"            \n"
-			"            \n"
-			"            \n"
-			"            ";
+			"          \n"
+			"          \n"
+			"          \n"
+			"          \n"
+			"          ";
 	}
 
 	std::string text = data["data"]["text"].get<std::string>();
@@ -252,25 +252,6 @@ bool skipCheck(json& data) {
 	return data["data"]["isBlank"].get<bool>() || data["data"]["bookedBy"] != 0;
 }
 
-void App::chooseSeatMenu(Row& session) {
-	std::string hallQuery = std::format("select * from Hall where id = {};", session["hall_id"]);
-
-	auto hall = DB::resultSetToVector(db->db->execute(hallQuery))[0];
-
-	json seats = json::parse(hall["seats"]);
-
-	int itemSize[2] = { 9, 5 };
-	std::pair<size_t, size_t> seatChosen = menu->getChoice(seats,
-		highlight,
-		regular,
-		skipCheck,
-		itemSize,
-		std::format("Choose a seat for a \"{}\" at {}!", session["title"], session["startsAt"])
-	);
-
-	bookTicket(session, seats[seatChosen.first][seatChosen.second]);
-	//std::cout << std::format("You have chosen ({}, {})", seatChosen.first, seatChosen.second);
-}
 
 
 /*
@@ -278,7 +259,7 @@ void App::chooseSeatMenu(Row& session) {
 seat structure:
 
 {
-	position: identifier for customer(e.g 12 or A5 or whatever)
+	text: identifier for customer(e.g 12 or A5 or whatever)
 	bookedBy: userId of the user who booked the seat, 0 if not booked
 	isVIP:  for false and 1 for true
 	isBlank: 0 for false and 1 for true (just for the space)
@@ -287,6 +268,70 @@ seat structure:
 
 */
 
-void App::bookTicket(Row& session, const json& seatData) {
+std::string getSeatData(const json& seatData) {
+	return std::format("Position: {},\nVIP: {},\nPrice: {}", seatData["data"]["text"].get<std::string>(), seatData["data"]["isVIP"].get<bool>() ? "yes" : "no", Utils::String::toString(seatData["data"]["price"].get<double>()));
+}
+
+void App::bookTicket(Row& session) {
+
+	std::string hallQuery = std::format("select * from Hall where id = {};", session["hall_id"]);
+
+	auto hall = DB::resultSetToVector(db->db->execute(hallQuery))[0];
+
+	json seats = json::parse(hall["seats"]);
+
+	int itemSize[2] = { 10, 5 };
+
+	auto bookedSeats = json::array();
+	bool bookMoreSeats = true;
+
+	while (bookMoreSeats) {
+		std::pair<size_t, size_t> seatChosen = menu->getChoice(seats,
+			highlight,
+			regular,
+			skipCheck,
+			itemSize,
+			std::format("Choose a seat for a \"{}\" at {}!", session["title"], session["startsAt"])
+		);
+
+		std::vector<std::string> menuOptions = {
+			"Book another seat",
+			"Payment",
+			"<< Back"
+		};
+
+		size_t choice = menu->getChoice(menuOptions, getSeatData(seats[seatChosen.first][seatChosen.second]) + "\n\nChoose how to procede:");
+
+		if (choice == menuOptions.size() - 1) { // back
+			continue;
+		}
+		else if (choice == menuOptions.size() - 2) {
+
+			seats[seatChosen.first][seatChosen.second]["data"]["bookedBy"] = currentSession->getUser().getId();
+			bookedSeats.push_back(seats[seatChosen.first][seatChosen.second]);
+			bookMoreSeats = false;
+		}
+		else {
+			// Book another seat
+			if (seats[seatChosen.first][seatChosen.second]["data"]["bookedBy"].get<unsigned int>() != 0) {
+				std::cout << "This seat is already booked by user with id " << seats[seatChosen.first][seatChosen.second]["data"]["bookedBy"] << std::endl;
+				continue;
+			}
+
+			seats[seatChosen.first][seatChosen.second]["data"]["bookedBy"] = currentSession->getUser().getId();
+			bookedSeats.push_back(seats[seatChosen.first][seatChosen.second]);
+		}
+
+
+	}
+
+	/*for (const json& seat : bookedSeats) {
+		std::cout << 
+	}*/
+
+	std::cout << "Booked seats:\n" << bookedSeats.dump(4);
+
+	int i; std::cin >> i;
+
 	
 }

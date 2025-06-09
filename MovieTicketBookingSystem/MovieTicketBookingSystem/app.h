@@ -41,9 +41,8 @@ public:
 
 	void chooseMovieMenu(const unsigned int& cinemaId);
 
-	void chooseSeatMenu(Row& session);
 
-	void bookTicket(Row& movie, const json& seatData);
+	void bookTicket(Row& movie);
 
 
 	std::vector<std::string> getCities();
