@@ -9,7 +9,6 @@
 
 //#include <cppconn/resultset.h>
 #include "../nlohmann/json.hpp"
-#include "../Utils/utils.h";
 #include "../../db_cpp/database.h"
 #include "../Date/date.h"
 #include "session.h"
@@ -17,6 +16,8 @@
 
 #include "../../password_input/PasswordInput/include/options.h"
 #include "../../password_input/PasswordInput/include/passwordInput.h"
+
+#include <string>
 
 using RedirectFunction = std::function<void()>;
 
@@ -190,28 +191,65 @@ void App::chooseMovieMenu(const unsigned int& cinemaId) {
 
 
 
+
+// FUNCTION WHICH CREATES REGULAR MENU ITEM ON GIVEN DATA
 std::string regular(json& data) {
+	if (data["data"]["isBlank"].get<bool>()) {
+		return
+			"            \n"
+			"            \n"
+			"            \n"
+			"            \n"
+			"            ";
+	}
+
 	std::string text = data["data"]["text"].get<std::string>();
 	return std::format(
-		"╭───────╮\n"
-		"|       |\n"
-		"|{:^7}|\n"
-		"|       |\n"
-		"╰───────╯",
-		text
+		"╭────────╮\n"
+		"|{}{:^8}{}|\n"
+		"|{:^8}|\n"
+		"|{}|\n"
+		"╰────────╯",
+		GREEN,
+		Utils::String::toString(data["data"]["price"].get<double>(), 2) + "$",
+		RESET,
+		text,
+		data["data"]["isVIP"].get<bool>()
+		? std::format("{}{}{}", YELLOW, std::format("{:^8}", "VIP"), RESET)
+		: std::format("{:^8}", "")
 	);
 }
 
+// FUNCTION WHICH CREATES HIGHLIGHTED MENU ITEM ON GIVEN DATA
 std::string highlight(json& data) {
+	if (data["data"]["isBlank"].get<bool>()) {
+		return
+			"            \n"
+			"            \n"
+			"            \n"
+			"            \n"
+			"            ";
+	}
+
 	std::string text = data["data"]["text"].get<std::string>();
 	return std::format(
-		"{}╭───────╮{}\n"
-		"{}|       |{}\n"
-		"{}|{:^7}|{}\n"
-		"{}|       |{}\n"
-		"{}╰───────╯{}",
-		RED, RESET, RED, RESET, RED, text, RESET, RED, RESET, RED, RESET
+		"{}╭────────╮{}\n"
+		"{}|{}{:^8}{}|{}\n"
+		"{}|{:^8}|{}\n"
+		"{}|{:^8}|{}\n"
+		"{}╰────────╯{}",
+		RED, RESET, RED, 
+		GREEN, Utils::String::toString(data["data"]["price"].get<double>(), 2) + "$", RED,
+		RESET, RED, text, RESET, RED,
+		data["data"]["isVIP"].get<bool>()
+		? std::format("{}{}{}", YELLOW, std::format("{:^8}", "VIP"), RED)
+		: std::format("{:^8}", ""),
+		RESET, RED, RESET
 	);
+}
+
+bool skipCheck(json& data) {
+	return data["data"]["isBlank"].get<bool>() || data["data"]["bookedBy"] != 0;
 }
 
 void App::chooseSeatMenu(Row& session) {
@@ -225,6 +263,7 @@ void App::chooseSeatMenu(Row& session) {
 	std::pair<size_t, size_t> seatChosen = menu->getChoice(seats,
 		highlight,
 		regular,
+		skipCheck,
 		itemSize,
 		std::format("Choose a seat for a \"{}\" at {}!", session["title"], session["startsAt"])
 	);
@@ -240,15 +279,14 @@ seat structure:
 
 {
 	position: identifier for customer(e.g 12 or A5 or whatever)
-	booked: 0 for false and 1 for true
+	bookedBy: userId of the user who booked the seat, 0 if not booked
 	isVIP:  for false and 1 for true
 	isBlank: 0 for false and 1 for true (just for the space)
+	price: price of the seat
 }
 
 */
 
-void App::bookTicket(Row& movie, const json& seatData) {
-	std::cout << seatData.dump(4);
-	std::cout << "Confirm?";
-	int n; std::cin >> n;
+void App::bookTicket(Row& session, const json& seatData) {
+	
 }

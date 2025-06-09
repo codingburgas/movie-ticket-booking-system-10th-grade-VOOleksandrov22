@@ -129,7 +129,7 @@ int main() {
             {
                 "data": {
                     "text": "A1",
-                    "booked": false,
+                    "bookedBy": 0,
                     "isVIP": true,
                     "isBlank": false
                 }
@@ -137,7 +137,7 @@ int main() {
             {
                 "data": {
                     "text": "A2",
-                    "booked": false,
+                    "bookedBy": 0,
                     "isVIP": true,
                     "isBlank": false
                 }
@@ -145,7 +145,7 @@ int main() {
             {
                 "data": {
                     "text": "A3",
-                    "booked": true,
+                    "bookedBy": true,
                     "isVIP": true,
                     "isBlank": false
                 }
@@ -155,7 +155,7 @@ int main() {
             {
                 "data": {
                     "text": "B1",
-                    "booked": false,
+                    "bookedBy": 0,
                     "isVIP": false,
                     "isBlank": true
                 }
@@ -163,7 +163,7 @@ int main() {
             {
                 "data": {
                     "text": "B2",
-                    "booked": false,
+                    "bookedBy": 0,
                     "isVIP": false,
                     "isBlank": false
                 }
@@ -171,7 +171,7 @@ int main() {
             {
                 "data": {
                     "text": "",
-                    "booked": false,
+                    "bookedBy": 0,
                     "isVIP": false,
                     "isBlank": true
                 }
@@ -181,7 +181,7 @@ int main() {
             {
                 "data": {
                     "text": "C1",
-                    "booked": false,
+                    "bookedBy": 0,
                     "isVIP": false,
                     "isBlank": true
                 }
@@ -189,7 +189,7 @@ int main() {
             {
                 "data": {
                     "text": "C2",
-                    "booked": false,
+                    "bookedBy": 0,
                     "isVIP": false,
                     "isBlank": false
                 }
@@ -197,7 +197,7 @@ int main() {
             {
                 "data": {
                     "text": "C3",
-                    "booked": false,
+                    "bookedBy": 0,
                     "isVIP": false,
                     "isBlank": false
                 }

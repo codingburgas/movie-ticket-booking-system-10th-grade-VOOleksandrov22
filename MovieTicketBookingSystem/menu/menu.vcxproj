@@ -47,7 +47,7 @@
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -138,6 +138,9 @@
     <ClInclude Include="menu.h" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\password_input\vs\password_input.vcxproj">
+      <Project>{0217171b-f6a9-3090-8c7b-da898fd0ef37}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\Colors\Colors.vcxproj">
       <Project>{f78d0a9a-4425-4d64-bcd7-664c98b27592}</Project>
     </ProjectReference>

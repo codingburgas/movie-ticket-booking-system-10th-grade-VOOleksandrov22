@@ -1,7 +1,6 @@
 #include "app.h"
 #include "session.h"
 #include "user.h"
-#include "../Utils/utils.h";
 #include "../../db_cpp/database.h"
 #include "../Date/date.h"
 

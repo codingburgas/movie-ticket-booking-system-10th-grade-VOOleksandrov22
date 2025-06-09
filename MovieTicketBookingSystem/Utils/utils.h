@@ -1,5 +1,7 @@
 //#include "../../nlohmann/json.hpp"
 #include "../nlohmann/json.hpp"
+#include <iostream>
+
 
 using json = nlohmann::json;
 
@@ -8,5 +10,9 @@ namespace Utils {
 		json readJsonFile(std::string filename);
 
 		bool writeJsonToFile(std::string filename, const json& data);
+	}
+
+	namespace String {
+		std::string toString(double num, int digitsAfterPoint = 2);
 	}
 }
