@@ -51,11 +51,11 @@ void makeStringCertainLength(std::string& string, int size) {
 std::string regular(json& data) {
     if (data["data"]["isBlank"].get<bool>()) {
         return
-            "          \n"
-            "          \n"
-            "          \n"
-            "          \n"
-            "          ";
+            "            \n"
+            "            \n"
+            "            \n"
+            "            \n"
+            "            ";
     }
 
     std::string text = data["data"]["text"].get<std::string>();
@@ -76,11 +76,11 @@ std::string regular(json& data) {
 std::string highlight(json& data) {
     if (data["data"]["isBlank"].get<bool>()) {
         return
-            "          \n"
-            "          \n"
-            "          \n"
-            "          \n"
-            "          ";
+            "            \n"
+            "            \n"
+            "            \n"
+            "            \n"
+            "            ";
     }
 
     std::string text = data["data"]["text"].get<std::string>();
@@ -127,7 +127,6 @@ int main() {
         [
         [
             {
-                "isVisible": true,
                 "data": {
                     "text": "A1",
                     "booked": false,
@@ -136,7 +135,6 @@ int main() {
                 }
             },
             {
-                "isVisible": true,
                 "data": {
                     "text": "A2",
                     "booked": false,
@@ -145,7 +143,6 @@ int main() {
                 }
             },
             {
-                "isVisible": true,
                 "data": {
                     "text": "A3",
                     "booked": true,
@@ -156,16 +153,14 @@ int main() {
         ],
         [
             {
-                "isVisible": true,
                 "data": {
                     "text": "B1",
                     "booked": false,
                     "isVIP": false,
-                    "isBlank": false
+                    "isBlank": true
                 }
             },
             {
-                "isVisible": true,
                 "data": {
                     "text": "B2",
                     "booked": false,
@@ -174,7 +169,6 @@ int main() {
                 }
             },
             {
-                "isVisible": true,
                 "data": {
                     "text": "",
                     "booked": false,
@@ -182,9 +176,36 @@ int main() {
                     "isBlank": true
                 }
             }
+        ],
+        [
+            {
+                "data": {
+                    "text": "C1",
+                    "booked": false,
+                    "isVIP": false,
+                    "isBlank": true
+                }
+            },
+            {
+                "data": {
+                    "text": "C2",
+                    "booked": false,
+                    "isVIP": false,
+                    "isBlank": false
+                }
+            },
+            {
+                "data": {
+                    "text": "C3",
+                    "booked": false,
+                    "isVIP": false,
+                    "isBlank": false
+                }
+            }
         ]
     ]
     )");
+
 
 
    
@@ -198,7 +219,10 @@ int main() {
 
 
     try {
-        menu.getChoice(data, highlight, regular, skipCheck, itemSize, "Choose an option:");
+        auto pos = menu.getChoice(data, highlight, regular, skipCheck, itemSize, "Choose an option:");
+
+        std::cout << std::format("Position of seat chosen is : ({}, {})\n", pos.first, pos.second);
+        std::cout << std::format("Seat data: \n\n{}", data[pos.first][pos.second].dump(4));
     }
     catch (const std::exception& e) {
         std::cout << "Error: " << e.what();

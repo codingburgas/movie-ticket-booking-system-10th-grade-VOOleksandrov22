@@ -68,12 +68,13 @@ void displayChoices(
     const size_t* highlightPos,
     int itemSize[2],
     std::string(*getHighlightedItemAsString)(json&),
-    std::string(*getRegularItemAsString)(json&)
+    std::string(*getRegularItemAsString)(json&),
+    bool(*skipCheck)(json&)
 ) {
     for (size_t i = 0; i < data.size(); i++) {
         std::vector<std::string> row = {};
         for (size_t j = 0; j < data[i].size(); j++) {
-            if (!data[i][j]["isVisible"]) {
+            if (skipCheck(data[i][j])) {
                 row.push_back("");
                 continue;
             }
@@ -162,7 +163,7 @@ std::pair<size_t, size_t> Menu::getChoice(
     while (true) {
         system("cls");
         std::cout << question << std::endl;
-        displayChoices(data, highlightPos, itemSize, getHighlightedItemAsString, getRegularItemAsString);
+        displayChoices(data, highlightPos, itemSize, getHighlightedItemAsString, getRegularItemAsString, skipCheck);
         char key = _getch();
 
 
