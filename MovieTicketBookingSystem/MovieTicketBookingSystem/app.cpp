@@ -194,34 +194,15 @@ void App::chooseMovieMenu(const unsigned int& cinemaId) {
 
 // FUNCTION WHICH CREATES REGULAR MENU ITEM ON GIVEN DATA
 std::string regular(json& data) {
-	if (data["data"]["isBlank"].get<bool>()) {
-		return
-			"          \n"
-			"          \n"
-			"          \n"
-			"          \n"
-			"          ";
+	std::string paintIn = RESET;
+	if (data["data"]["bookedBy"].get<unsigned int>() != 0) {
+		paintIn = RED;
+	}
+	else if (data.contains("isHighlighted")) {
+		paintIn = BLUE;
+		data.erase("isHighlighted");
 	}
 
-	std::string text = data["data"]["text"].get<std::string>();
-	return std::format(
-		"╭────────╮\n"
-		"|{}{:^8}{}|\n"
-		"|{:^8}|\n"
-		"|{}|\n"
-		"╰────────╯",
-		GREEN,
-		Utils::String::toString(data["data"]["price"].get<double>(), 2) + "$",
-		RESET,
-		text,
-		data["data"]["isVIP"].get<bool>()
-		? std::format("{}{}{}", YELLOW, std::format("{:^8}", "VIP"), RESET)
-		: std::format("{:^8}", "")
-	);
-}
-
-// FUNCTION WHICH CREATES HIGHLIGHTED MENU ITEM ON GIVEN DATA
-std::string highlight(json& data) {
 	if (data["data"]["isBlank"].get<bool>()) {
 		return
 			"          \n"
@@ -238,14 +219,20 @@ std::string highlight(json& data) {
 		"{}|{:^8}|{}\n"
 		"{}|{:^8}|{}\n"
 		"{}╰────────╯{}",
-		RED, RESET, RED, 
-		GREEN, Utils::String::toString(data["data"]["price"].get<double>(), 2) + "$", RED,
-		RESET, RED, text, RESET, RED,
+		paintIn, RESET, paintIn,
+		GREEN, Utils::String::toString(data["data"]["price"].get<double>(), 2) + "$", paintIn,
+		RESET, paintIn, text, RESET, paintIn,
 		data["data"]["isVIP"].get<bool>()
-		? std::format("{}{}{}", YELLOW, std::format("{:^8}", "VIP"), RED)
+		? std::format("{}{}{}", YELLOW, std::format("{:^8}", "VIP"), paintIn)
 		: std::format("{:^8}", ""),
-		RESET, RED, RESET
+		RESET, paintIn, RESET
 	);
+}
+
+// FUNCTION WHICH CREATES HIGHLIGHTED MENU ITEM ON GIVEN DATA
+std::string highlight(json& data) {
+	data["isHighlighted"] = 1;
+	return regular(data);
 }
 
 bool skipCheck(json& data) {
