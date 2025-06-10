@@ -24,9 +24,34 @@ using RedirectFunction = std::function<void()>;
 
 
 void App::defineHelperMethods() {
-	regular = [this](json& data) -> std::string {
+	auto user = currentSession->getUser();
+	// Define the helper methods for menu item rendering
+	regular = [this, user](json& data) -> std::string {
 		std::string paintIn = RESET;
-		if (data["data"]["bookedBy"].get<unsigned long>() == this->currentSession->getUser().getId()) {
+
+
+		if (data["data"].contains("isConfirmation")) {
+			if (data.contains("isHighlighted")) {
+				paintIn = BLUE;
+				data.erase("isHighlighted");
+			}
+			std::string text = data["data"]["text"].get<std::string>();
+			return std::format(
+				"{}╭────────╮{}\n"
+				"{}|        |{}\n"
+				"{}|{:^8}|{}\n"
+				"{}|        |{}\n"
+				"{}╰────────╯{}",
+				paintIn, RESET,
+				paintIn, RESET,
+				paintIn, text, RESET,
+				paintIn, RESET,
+				paintIn, RESET
+			);
+		}
+		/*std::cout << "data: " << data.dump(4) << std::endl << "User id: " << user.getId();
+		int c; std::cin >> c;*/
+		if (data["data"]["bookedBy"].get<unsigned long>() == user.getId()) {
 			paintIn = GREEN;
 		}
 		else if (data.contains("isHighlighted")) {
@@ -35,6 +60,8 @@ void App::defineHelperMethods() {
 		} else if (data["data"]["bookedBy"].get<unsigned long>() != 0) {
 			paintIn = RED;
 		}
+
+		
 
 		if (data["data"]["isBlank"].get<bool>()) {
 			return
@@ -80,9 +107,8 @@ App::App()
 	db(new DbWrapper(config->url, config->username, config->password, config->schema, config->debugMode)),
 	menu(new Menu())
 {
-
-	defineHelperMethods();
 	loginBySavedSession();
+	defineHelperMethods();
 	mainLoop();
 }
 
@@ -245,57 +271,6 @@ void App::chooseMovieMenu(const unsigned int& cinemaId) {
 
 /*
 
-// FUNCTION WHICH CREATES REGULAR MENU ITEM ON GIVEN DATA
-std::string regular(json& data) {
-	std::string paintIn = RESET;
-	if (data["data"]["bookedBy"].get<unsigned int>() != 0) {
-		paintIn = RED;
-	}
-	else if (data.contains("isHighlighted")) {
-		paintIn = BLUE;
-		data.erase("isHighlighted");
-	}
-
-	if (data["data"]["isBlank"].get<bool>()) {
-		return
-			"          \n"
-			"          \n"
-			"          \n"
-			"          \n"
-			"          ";
-	}
-
-	std::string text = data["data"]["text"].get<std::string>();
-	return std::format(
-		"{}╭────────╮{}\n"
-		"{}|{}{:^8}{}|{}\n"
-		"{}|{:^8}|{}\n"
-		"{}|{:^8}|{}\n"
-		"{}╰────────╯{}",
-		paintIn, RESET, paintIn,
-		GREEN, Utils::String::toString(data["data"]["price"].get<double>(), 2) + "$", paintIn,
-		RESET, paintIn, text, RESET, paintIn,
-		data["data"]["isVIP"].get<bool>()
-		? std::format("{}{}{}", YELLOW, std::format("{:^8}", "VIP"), paintIn)
-		: std::format("{:^8}", ""),
-		RESET, paintIn, RESET
-	);
-}
-
-// FUNCTION WHICH CREATES HIGHLIGHTED MENU ITEM ON GIVEN DATA
-std::string highlight(json& data) {
-	data["isHighlighted"] = 1;
-	return regular(data);
-}
-
-bool skipCheck(json& data) {
-	return data["data"]["isBlank"].get<bool>() || data["data"]["bookedBy"] != 0;
-}
-
-*/
-
-/*
-
 seat structure:
 
 {
@@ -313,6 +288,8 @@ std::string getSeatData(const json& seatData) {
 }
 
 void App::bookTicket(Row& session) {
+
+	auto user = currentSession->getUser();
 
 	std::string hallQuery = std::format("select * from Hall where id = {};", session["hall_id"]);
 
@@ -352,7 +329,7 @@ void App::bookTicket(Row& session) {
 		}
 		
 		seats[seatChosen.first][seatChosen.second]["data"]["position"] = json::array({ seatChosen.first, seatChosen.second });
-		seats[seatChosen.first][seatChosen.second]["data"]["bookedBy"] = currentSession->getUser().getId();
+		seats[seatChosen.first][seatChosen.second]["data"]["bookedBy"] = user.getId();
 		bookedSeats.push_back(seats[seatChosen.first][seatChosen.second]);
 
 		if (choice == 1) { // payment
@@ -360,15 +337,71 @@ void App::bookTicket(Row& session) {
 		}
 	}
 
-	
-	/*confirmationScreenSkipCheck = [&bookedSeats](json& data) {
-		return data["data"]["bookedBy"].get<unsigned int>() != 0;
-		};*/
+	auto confirmationButtons = json::parse(R"(
+		[
+			{
+			  "data": {
+				"text": "CONFIRM",
+				"isConfirmation": 1
+			  }
+			},
+			{
+			  "data": {
+				"text": "CANCEL",
+				"isConfirmation": 1
+			  }
+			}
 
-	std::cout << bookedSeats.dump(4) << std::endl;
-	int i; std::cin >> i;
+
+		]
+	)");
+
+
+	seats.push_back(confirmationButtons);
 
 	
+	std::function<bool(json&)> confirmationScreenSkipCheck = [](json& data) {
+		return !data["data"].contains("isConfirmation");
+		};
+
+	double price = 0;
+	for (const auto& seat : bookedSeats) {
+		price += seat["data"]["price"].get<double>();
+	}
+
+	std::pair<size_t, size_t> choice = menu->getChoice(seats,
+		highlight,
+		regular,
+		confirmationScreenSkipCheck,
+		itemSize,
+		std::format("You are about to book {} seat(s) for \"{}\" at {}. This will cost {}$(Your balance is {}$).\nDo you confirm?",
+			bookedSeats.size(), session["title"], session["startsAt"], price, user.getBalance())
+	);
+
+	if (choice.first != seats.size() - 1) {
+		std::cout << "This option is impossible to choose, please contact us about the situation!\n";
+		return;
+	}
+
+	if (choice.second == 0) { // confirm
+		if (currentSession->getUser().getBalance() < price) {
+			std::cout << "You don't have enough money to book this ticket!\n";
+			// TODO: add redirect to deposit page
+			return;
+		}
+
+		std::string createTransactionQuery = std::format(
+			"INSERT INTO Transaction (sum, userId, movieSessionId, seatsData) VALUES ({}, {}, {}, '{}');",
+			price, user.getId(), session["id"], bookedSeats.dump()
+		);
+
+		db->db->execute(createTransactionQuery);
+		
+	}
+	else { // cancel
+		return;
+		
+	}
 	
 	
 }
