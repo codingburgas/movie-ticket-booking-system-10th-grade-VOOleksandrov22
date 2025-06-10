@@ -1,18 +1,27 @@
 #pragma once
 
 #include <iostream>
+#include <functional>
 #include <map>
 #include "../Config/config.h"
 #include "../Database/dbWrapper.h"
 #include "../Menu/menu.h"
+#include "../nlohmann/json.hpp"
+
+using json = nlohmann::json;
 
 class Session;
 
 
 class App {
 private:
-
+	std::function<std::string(json&)> regular;
+	std::function<std::string(json&)> highlight;
+	std::function<bool(json&)> skipCheck;
 public:
+
+	
+
 	const Config* config = new Config();
 
 	const DbWrapper* db;
@@ -22,6 +31,8 @@ public:
 	Session* currentSession;
 
 	App();
+
+	void defineHelperMethods();
 
 	void loginBySavedSession();
 

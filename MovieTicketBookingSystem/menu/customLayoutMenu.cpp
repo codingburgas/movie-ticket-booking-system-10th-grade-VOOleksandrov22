@@ -67,9 +67,9 @@ void displayChoices(
     json& data,
     const size_t* highlightPos,
     int itemSize[2],
-    std::string(*getHighlightedItemAsString)(json&),
-    std::string(*getRegularItemAsString)(json&),
-    bool(*skipCheck)(json&)
+    std::function<std::string(json&)> &getHighlightedItemAsString,
+    std::function<std::string(json&)> &getRegularItemAsString,
+    std::function<bool(json&)> skipCheck
 ) {
     for (size_t i = 0; i < data.size(); i++) {
         std::vector<std::string> row = {};
@@ -89,7 +89,7 @@ void displayChoices(
 }
 
 
-bool setPosToNearestVisible(json& data, bool(*skipCheck)(json&),size_t pos[2], bool rightDirectionFirst = true) {
+bool setPosToNearestVisible(json& data, std::function<bool(json&)> &skipCheck,size_t pos[2], bool rightDirectionFirst = true) {
     const size_t& row = pos[0];
 
     auto directionToRight = [&]() -> bool {
@@ -132,9 +132,9 @@ bool setPosToNearestVisible(json& data, bool(*skipCheck)(json&),size_t pos[2], b
 
 std::pair<size_t, size_t> Menu::getChoice(
     json& data,
-    std::string(*getHighlightedItemAsString)(json&),
-    std::string(*getRegularItemAsString)(json&),
-    bool(*skipCheck)(json&),
+    std::function<std::string(json&)>& getHighlightedItemAsString,
+    std::function<std::string(json&)>& getRegularItemAsString,
+    std::function<bool(json&)> skipCheck,
     int itemSize[2],
     std::string question
 ) {

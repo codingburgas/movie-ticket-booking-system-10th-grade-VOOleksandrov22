@@ -8,7 +8,7 @@
 #include "../Config/config.h"
 
 //#include <cppconn/resultset.h>
-#include "../nlohmann/json.hpp"
+
 #include "../../db_cpp/database.h"
 #include "../Date/date.h"
 #include "session.h"
@@ -22,13 +22,66 @@
 using RedirectFunction = std::function<void()>;
 
 
-using json = nlohmann::json;
+
+void App::defineHelperMethods() {
+	regular = [this](json& data) -> std::string {
+		std::string paintIn = RESET;
+		if (data["data"]["bookedBy"].get<unsigned long>() == this->currentSession->getUser().getId()) {
+			paintIn = GREEN;
+		}
+		else if (data.contains("isHighlighted")) {
+			paintIn = BLUE;
+			data.erase("isHighlighted");
+		} else if (data["data"]["bookedBy"].get<unsigned long>() != 0) {
+			paintIn = RED;
+		}
+
+		if (data["data"]["isBlank"].get<bool>()) {
+			return
+				"          \n"
+				"          \n"
+				"          \n"
+				"          \n"
+				"          ";
+		}
+
+		std::string text = data["data"]["text"].get<std::string>();
+		return std::format(
+			"{}╭────────╮{}\n"
+			"{}|{:^8}|{}\n"
+			"{}|{:^8}|{}\n"
+			"{}|{:^8}|{}\n"
+			"{}╰────────╯{}",
+			paintIn, RESET, 
+			paintIn, Utils::String::toString(data["data"]["price"].get<double>(), 2) + "$", RESET,
+			paintIn, text, RESET, 
+			paintIn,
+			data["data"]["isVIP"].get<bool>()
+			? std::format("{}{}{}", YELLOW, std::format("{:^8}", "VIP"), paintIn)
+			: std::format("{:^8}", ""),
+			RESET, paintIn, RESET
+		);
+	};
+
+	highlight = [this](json& data) -> std::string {
+		data["isHighlighted"] = 1;
+		return regular(data);
+	};
+
+	skipCheck = [this](json& data) -> bool {
+		return data["data"]["isBlank"].get<bool>() || data["data"]["bookedBy"] != 0;
+		};
+}
+
+
 
 App::App() 
 	: 
 	db(new DbWrapper(config->url, config->username, config->password, config->schema, config->debugMode)),
 	menu(new Menu())
 {
+
+	defineHelperMethods();
 	loginBySavedSession();
 	mainLoop();
 }
@@ -190,7 +243,7 @@ void App::chooseMovieMenu(const unsigned int& cinemaId) {
 
 
 
-
+/*
 
 // FUNCTION WHICH CREATES REGULAR MENU ITEM ON GIVEN DATA
 std::string regular(json& data) {
@@ -239,7 +292,7 @@ bool skipCheck(json& data) {
 	return data["data"]["isBlank"].get<bool>() || data["data"]["bookedBy"] != 0;
 }
 
-
+*/
 
 /*
 
@@ -298,7 +351,7 @@ void App::bookTicket(Row& session) {
 			continue;
 		}
 		
-		
+		seats[seatChosen.first][seatChosen.second]["data"]["position"] = json::array({ seatChosen.first, seatChosen.second });
 		seats[seatChosen.first][seatChosen.second]["data"]["bookedBy"] = currentSession->getUser().getId();
 		bookedSeats.push_back(seats[seatChosen.first][seatChosen.second]);
 
@@ -307,13 +360,15 @@ void App::bookTicket(Row& session) {
 		}
 	}
 
-	/*for (const json& seat : bookedSeats) {
-		std::cout << 
-	}*/
+	
+	/*confirmationScreenSkipCheck = [&bookedSeats](json& data) {
+		return data["data"]["bookedBy"].get<unsigned int>() != 0;
+		};*/
 
-	std::cout << "Booked seats:\n" << bookedSeats.dump(4);
-
+	std::cout << bookedSeats.dump(4) << std::endl;
 	int i; std::cin >> i;
 
+	
+	
 	
 }

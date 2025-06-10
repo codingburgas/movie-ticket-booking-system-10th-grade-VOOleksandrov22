@@ -19,9 +19,9 @@ public:
 
 	std::pair<size_t, size_t> getChoice(
 		json& data,
-		std::string(*getHighlightedItemAsString)(json&),
-		std::string(*getRegularItemAsString)(json&),
-		bool(*skipCheck)(json&),
+		std::function<std::string(json&)>& getHighlightedItemAsString,
+		std::function<std::string(json&)>& getRegularItemAsString,
+		std::function<bool(json&)> skipCheck,
 		int itemSize[2],
 		std::string question = ""
 	);

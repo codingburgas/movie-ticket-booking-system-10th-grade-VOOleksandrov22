@@ -218,7 +218,7 @@ int main() {
 
 
 
-    try {
+    /*try {
         auto pos = menu.getChoice(data, highlight, regular, skipCheck, itemSize, "Choose an option:");
 
         std::cout << std::format("Position of seat chosen is : ({}, {})\n", pos.first, pos.second);
@@ -227,7 +227,7 @@ int main() {
     catch (const std::exception& e) {
         std::cout << "Error: " << e.what();
         int i; std::cin >> i;
-    }
+    }*/
     
 
 }
