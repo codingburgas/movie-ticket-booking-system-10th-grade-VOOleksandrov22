@@ -281,6 +281,11 @@ void App::bookTicket(Row& session) {
 			std::format("Choose a seat for a \"{}\" at {}!", session["title"], session["startsAt"])
 		);
 
+		if (skipCheck(seats[seatChosen.first][seatChosen.second])) { // if the seat is blank or booked
+			std::cout << "This seat is impossible to book, please contact us about the situation!\n";
+			continue;
+		}
+
 		std::vector<std::string> menuOptions = {
 			"Book another seat",
 			"Payment",
@@ -289,27 +294,17 @@ void App::bookTicket(Row& session) {
 
 		size_t choice = menu->getChoice(menuOptions, getSeatData(seats[seatChosen.first][seatChosen.second]) + "\n\nChoose how to procede:");
 
-		if (choice == menuOptions.size() - 1) { // back
+		if (choice == 2) { // back
 			continue;
 		}
-		else if (choice == menuOptions.size() - 2) {
+		
+		
+		seats[seatChosen.first][seatChosen.second]["data"]["bookedBy"] = currentSession->getUser().getId();
+		bookedSeats.push_back(seats[seatChosen.first][seatChosen.second]);
 
-			seats[seatChosen.first][seatChosen.second]["data"]["bookedBy"] = currentSession->getUser().getId();
-			bookedSeats.push_back(seats[seatChosen.first][seatChosen.second]);
+		if (choice == 1) { // payment
 			bookMoreSeats = false;
 		}
-		else {
-			// Book another seat
-			if (seats[seatChosen.first][seatChosen.second]["data"]["bookedBy"].get<unsigned int>() != 0) {
-				std::cout << "This seat is already booked by user with id " << seats[seatChosen.first][seatChosen.second]["data"]["bookedBy"] << std::endl;
-				continue;
-			}
-
-			seats[seatChosen.first][seatChosen.second]["data"]["bookedBy"] = currentSession->getUser().getId();
-			bookedSeats.push_back(seats[seatChosen.first][seatChosen.second]);
-		}
-
-
 	}
 
 	/*for (const json& seat : bookedSeats) {
