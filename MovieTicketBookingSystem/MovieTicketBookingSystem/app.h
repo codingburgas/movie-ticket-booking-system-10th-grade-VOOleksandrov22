@@ -58,5 +58,7 @@ public:
 
 	std::vector<std::string> getCities();
 
+	void profilePage();
+
 	
 };

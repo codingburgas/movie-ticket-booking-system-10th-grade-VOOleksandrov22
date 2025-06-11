@@ -1,5 +1,6 @@
 #include <iostream>
 #include <map>
+#include <conio.h>
 #include <vector>
 #include <cstdlib>
 #include <functional>
@@ -123,6 +124,7 @@ void App::mainLoop() {
 	auto user = currentSession->getUser();
 
 	std::vector<std::pair<std::string, RedirectFunction>> redirects = {
+		{"My profile", [this]() -> void { this->profilePage(); }},
 		{"Buy a ticket", [this]() -> void { this->chooseCityMenu(); }},
 		{"Log out", [this]() -> void { this->logout(); } },
 		{"Exit",[]() -> void {
@@ -154,6 +156,52 @@ void App::mainLoop() {
 
 		redirects[choice].second();
 	}
+}
+
+
+void App::profilePage() {
+	while (true) {
+		system("cls");
+		auto user = currentSession->getUser();
+	
+		std::string data = std::format(R"(Your profile data:\nUsername: {}\nBalance: {}$\nAdmin: {}\n)", 
+			user.getUsername(), 
+			Utils::String::toString(user.getBalance()),
+			(user.getIsAdmin() ? "true" : "false")
+		);
+
+		std::vector<std::string> menuOptions = {
+			"Change data",
+			"Change password",
+			"Deposit money",
+			"View transactions",
+			"<< Back"
+		};
+
+		size_t choice = menu->getChoice(menuOptions, data + "Choose an action:");
+		if (choice == menuOptions.size() - 1) return; // back
+		if (choice == menuOptions.size() - 2) {
+
+			std::string transactionQuery = std::format("SELECT * FROM Transaction WHERE userId = {} ORDER BY createdAt DESC;", user.getId());
+			auto transactions = DB::resultSetToVector(db->db->execute(transactionQuery));
+
+			if (transactions.size() == 0) {
+				std::cout << "No transactions found.\n";
+			}
+			else {
+				std::cout << "Your transactions:\n";
+				for (auto& transaction : transactions) {
+					std::cout << "ID: " << transaction["id"] << ", Amount: " << transaction["sum"] << "$, Created at: " << transaction["createdAt"] << "\n";
+					auto seatsData = json::parse(transaction["seatsData"]);
+					std::cout << "Seats amount: " << seatsData.size() << "\n\n";
+				}
+			}
+
+			std::cout << "Press any key to continue...\n";
+			_getch();
+ 		}
+	}
+	
 }
 
 
@@ -226,6 +274,7 @@ void App::chooseMovieMenu(const unsigned int& cinemaId) {
 		R"(select
 		ms.id,
 		ms.startsAt,
+		ms.seats,
 		m.title,
 		m.rating,
 		m.description,
@@ -291,11 +340,8 @@ void App::bookTicket(Row& session) {
 
 	auto user = currentSession->getUser();
 
-	std::string hallQuery = std::format("select * from Hall where id = {};", session["hall_id"]);
 
-	auto hall = DB::resultSetToVector(db->db->execute(hallQuery))[0];
-
-	json seats = json::parse(hall["seats"]);
+	json seats = json::parse(session["seats"]);
 
 	int itemSize[2] = { 10, 5 };
 
@@ -380,12 +426,17 @@ void App::bookTicket(Row& session) {
 
 	if (choice.first != seats.size() - 1) {
 		std::cout << "This option is impossible to choose, please contact us about the situation!\n";
+		int x; std::cin >> x;
 		return;
 	}
 
+	seats.erase(seats.end() - 1); // remove confirmation buttons from the seats array
+
+	
 	if (choice.second == 0) { // confirm
 		if (currentSession->getUser().getBalance() < price) {
 			std::cout << "You don't have enough money to book this ticket!\n";
+			int x; std::cin >> x;
 			// TODO: add redirect to deposit page
 			return;
 		}
@@ -396,6 +447,12 @@ void App::bookTicket(Row& session) {
 		);
 
 		db->db->execute(createTransactionQuery);
+
+		std::string updateSeatQuery = std::format(
+			"UPDATE MovieSession SET seats = '{}' WHERE id = {};",
+			seats.dump(), session["id"]
+		);
+		db->db->execute(updateSeatQuery);
 		
 	}
 	else { // cancel
