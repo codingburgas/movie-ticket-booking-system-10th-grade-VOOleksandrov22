@@ -14,5 +14,11 @@ namespace Utils {
 
 	namespace String {
 		std::string toString(double num, int digitsAfterPoint = 2);
+
+		std::string stringRepeater(std::string s, int amount);
+
+		std::string toUppercase(const std::string& s);
+
+		std::string toLowercase(const std::string& s);
 	}
 }
