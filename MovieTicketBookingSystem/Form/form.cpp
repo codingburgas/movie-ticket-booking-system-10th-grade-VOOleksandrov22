@@ -115,22 +115,22 @@ EnteredData initForm(const std::vector<Field>&& fields) {
 
     EnteredData data = {};
     fillInInitialData(data, fields);
-
-    // std::pair<Field*, std::pair<std::string, size_t>>
+    //        highlight pos                       value        cursor pos
+    // std::pair<int, std::pair<Field*, std::pair<std::string, size_t>>>
     HighlightData highlightData = { 0, data };
 
     while (true) {
         system("cls");
         displayForm(data, highlightData.first);
-        char key = _getch();
+        int key = _getch();
 
 
 		switch (key) {
 		case 0: // Handle special keys (arrows, function keys, etc.)
-        case 244:
+        case 224:
 			key = _getch(); // Get the actual key code after the 0 or 224 prefix
 
-			switch (key) {
+            switch (key) {
             case 72: // Up arrow
                 if (highlightData.first > 0) highlightData.dec();
                 else highlightData.set1st(fields.size() - 1);
@@ -139,7 +139,6 @@ EnteredData initForm(const std::vector<Field>&& fields) {
                 if (highlightData.first < fields.size() - 1) highlightData.inc();
                 else highlightData.set1st(0);
                 break;
-			}
             case 75: // left arrow
                 if (highlightData.second->second.second > 0) highlightData.second->second.second--;
                 break;
@@ -149,20 +148,22 @@ EnteredData initForm(const std::vector<Field>&& fields) {
             case 83: // delete
                 if (highlightData.second->second.second != highlightData.second->second.first.size()) highlightData.second->second.first.erase(highlightData.second->second.second);
                 break;
+            }
 
 
 
 			break;
 
         case '\b':
-            if (highlightData.second->second.second != 0) {
-                highlightData.second->second.first.erase(highlightData.second->second.second);
+            if (highlightData.second->second.second > 0) {
                 highlightData.second->second.second--;
+                highlightData.second->second.first.erase(highlightData.second->second.second, 1);
             }
             break;
 
         default:
             highlightData.second->second.first.insert(highlightData.second->second.second, 1, key);
+			highlightData.second->second.second++;
             break;
         }
     }

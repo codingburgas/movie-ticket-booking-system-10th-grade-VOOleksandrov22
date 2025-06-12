@@ -14,4 +14,5 @@ using EnteredData = std::map<Field*, std::pair<std::string, size_t>>;
 
 
 
+
 EnteredData initForm(const std::vector<Field>&& fields);
