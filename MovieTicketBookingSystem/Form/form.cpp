@@ -79,7 +79,7 @@ void fillInInitialData(EnteredData& data, const std::vector<Field>& fields) {
 }
 
 
-struct HighlightData : std::pair<int, EnteredData::iterator> {
+class HighlightData : public std::pair<int, EnteredData::iterator> {
 private:
 	EnteredData* dataContainer = nullptr;
 public:
