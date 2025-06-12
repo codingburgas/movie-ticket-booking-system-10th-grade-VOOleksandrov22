@@ -7,6 +7,7 @@
 struct Field {
 	std::string name;
 	std::string defaultValue = "";
+	std::string placeholder = "";
 };
 
 // field pointer -> value inputted and cursor pos

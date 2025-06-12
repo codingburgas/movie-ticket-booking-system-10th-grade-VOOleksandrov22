@@ -27,7 +27,10 @@ void displayForm(EnteredData& data, const int& highlightIndex) {
 		const std::string& value = pair.second.first;
         const size_t& caretPos = pair.second.second;
 
-		const std::string strToPrint = (currentIndex == highlightIndex) ? value.substr(0, caretPos) + "|" + value.substr(caretPos) : value;
+		const std::string strToPrint = 
+            ((currentIndex == highlightIndex) ? value.substr(0, caretPos) + "|" + value.substr(caretPos) : value)
+            +
+            ((value == "") ? pair.first->placeholder : "");
 
 		for (size_t i = 0; i < strToPrint.size(); i += width - 2) {
 			std::cout << "| " << std::left << std::setw(width - 2) << strToPrint.substr(i, width - 2) << " |\n";

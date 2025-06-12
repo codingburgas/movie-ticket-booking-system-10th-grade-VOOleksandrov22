@@ -10,8 +10,8 @@
 int main()
 {
     auto data = initForm({ 
-        {"email", "default email" },
-        {"password", "default password"}
+        {"email", "default email", "email placeholder"},
+        {"password", "default password", "password placeholder"}
         });
 
     for (const auto& pair : data) {
