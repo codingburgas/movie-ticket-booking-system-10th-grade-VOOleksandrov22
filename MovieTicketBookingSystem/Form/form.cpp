@@ -24,39 +24,15 @@ void displayForm(EnteredData& data, const int& highlightIndex) {
         std::cout << "╭" << Utils::String::toUppercase(pair.first->name) << Utils::String::stringRepeater("─", width - pair.first->name.size()) << "╮\n";
 
 
-        if (currentIndex == highlightIndex) {
-            const size_t& caretPos = pair.second.second;
-            std::string beforeCursor = pair.second.first.substr(0, caretPos);
-            std::string afterCursor = (caretPos != pair.second.first.size() + 1 ? pair.second.first.substr(caretPos) : "");
+		const std::string& value = pair.second.first;
+        const size_t& caretPos = pair.second.second;
 
-            //std::cout << std::format("BeforeCursor: {}, After: {}", beforeCursor, afterCursor);
-            //int e; std::cin >> e;
-            std::cout << "| " 
-                << beforeCursor // part of input before caret 
-                << "|" // caret
-                << std::left << std::setw(width - beforeCursor.size() - 3) // settings for second part for proper aligning
-                << afterCursor// part of input after caret 
-                << " |\n";
+		const std::string strToPrint = (currentIndex == highlightIndex) ? value.substr(0, caretPos) + "|" + value.substr(caretPos) : value;
 
-            /*std::string currentText = pair.second.first;
-            size_t caretPos = pair.second.second;
+		for (size_t i = 0; i < strToPrint.size(); i += width - 2) {
+			std::cout << "| " << std::left << std::setw(width - 2) << strToPrint.substr(i, width - 2) << " |\n";
+		}
 
-            std::string displayed_content;
-            if (caretPos < currentText.size()) {
-                displayed_content = currentText.substr(0, caretPos) + "|" + currentText.substr(caretPos);
-            }
-            else {
-                displayed_content = currentText + "|";
-            }
-
-            std::cout << "| "
-                << std::left << std::setw(width - 2)
-                << displayed_content
-                << " |\n";*/
-        }
-        else {
-            std::cout << "| " << std::left << std::setw(width - 2) << pair.second.first << " |\n";
-        }
         
 
         // footer
