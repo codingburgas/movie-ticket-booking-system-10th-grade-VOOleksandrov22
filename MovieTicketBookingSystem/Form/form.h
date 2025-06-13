@@ -9,16 +9,13 @@ struct Field {
 	std::string name;
 	std::string defaultValue = "";
 	std::string placeholder = "";
+	std::string instructions = "";
+	bool isHidden = false;
+
+	std::function<void(const std::string&)> validationCallback = [](const std::string&) {};
 };
 
-class FormResult : public std::map<Field*, std::string> {
-public:
-	FormResult(std::map<Field*, std::pair<std::string, size_t>>& dataEntered) {
-		for (const auto& pair : dataEntered) {
-			this->insert({ pair.first, pair.second.first });
-		}
-	}
-};
+using FormResult = std::map<Field*, std::string>;
 
 
 
