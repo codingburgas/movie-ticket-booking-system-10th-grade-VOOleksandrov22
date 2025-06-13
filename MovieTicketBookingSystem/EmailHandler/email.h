@@ -3,4 +3,4 @@
 
 
 
-void send(Config* config, const std::string recipient, const std::string subject, const std::string body);
+void send(const Config* config, const std::string recipient, const std::string subject, const std::string body);

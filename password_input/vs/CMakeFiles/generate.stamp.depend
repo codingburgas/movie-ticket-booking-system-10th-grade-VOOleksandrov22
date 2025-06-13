@@ -1,9 +1,4 @@
 # CMake generation dependency list for this directory.
-C:/Users/Oleksandr Vinichenko/source/repos/movie-ticket-booking-system-10th-grade-VOOleksandrov22/password_input/CMakeLists.txt
-C:/Users/Oleksandr Vinichenko/source/repos/movie-ticket-booking-system-10th-grade-VOOleksandrov22/password_input/vs/CMakeFiles/4.0.0/CMakeCCompiler.cmake
-C:/Users/Oleksandr Vinichenko/source/repos/movie-ticket-booking-system-10th-grade-VOOleksandrov22/password_input/vs/CMakeFiles/4.0.0/CMakeCXXCompiler.cmake
-C:/Users/Oleksandr Vinichenko/source/repos/movie-ticket-booking-system-10th-grade-VOOleksandrov22/password_input/vs/CMakeFiles/4.0.0/CMakeRCCompiler.cmake
-C:/Users/Oleksandr Vinichenko/source/repos/movie-ticket-booking-system-10th-grade-VOOleksandrov22/password_input/vs/CMakeFiles/4.0.0/CMakeSystem.cmake
 D:/CMake/share/cmake-4.0/Modules/CMakeCCompiler.cmake.in
 D:/CMake/share/cmake-4.0/Modules/CMakeCCompilerABI.c
 D:/CMake/share/cmake-4.0/Modules/CMakeCInformation.cmake
@@ -114,3 +109,8 @@ D:/CMake/share/cmake-4.0/Modules/Platform/Windows-MSVC-CXX.cmake
 D:/CMake/share/cmake-4.0/Modules/Platform/Windows-MSVC.cmake
 D:/CMake/share/cmake-4.0/Modules/Platform/Windows.cmake
 D:/CMake/share/cmake-4.0/Modules/Platform/WindowsPaths.cmake
+D:/personal/IT/projects/movie-ticket-booking-system-10th-grade-VOOleksandrov22/password_input/CMakeLists.txt
+D:/personal/IT/projects/movie-ticket-booking-system-10th-grade-VOOleksandrov22/password_input/vs/CMakeFiles/4.0.0/CMakeCCompiler.cmake
+D:/personal/IT/projects/movie-ticket-booking-system-10th-grade-VOOleksandrov22/password_input/vs/CMakeFiles/4.0.0/CMakeCXXCompiler.cmake
+D:/personal/IT/projects/movie-ticket-booking-system-10th-grade-VOOleksandrov22/password_input/vs/CMakeFiles/4.0.0/CMakeRCCompiler.cmake
+D:/personal/IT/projects/movie-ticket-booking-system-10th-grade-VOOleksandrov22/password_input/vs/CMakeFiles/4.0.0/CMakeSystem.cmake

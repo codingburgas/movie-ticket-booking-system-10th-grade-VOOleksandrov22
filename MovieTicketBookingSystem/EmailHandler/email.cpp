@@ -32,7 +32,7 @@ static size_t payload_source(void* ptr, size_t size, size_t nmemb, void* userp)
     return len;
 }
 
-void send(Config* config, const std::string recipient, const std::string subject, const std::string body) {
+void send(const Config* config, const std::string recipient, const std::string subject, const std::string body) {
     CURL* curl;
     CURLcode res = CURLE_OK;
 
@@ -51,6 +51,10 @@ void send(Config* config, const std::string recipient, const std::string subject
     email_payload.push_back("To: " + recipient + "\r\n");
     email_payload.push_back("From: " + mail_from + "\r\n");
     email_payload.push_back("Subject: " + subject + "\r\n");
+
+    email_payload.push_back("MIME-Version: 1.0\r\n");
+    email_payload.push_back("Content-Type: text/html; charset=utf-8\r\n");
+
     email_payload.push_back("\r\n"); // Empty line to separate headers from body
     email_payload.push_back(body + "\r\n");
     email_payload.push_back(".\r\n"); // SMTP end of data marker

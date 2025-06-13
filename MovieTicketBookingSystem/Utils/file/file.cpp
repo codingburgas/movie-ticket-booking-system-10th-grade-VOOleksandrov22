@@ -55,3 +55,12 @@ bool Utils::File::writeJsonToFile(std::string filename, const json& data) {
     file.close();
     return true;
 }
+
+
+
+int Utils::generateRandomSixDigitNumber() {
+    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+    std::mt19937 generator(seed);
+    std::uniform_int_distribution<int> distribution(100000, 999999);
+    return distribution(generator);
+}

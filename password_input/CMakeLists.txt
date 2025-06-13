@@ -5,7 +5,8 @@ set(CMAKE_CXX_STANDARD 20)
 
 include_directories(PasswordInput/include)
 
-add_executable(password_input
+add_library(password_input
+	STATIC
     PasswordInput/example/main.cpp
     PasswordInput/include/options.h
     PasswordInput/include/passwordInput.h

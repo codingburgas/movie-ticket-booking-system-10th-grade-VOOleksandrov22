@@ -1,6 +1,8 @@
 //#include "../../nlohmann/json.hpp"
 #include "../nlohmann/json.hpp"
 #include <iostream>
+#include <random>
+#include <chrono>
 
 
 using json = nlohmann::json;
@@ -25,4 +27,7 @@ namespace Utils {
 
 		std::string center(const std::string str, const int width, const bool containsLargeChars = false);
 	}
+
+	int generateRandomSixDigitNumber();
+
 }

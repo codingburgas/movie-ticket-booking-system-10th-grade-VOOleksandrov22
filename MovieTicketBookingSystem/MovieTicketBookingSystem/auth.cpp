@@ -1,11 +1,12 @@
+#include <regex>
+
 #include "app.h"
 #include "session.h"
 #include "user.h"
 #include "../../db_cpp/database.h"
 #include "../Date/date.h"
 
-#include "../../password_input/PasswordInput/include/options.h"
-#include "../../password_input/PasswordInput/include/passwordInput.h"
+#include "../EmailHandler/email.h"
 
 #include "../Form/form.h"
 
@@ -121,8 +122,29 @@ void validatePassword(const FormResult& formData, const size_t& fieldIndex) {
 }
 
 void passwordMatch(const FormResult& formData, const size_t& fieldIndex) {
-	if (formData.at(1).second != formData.at(fieldIndex).second) {
+	if (formData.at(formData.size() - 2).second != formData.at(fieldIndex).second) {
 		throw std::runtime_error("Passwords do not match");
+	}
+}
+
+void validateEmail(const FormResult& formData, const size_t& fieldIndex) {
+	const std::regex email_pattern(R"(^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$)");
+	const std::string& email = formData.at(fieldIndex).second;
+
+	if (email.empty()) {
+		throw std::runtime_error("Email cannot be empty.");
+	}
+
+	if (!std::regex_match(email, email_pattern)) {
+		throw std::runtime_error("Invalid email format.");
+	}
+}
+
+void validateVerificationCode(const FormResult& formData, const size_t& fieldIndex) {
+	const std::string& code = formData.at(fieldIndex).second;
+
+	if (code.length() != 6 || !std::all_of(code.begin(), code.end(), isdigit)) {
+		throw std::runtime_error("Verification code must be a 6-digit number.");
 	}
 }
 
@@ -145,12 +167,26 @@ void App::login() {
 void App::signup() {
 	FormResult input = initForm({
 		new Field({"username", "", "Enter username", "Any quote symbols are forbidden", false}),
+		new Field({"email", "@gmail.com", "Enter email", "Any quote symbols are forbidden", false, validateEmail}),
 		new Field({"password", "", "Enter password", passwordInstructions, true, validatePassword}),
 		new Field({"password", "", "Reenter the password", "", true, passwordMatch})
 		}, "SIGNUP");
 
-	std::string& username = input.at(0).second;
-	std::string& password = input.at(1).second;
+	std::string username = input.at(0).second;
+	std::string email = input.at(1).second;
+	std::string password = input.at(2).second;
+
+	int verificationCode = Utils::generateRandomSixDigitNumber();
+	send(config, email, "Verification code for movie ticket booking system", std::format("Your verification code is <b>{}</b>", std::to_string(verificationCode)));
+
+	input = initForm({
+		new Field({"Verification code", "", "Enter verification code", "6 digits", false, validateVerificationCode})
+		}, "CHECK");
+
+	if (std::stoi(input.at(0).second) != verificationCode) {
+		auth("Incorrect verification code entered\n\n");
+		return;
+	}
 
 	int status = User::initUser(this, username, password);
 	switch (status) {

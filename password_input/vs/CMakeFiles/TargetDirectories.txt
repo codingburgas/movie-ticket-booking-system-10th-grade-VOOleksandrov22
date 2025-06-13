@@ -1,3 +1,3 @@
-C:/Users/Oleksandr Vinichenko/source/repos/movie-ticket-booking-system-10th-grade-VOOleksandrov22/password_input/vs/CMakeFiles/password_input.dir
-C:/Users/Oleksandr Vinichenko/source/repos/movie-ticket-booking-system-10th-grade-VOOleksandrov22/password_input/vs/CMakeFiles/ALL_BUILD.dir
-C:/Users/Oleksandr Vinichenko/source/repos/movie-ticket-booking-system-10th-grade-VOOleksandrov22/password_input/vs/CMakeFiles/ZERO_CHECK.dir
+D:/personal/IT/projects/movie-ticket-booking-system-10th-grade-VOOleksandrov22/password_input/vs/CMakeFiles/password_input.dir
+D:/personal/IT/projects/movie-ticket-booking-system-10th-grade-VOOleksandrov22/password_input/vs/CMakeFiles/ALL_BUILD.dir
+D:/personal/IT/projects/movie-ticket-booking-system-10th-grade-VOOleksandrov22/password_input/vs/CMakeFiles/ZERO_CHECK.dir
