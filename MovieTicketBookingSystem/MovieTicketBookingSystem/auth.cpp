@@ -7,10 +7,21 @@
 #include "../../password_input/PasswordInput/include/options.h"
 #include "../../password_input/PasswordInput/include/passwordInput.h"
 
+#include "../Form/form.h"
+
 #include "../nlohmann/json.hpp"
 using json = nlohmann::json;
 
 
+#define MIN_PASSWORD_LENGTH 8
+#define MAX_PASSWORD_LENGTH 64
+
+const std::string passwordInstructions = R"(
+- 8 to 64 characters.
+- At least one uppercase letter, one lowercase, one digit, and one special character (e.g., !@#$%^&*).
+)";
+
+const std::string specialCharacters = "!@#$%^&*()-_=+[]{}|;:,.<>?/~";
 
 
 void App::loginBySavedSession() {
@@ -77,19 +88,64 @@ void App::auth(std::string message) {
 	};
 }
 
+void validatePassword(const FormResult& formData, const size_t& fieldIndex) {
+	const std::string& password = formData.at(fieldIndex).second;
+	if (password.length() < MIN_PASSWORD_LENGTH) {
+		throw std::runtime_error("Password must be at least " + std::to_string(MIN_PASSWORD_LENGTH) + " characters long.");
+	}
+
+	if (password.length() > MAX_PASSWORD_LENGTH) {
+		throw std::runtime_error("Password cannot exceed " + std::to_string(MAX_PASSWORD_LENGTH) + " characters.");
+	}
+
+	bool hasLower = false;
+	bool hasUpper = false;
+	bool hasDigit = false;
+	bool hasSpecial = false;
+
+	for (char c : password) {
+		if (std::islower(static_cast<unsigned char>(c))) {
+			hasLower = true;
+		}
+		else if (std::isupper(static_cast<unsigned char>(c))) {
+			hasUpper = true;
+		}
+		else if (std::isdigit(static_cast<unsigned char>(c))) {
+			hasDigit = true;
+		}
+		else if (specialCharacters.find(c) != std::string::npos) {
+			hasSpecial = true;
+		}
+	}
+
+	if (!hasLower) {
+		throw std::runtime_error("Password must contain at least one lowercase letter.");
+	}
+	if (!hasUpper) {
+		throw std::runtime_error("Password must contain at least one uppercase letter.");
+	}
+	if (!hasDigit) {
+		throw std::runtime_error("Password must contain at least one digit.");
+	}
+	if (!hasSpecial) {
+		throw std::runtime_error("Password must contain at least one special character (e.g., !@#$%^&*).");
+	}
+}
+
+void passwordMatch(const FormResult& formData, const size_t& fieldIndex) {
+	if (formData.at(1).second != formData.at(fieldIndex).second) {
+		throw std::runtime_error("Passwords do not match");
+	}
+}
+
 void App::login() {
-	std::cout << "Enter your username\n> ";
-	std::string username; std::getline(std::cin, username);
+	FormResult input = initForm({
+		new Field({"username", "", "Enter your username", "Any quote symbols are forbidden", false}),
+		new Field({"password", "", "Enter your password", "", true})
+		}, "LOGIN");
 
-	Options passwordInputOptions = {
-		.message = "Enter password for user \"" + username + "\"\n> ",
-		.doubleCheck = false,
-		.replaceSymbolsWith = '*',
-	};
 
-	std::string password = inputPassword(passwordInputOptions);
-
-	bool success = Session::initSession(this, username, password);
+	bool success = Session::initSession(this, input.at(0).second, input.at(1).second);
 
 	if (!success) {
 		auth("Incorrect credentials entered\n\n");
@@ -99,37 +155,14 @@ void App::login() {
 }
 
 void App::signup() {
-	std::cout << "Enter your username\n> ";
-	std::string username; std::getline(std::cin, username);
+	FormResult input = initForm({
+		new Field({"username", "", "Enter username", "Any quote symbols are forbidden", false}),
+		new Field({"password", "", "Enter password", passwordInstructions, true, validatePassword}),
+		new Field({"password", "", "Reenter the password", "", true, passwordMatch})
+		}, "SIGNUP");
 
-	Options passwordInputOptions = {
-		.message = "Enter password for user \"" + username + "\"\n> ",
-		.doubleCheck = true,
-		.doubleCheckMessage = "Reenter the password:\n> ",
-		.replaceSymbolsWith = '*',
-	};
-
-	std::string password;
-	try {
-		password = inputPassword(passwordInputOptions);
-	}
-	catch (std::runtime_error& e) {
-		int key = std::stoi(e.what());
-		switch (key) {
-		case 1: {
-			auth("Passwords didn't match! \n");
-			break;
-		}
-		case 2: {
-			auth("Validation failed! \n");
-			break;
-		}
-		default: {
-			auth("Unknown error occured! \n");
-			break;
-		}
-		}
-	}
+	std::string& username = input.at(0).second;
+	std::string& password = input.at(1).second;
 
 	int status = User::initUser(this, username, password);
 	switch (status) {

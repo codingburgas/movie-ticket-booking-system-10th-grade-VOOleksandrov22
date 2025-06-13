@@ -7,6 +7,11 @@
 
 #include "../Dict/dict.h"
 
+
+struct Field;
+
+using FormResult = Dict<Field*, std::string>;
+
 struct Field {
 	std::string name;
 	std::string defaultValue = "";
@@ -14,11 +19,11 @@ struct Field {
 	std::string instructions = "";
 	bool isHidden = false;
 
-	std::function<void(const std::string&)> validationCallback = [](const std::string&) {};
+	std::function<void(const FormResult&, const size_t&)> validationCallback = [](const FormResult&, const size_t&) {};
 };
 
 
-using FormResult = Dict<Field*, std::string>;
+
 
 
 

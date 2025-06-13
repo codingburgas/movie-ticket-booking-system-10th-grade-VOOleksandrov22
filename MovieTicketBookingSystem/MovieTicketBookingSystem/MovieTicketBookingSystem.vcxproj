@@ -157,8 +157,14 @@
     <ProjectReference Include="..\Date\Date.vcxproj">
       <Project>{ea422478-3d6a-4086-99eb-9f6a31fca1db}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\Dict\Dict.vcxproj">
+      <Project>{d4aa2f47-7cc4-444f-853c-9d2195aa10a1}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\EmailHandler\EmailHandler.vcxproj">
       <Project>{14925854-c6a2-4906-bd30-937320fb7e72}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\Form\Form.vcxproj">
+      <Project>{8b4a1a11-1633-48c1-9b84-4d8c58ead2e2}</Project>
     </ProjectReference>
     <ProjectReference Include="..\menu\menu.vcxproj">
       <Project>{18589191-2cfd-4c78-a40f-ae02441cc03d}</Project>

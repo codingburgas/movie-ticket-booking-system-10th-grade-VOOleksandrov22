@@ -9,6 +9,7 @@
 #include <format>
 #include <iterator>
 #include <windows.h>
+#include <ranges>
 
 
 #define WIDTH 70
@@ -24,14 +25,21 @@ struct AdditionalFieldData {
     bool hidden;
 };
 
+
+class EnteredData; // forward declaration
+
+
+FormResult normalizeData(EnteredData& data);
+
 // field pointer -> value inputted and cursor pos
 class EnteredData : public Dict<Field*, AdditionalFieldData> {
 public:
     bool isValid(){
 		bool valid = true;
-		for (auto& pair : *this) {
+        for (size_t i = 0; i < size(); i++) {
+			auto& pair = at(i);
             try {
-                pair.first->validationCallback(pair.second.value);
+                pair.first->validationCallback(normalizeData(*this), i);
 			}
 			catch (const std::runtime_error& error) {
 				valid = false;
@@ -42,6 +50,15 @@ public:
 		return valid;
     }
 };
+
+
+FormResult normalizeData(EnteredData& data) {
+    FormResult result;
+    for (const auto& pair : data) {
+        result.insert(pair.first, pair.second.value);
+    }
+    return result;
+}
 
 
 
@@ -124,15 +141,6 @@ void fillInInitialData(EnteredData& data, const std::vector<Field*>& fields) {
     }
 }
 
-
-
-FormResult normalizeData(EnteredData& data) {
-	FormResult result;
-    for (const auto& pair : data) {
-        result.insert(pair.first, pair.second.value);
-    }
-	return result;
-}
 
 
 FormResult initForm(const std::vector<Field*>&& fields, const std::string&& submitButtonText) {
