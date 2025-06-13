@@ -34,12 +34,9 @@ void App::loginBySavedSession() {
 
 		int sessionId = cache["sessionId"];
 
-		std::string fields = "*";
-		std::string condition = "id=" + std::to_string(sessionId);
+		std::string query = std::format("SELECT * FROM Session WHERE id = {} AND expiresAt > now()", sessionId);
+		auto sessions = DB::resultSetToVector(db->db->execute(query));
 
-
-		auto* res = db->session->select(fields, condition);
-		auto sessions = DB::resultSetToVector(res);
 
 
 		if (sessions.size() == 0) {
@@ -47,17 +44,8 @@ void App::loginBySavedSession() {
 			return;
 		}
 
-		bool validSessionFound = false;
-		int i = 0;
-		do {
-			if (Date(sessions[i]["expiresAt"]) > Date()) {
-				validSessionFound = true;
-				currentSession = new Session(this, sessions[i]);
-				std::cout << "Logged in as " << currentSession->getUser().getUsername() << std::endl;
-			}
-			i++;
-		} while (!validSessionFound && i < sessions.size());
-		if (!validSessionFound) auth();
+		currentSession = new Session(this, sessions[0]);
+		std::cout << "Logged in as " << currentSession->getUser().getUsername() << std::endl;
 
 	}
 	catch (const std::exception& e) {
