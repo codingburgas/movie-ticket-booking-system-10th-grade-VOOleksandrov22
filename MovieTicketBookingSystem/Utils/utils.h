@@ -22,5 +22,7 @@ namespace Utils {
 		std::string toLowercase(const std::string& s);
 
 		std::vector<std::string> split(const std::string& s, const std::string delimiter);
+
+		std::string center(const std::string str, const int width, const bool containsLargeChars = false);
 	}
 }

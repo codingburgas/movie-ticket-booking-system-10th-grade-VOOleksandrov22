@@ -61,3 +61,12 @@ std::vector<std::string> Utils::String::split(const std::string& s, const std::s
 
 	return tokens;
 }
+
+
+
+std::string Utils::String::center(const std::string str, const int width, const bool containsLargeChars) {
+	const int size = containsLargeChars ? str.size() / 3 : str.size();
+	if (size >= width) return str;
+	int padding = (width - size) / 2;
+	return std::string(padding, ' ') + str + std::string(width - size - padding, ' ');
+}

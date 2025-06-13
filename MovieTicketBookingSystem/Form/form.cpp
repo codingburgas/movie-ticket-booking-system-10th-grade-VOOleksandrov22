@@ -42,13 +42,6 @@ public:
 };
 
 
-std::string center(const std::string str, const bool containsLargeChars = false, const int width = SUBMIT_BUTTON_WIDTH) {
-	const int size = containsLargeChars ? str.size() / 3 : str.size();
-	if (size >= width) return str;
-	int padding = (width - size) / 2;
-	return std::string(padding, ' ') + str + std::string(width - size - padding, ' ');
-}
-
 
 void displayForm(EnteredData& data, const int& highlightIndex) {
 
@@ -107,9 +100,9 @@ void displayForm(EnteredData& data, const int& highlightIndex) {
 		std::cout << YELLOW;
     }
 
-	std::cout << center("╭" + Utils::String::stringRepeater("─", SUBMIT_BUTTON_WIDTH) + "╮", true, WIDTH) << "\n"
-              << center("|" + center(std::string("SUBMIT")) + "|", false, WIDTH) << "\n"
-              << center("╰" + Utils::String::stringRepeater("─", SUBMIT_BUTTON_WIDTH) + "╯", true, WIDTH) << "\n";
+	std::cout << Utils::String::center("╭" + Utils::String::stringRepeater("─", SUBMIT_BUTTON_WIDTH) + "╮", WIDTH, true) << "\n"
+              << Utils::String::center("|" + Utils::String::center(std::string("SUBMIT"), SUBMIT_BUTTON_WIDTH) + "|", WIDTH, false) << "\n"
+              << Utils::String::center("╰" + Utils::String::stringRepeater("─", SUBMIT_BUTTON_WIDTH) + "╯", WIDTH, true) << "\n";
 
     if (currentIndex == highlightIndex) {
         std::cout << RESET;
