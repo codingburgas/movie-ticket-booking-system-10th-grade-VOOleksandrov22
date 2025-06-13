@@ -127,7 +127,7 @@ EnteredData initForm(const std::vector<Field>&& fields) {
                 if (highlightData.second->second.second < highlightData.second->second.first.size()) highlightData.second->second.second++;
                 break;
             case 83: // delete
-                if (highlightData.second->second.second != highlightData.second->second.first.size()) highlightData.second->second.first.erase(highlightData.second->second.second);
+                if (highlightData.second->second.second != highlightData.second->second.first.size()) highlightData.second->second.first.erase(highlightData.second->second.second, 1);
                 break;
             }
 
