@@ -20,5 +20,7 @@ namespace Utils {
 		std::string toUppercase(const std::string& s);
 
 		std::string toLowercase(const std::string& s);
+
+		std::vector<std::string> split(const std::string& s, const std::string delimiter);
 	}
 }

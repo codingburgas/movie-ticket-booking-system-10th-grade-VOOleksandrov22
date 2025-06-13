@@ -42,3 +42,22 @@ std::string Utils::String::toLowercase(const std::string& s) {
 
 	return res;
 }
+
+
+std::vector<std::string> Utils::String::split(const std::string& s, const std::string delimiter) {
+	std::vector<std::string> tokens;
+	size_t lastPos = 0;
+	size_t findPos = s.find(delimiter, 0);
+
+	while (findPos != std::string::npos) {
+		std::string token = s.substr(lastPos, findPos - lastPos);
+		tokens.push_back(token);
+		lastPos = findPos + delimiter.size();
+		findPos = s.find(delimiter, lastPos);
+	}
+
+	std::string lastToken = s.substr(lastPos);
+	tokens.push_back(lastToken);
+
+	return tokens;
+}
