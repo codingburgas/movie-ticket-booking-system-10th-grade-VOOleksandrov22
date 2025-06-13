@@ -14,7 +14,7 @@ int main()
         });
 
         for (const auto& pair : data) {
-            std::cout << pair.first->name << " - " << pair.second.first << "\n";
+            std::cout << pair.first->name << " - " << pair.second << "\n";
         }
 	}
 	catch (const int& code) {

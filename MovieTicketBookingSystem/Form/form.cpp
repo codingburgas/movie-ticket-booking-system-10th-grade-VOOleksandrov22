@@ -13,6 +13,9 @@
 #define WIDTH 70
 #define SUBMIT_BUTTON_WIDTH 30
 
+// field pointer -> value inputted and cursor pos
+using EnteredData = std::map<Field*, std::pair<std::string, size_t>>;
+
 
 std::string center(const std::string str, const bool containsLargeChars = false, const int width = SUBMIT_BUTTON_WIDTH) {
 	const int size = containsLargeChars ? str.size() / 3 : str.size();
@@ -124,7 +127,7 @@ public:
     }
 };
 
-EnteredData initForm(const std::vector<Field*>&& fields) {
+FormResult initForm(const std::vector<Field*>&& fields) {
 
     EnteredData data = {};
     fillInInitialData(data, fields);
