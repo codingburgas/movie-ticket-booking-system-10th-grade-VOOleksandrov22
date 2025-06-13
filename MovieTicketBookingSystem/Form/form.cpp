@@ -45,6 +45,7 @@ public:
 
 void displayForm(EnteredData& data, const int& highlightIndex) {
 
+    std::cout << "Press \"esc\" to cancel form submission\nPress \"Ctrl + H\" to enable privacy mode\n\n";
 
     int currentIndex = 0;
     for (const auto& pair : data) {
