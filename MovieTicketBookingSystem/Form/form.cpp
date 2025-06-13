@@ -10,9 +10,11 @@
 #include <iterator>
 
 
+#define WIDTH 70
+
+
 
 void displayForm(EnteredData& data, const int& highlightIndex) {
-    unsigned int width = 70;
 
 
     int currentIndex = 0;
@@ -21,7 +23,7 @@ void displayForm(EnteredData& data, const int& highlightIndex) {
             std::cout << YELLOW;
         }
         // header
-        std::cout << "╭" << Utils::String::toUppercase(pair.first->name) << Utils::String::stringRepeater("─", width - pair.first->name.size()) << "╮\n";
+        std::cout << "╭" << Utils::String::toUppercase(pair.first->name) << Utils::String::stringRepeater("─", WIDTH - pair.first->name.size()) << "╮\n";
 
 
 		const std::string& value = pair.second.first;
@@ -32,14 +34,14 @@ void displayForm(EnteredData& data, const int& highlightIndex) {
             +
             ((value == "") ? pair.first->placeholder : "");
 
-		for (size_t i = 0; i < strToPrint.size(); i += width - 2) {
-			std::cout << "| " << std::left << std::setw(width - 2) << strToPrint.substr(i, width - 2) << " |\n";
+		for (size_t i = 0; i < strToPrint.size(); i += WIDTH - 2) {
+			std::cout << "| " << std::left << std::setw(WIDTH - 2) << strToPrint.substr(i, WIDTH - 2) << " |\n";
 		}
 
         
 
         // footer
-        std::cout << "╰" << Utils::String::stringRepeater("─", width) << "╯\n";
+        std::cout << "╰" << Utils::String::stringRepeater("─", WIDTH) << "╯\n";
 
         if (currentIndex == highlightIndex) {
             std::cout << RESET;
