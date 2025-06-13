@@ -23,7 +23,7 @@ struct AdditionalFieldData {
 };
 
 // field pointer -> value inputted and cursor pos
-class EnteredData : public std::map<Field*, AdditionalFieldData> {
+class EnteredData : public Dict<Field*, AdditionalFieldData> {
 public:
     bool isValid(){
 		bool valid = true;
@@ -129,49 +129,11 @@ void fillInInitialData(EnteredData& data, const std::vector<Field*>& fields) {
 }
 
 
-class HighlightData : public std::pair<int, EnteredData::iterator> {
-private:
-	EnteredData* dataContainer = nullptr;
-
-    bool firstInRange() {
-		return first >= 0 && first < dataContainer->size();
-    }
-public:
-	HighlightData(int index, EnteredData& data) : dataContainer(&data) {
-		first = index;
-		second = data.begin();
-        std::advance(second, index);
-    }
-
-	void inc() {
-		if (first < dataContainer->size() - 1) std::advance(second, 1);
-        first++;
-	}
-
-	void dec() {
-		if (first != dataContainer->size()) std::advance(second, -1);
-        first--;
-	}
-
-    void set1st(int val, bool updateSecond = true) {
-        if (updateSecond) {
-            if (val < 0 || val >= dataContainer->size()) return;
-		    first = val;
-		    second = dataContainer->begin();
-		    std::advance(second, first);
-        }
-        else {
-			first = val;
-        }
-        
-    }
-};
-
 
 FormResult normalizeData(EnteredData& data) {
 	FormResult result;
     for (const auto& pair : data) {
-        result.insert({ pair.first, pair.second.value });
+        result.insert(pair.first, pair.second.value);
     }
 	return result;
 }
@@ -183,19 +145,19 @@ FormResult initForm(const std::vector<Field*>&& fields) {
     fillInInitialData(data, fields);
     //        highlight pos                       value        cursor pos
     // std::pair<int, std::pair<Field*, std::pair<std::string, size_t>>>
-    HighlightData highlightData = { 0, data };
+    //HighlightData highlightData = { 0, data };
+	int highlightIndex = 0;
 
     while (true) {
         system("cls");
-        displayForm(data, highlightData.first);
+        displayForm(data, highlightIndex);
         int key = _getch();
         bool is_ctrl_pressed = (GetKeyState(VK_CONTROL) & 0x8000) != 0;
 		if (is_ctrl_pressed) {
-            if (highlightData.first == data.size()) continue;
+            if (highlightIndex == data.size()) continue;
             switch (key) {
 			case 8: // Ctrl + H
-				//std::abort();
-                data[highlightData.second->first].hidden = !data[highlightData.second->first].hidden;
+                data.at(highlightIndex).second.hidden = !data.at(highlightIndex).second.hidden;
                 break;
             }
             continue;
@@ -210,19 +172,19 @@ FormResult initForm(const std::vector<Field*>&& fields) {
 
             switch (key) {
             case 72: // Up arrow
-                if (highlightData.first > 0) highlightData.dec();
+                if (highlightIndex > 0) highlightIndex--;
                 break;
             case 80: // Down arrow
-                if (highlightData.first < fields.size()) highlightData.inc();
+                if (highlightIndex < fields.size()) highlightIndex++;
                 break;
             case 75: // left arrow
-                if (highlightData.second->second.caretPos > 0) highlightData.second->second.caretPos--;
+                if (data.at(highlightIndex).second.caretPos > 0) data.at(highlightIndex).second.caretPos--;
                 break;
             case 77: // right arrow
-                if (highlightData.second->second.caretPos < highlightData.second->second.value.size()) highlightData.second->second.caretPos++;
+                if (data.at(highlightIndex).second.caretPos < data.at(highlightIndex).second.value.size()) data.at(highlightIndex).second.caretPos++;
                 break;
             case 83: // delete
-                if (highlightData.second->second.caretPos != highlightData.second->second.value.size()) highlightData.second->second.value.erase(highlightData.second->second.caretPos, 1);
+                if (data.at(highlightIndex).second.caretPos != data.at(highlightIndex).second.value.size()) data.at(highlightIndex).second.value.erase(data.at(highlightIndex).second.caretPos, 1);
                 break;
             }
 
@@ -231,23 +193,23 @@ FormResult initForm(const std::vector<Field*>&& fields) {
 			break;
 
         case '\b':
-			if (highlightData.first == data.size()) continue; // Ignore backspace if we are on the submit button
-            if (highlightData.second->second.caretPos > 0) {
-                highlightData.second->second.caretPos--;
-                highlightData.second->second.value.erase(highlightData.second->second.caretPos, 1);
+			if (highlightIndex == data.size()) continue; // Ignore backspace if we are on the submit button
+            if (data.at(highlightIndex).second.caretPos > 0) {
+                data.at(highlightIndex).second.caretPos--;
+                data.at(highlightIndex).second.value.erase(data.at(highlightIndex).second.caretPos, 1);
             }
             break;
 
         default:
-			if (highlightData.first == data.size()) {
+			if (highlightIndex == data.size()) {
 				if (key != '\r') continue; // Ignore any input if we are on the submit button
                 
                 if (!data.isValid()) break;
                 return normalizeData(data);
                 
 			}
-            highlightData.second->second.value.insert(highlightData.second->second.caretPos, 1, key);
-			highlightData.second->second.caretPos++;
+            data.at(highlightIndex).second.value.insert(data.at(highlightIndex).second.caretPos, 1, key);
+			data.at(highlightIndex).second.caretPos++;
             break;
         }
     }

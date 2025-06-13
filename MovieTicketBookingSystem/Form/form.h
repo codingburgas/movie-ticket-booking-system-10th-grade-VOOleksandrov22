@@ -5,6 +5,8 @@
 #include <vector>
 #include <functional>
 
+#include "../Dict/dict.h"
+
 struct Field {
 	std::string name;
 	std::string defaultValue = "";
@@ -15,7 +17,8 @@ struct Field {
 	std::function<void(const std::string&)> validationCallback = [](const std::string&) {};
 };
 
-using FormResult = std::map<Field*, std::string>;
+
+using FormResult = Dict<Field*, std::string>;
 
 
 
