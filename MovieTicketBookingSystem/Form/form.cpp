@@ -14,6 +14,8 @@
 #define WIDTH 70
 #define SUBMIT_BUTTON_WIDTH 30
 
+std::string SUBMIT_BUTTON_TEXT;
+
 
 struct AdditionalFieldData {
     std::string value;
@@ -102,7 +104,7 @@ void displayForm(EnteredData& data, const int& highlightIndex) {
     }
 
 	std::cout << Utils::String::center("╭" + Utils::String::stringRepeater("─", SUBMIT_BUTTON_WIDTH) + "╮", WIDTH, true) << "\n"
-              << Utils::String::center("|" + Utils::String::center(std::string("SUBMIT"), SUBMIT_BUTTON_WIDTH) + "|", WIDTH, false) << "\n"
+              << Utils::String::center("|" + Utils::String::center(SUBMIT_BUTTON_TEXT, SUBMIT_BUTTON_WIDTH) + "|", WIDTH, false) << "\n"
               << Utils::String::center("╰" + Utils::String::stringRepeater("─", SUBMIT_BUTTON_WIDTH) + "╯", WIDTH, true) << "\n";
 
     if (currentIndex == highlightIndex) {
@@ -133,7 +135,9 @@ FormResult normalizeData(EnteredData& data) {
 }
 
 
-FormResult initForm(const std::vector<Field*>&& fields) {
+FormResult initForm(const std::vector<Field*>&& fields, const std::string&& submitButtonText) {
+
+	SUBMIT_BUTTON_TEXT = submitButtonText;
 
     EnteredData data = {};
     fillInInitialData(data, fields);

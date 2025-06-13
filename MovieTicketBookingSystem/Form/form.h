@@ -23,4 +23,4 @@ using FormResult = Dict<Field*, std::string>;
 
 
 
-FormResult initForm(const std::vector<Field*>&& fields);
+FormResult initForm(const std::vector<Field*>&& fields, const std::string&& submitButtonText = "SUBMIT");
