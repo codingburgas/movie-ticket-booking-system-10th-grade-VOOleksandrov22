@@ -164,7 +164,7 @@ void App::profilePage() {
 		system("cls");
 		auto user = currentSession->getUser();
 	
-		std::string data = std::format(R"(Your profile data:\nUsername: {}\nBalance: {}$\nAdmin: {}\n)", 
+		std::string data = std::format("Your profile data:\nUsername: {}\nBalance: {}$\nAdmin: {}\n", 
 			user.getUsername(), 
 			Utils::String::toString(user.getBalance()),
 			(user.getIsAdmin() ? "true" : "false")

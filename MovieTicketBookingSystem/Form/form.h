@@ -24,8 +24,4 @@ struct Field {
 
 
 
-
-
-
-
 FormResult initForm(const std::vector<Field*>&& fields, const std::string&& submitButtonText = "SUBMIT");

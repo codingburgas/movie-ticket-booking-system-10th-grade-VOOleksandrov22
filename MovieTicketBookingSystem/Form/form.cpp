@@ -98,7 +98,6 @@ void displayForm(EnteredData& data, const int& highlightIndex) {
 
         for (size_t i = 0; i < strToPrint.size(); i += WIDTH - 2) {
             std::vector<std::string> splittedLine = Utils::String::split(strToPrint.substr(i, WIDTH - 2), "\r");
-            //lines.insert(lines.end(), splittedLine.begin(), splittedLine.end());
 
             for (const std::string& line : splittedLine) {
                 std::cout << "| " << std::left << std::setw(WIDTH - 2) << line << " |\n";
@@ -112,6 +111,7 @@ void displayForm(EnteredData& data, const int& highlightIndex) {
         std::cout << "╰" << Utils::String::stringRepeater("─", WIDTH) << "╯\n";
 
         std::cout << RESET << ((pair.first->instructions.size() != 0) ? pair.first->instructions + "\n" : "") << RED << pair.second.errorMessage << RESET << "\n";
+        
 
         currentIndex++;
     }
