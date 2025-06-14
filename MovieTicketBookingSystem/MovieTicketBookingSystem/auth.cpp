@@ -149,10 +149,16 @@ void validateVerificationCode(const FormResult& formData, const size_t& fieldInd
 }
 
 void App::login() {
-	FormResult input = initForm({
-		new Field({"username", "", "Enter your username", "Any quote symbols are forbidden", false}),
-		new Field({"password", "", "Enter your password", "", true})
-		}, "LOGIN");
+	FormResult input;
+	try {
+		input = initForm({
+			new Field({"username", "", "Enter your username", "Any quote symbols are forbidden", false}),
+			new Field({"password", "", "Enter your password", "", true})
+			}, "LOGIN");
+	}
+	catch (const int& code) {
+		auth("The form submission was cancelled.\n\n");
+	}
 
 
 	bool success = Session::initSession(this, input.at(0).second, input.at(1).second);
@@ -162,15 +168,23 @@ void App::login() {
 	}
 
 	loginBySavedSession();
+	
 }
 
 void App::signup() {
-	FormResult input = initForm({
-		new Field({"username", "", "Enter username", "Any quote symbols are forbidden", false}),
-		new Field({"email", "@gmail.com", "Enter email", "Any quote symbols are forbidden", false, validateEmail}),
-		new Field({"password", "", "Enter password", passwordInstructions, true, validatePassword}),
-		new Field({"password", "", "Reenter the password", "", true, passwordMatch})
+	FormResult input;
+	try {
+		input = initForm({
+			new Field({"username", "", "Enter username", "Any quote symbols are forbidden", false}),
+			new Field({"email", "@gmail.com", "Enter email", "Any quote symbols are forbidden", false, validateEmail}),
+			new Field({"password", "", "Enter password", passwordInstructions, true, validatePassword}),
+			new Field({"password", "", "Reenter the password", "", true, passwordMatch})
 		}, "SIGNUP");
+	}
+	catch (const int& code) {
+		auth("The form submission was cancelled.\n\n");
+	}
+	
 
 	std::string username = input.at(0).second;
 	std::string email = input.at(1).second;
@@ -179,9 +193,15 @@ void App::signup() {
 	int verificationCode = Utils::generateRandomSixDigitNumber();
 	send(config, email, "Verification code for movie ticket booking system", std::format("Your verification code is <b>{}</b>", std::to_string(verificationCode)));
 
-	input = initForm({
-		new Field({"Verification code", "", "Enter verification code", "6 digits", false, validateVerificationCode})
+	try {
+		input = initForm({
+			new Field({"Verification code", "", "Enter verification code", "6 digits", false, validateVerificationCode})
 		}, "CHECK");
+	}
+	catch (const int& code) {
+		auth("The form submission was cancelled.\n\n");
+	}
+	
 
 	if (std::stoi(input.at(0).second) != verificationCode) {
 		auth("Incorrect verification code entered\n\n");
