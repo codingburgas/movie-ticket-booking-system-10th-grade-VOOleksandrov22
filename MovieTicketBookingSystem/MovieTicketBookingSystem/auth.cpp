@@ -80,7 +80,7 @@ void App::login() {
 	FormResult input;
 	try {
 		input = initForm({
-			new Field({"username", "", "Enter your username", "Any quote symbols are forbidden", false}),
+			new Field({"credential", "", "Enter your username or email", "Any quote symbols are forbidden", false}),
 			new Field({"password", "", "Enter your password", "", true})
 			}, "LOGIN");
 	}

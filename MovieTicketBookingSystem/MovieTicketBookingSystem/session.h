@@ -35,8 +35,11 @@ public:
 		return User(app, userData);
 	}
 
-	static bool initSession(App* app, const std::string username, const std::string password) {
-		std::string fields = "*"; std::string condition = "username = '" + username + "' AND password = '" + password + "'";
+	static bool initSession(App* app, const std::string& credential, const std::string& password) {
+		std::string fields = "*"; std::string condition = std::format("(username = '{}' OR email = '{}') AND password = '{}'", 
+																		credential, 
+																		credential, 
+																		password);
 		auto users = DB::resultSetToVector(app->db->user->select(fields, condition));
 
 		if (users.size() == 0) return false;
