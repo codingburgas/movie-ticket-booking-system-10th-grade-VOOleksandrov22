@@ -15,9 +15,6 @@
 #include "session.h"
 #include "../Colors/colors.h"
 
-#include "../../password_input/PasswordInput/include/options.h"
-#include "../../password_input/PasswordInput/include/passwordInput.h"
-
 #include <string>
 
 using RedirectFunction = std::function<void()>;

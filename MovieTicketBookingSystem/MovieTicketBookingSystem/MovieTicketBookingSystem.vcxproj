@@ -145,9 +145,6 @@
     <ProjectReference Include="..\..\db_cpp\vs\db_cpp.vcxproj">
       <Project>{bb9f3f66-798a-35e3-8c3d-c7c750f8da30}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\password_input\vs\password_input.vcxproj">
-      <Project>{0217171b-f6a9-3090-8c7b-da898fd0ef37}</Project>
-    </ProjectReference>
     <ProjectReference Include="..\Colors\Colors.vcxproj">
       <Project>{f78d0a9a-4425-4d64-bcd7-664c98b27592}</Project>
     </ProjectReference>
