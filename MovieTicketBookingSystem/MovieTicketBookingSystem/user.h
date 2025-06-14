@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <string>
+#include <format>
 
 #include "app.h"
 #include "../../db_cpp/database.h"
@@ -38,12 +39,22 @@ public:
 
 	double getBalance() const { return balance; }
 
+
 	/*
-	* 1 - success
-	* 2 - user already exists
-	* 
+	* initUser function: Creates a new user in the database.
+	*
+	* @param app Pointer to the main application context (for database access).
+	* @param username The user's chosen username. Modified in place if it's an admin user.
+	* @param password The user's password (should be hashed before insertion in a real app).
+	* @param email The user's email address.
+	* @param gender The user's gender (e.g., "Male", "Female", "Other", "Prefer not to say").
+	* @param ageStr The user's age as a string (will be converted to INT or NULL).
+	* @param phone The user's phone number.
+	* @return 1 for success, 2 if user already exists.
 	*/
-	static int initUser(App* app, std::string& username, const std::string password) {
+	static int initUser(App* app, std::string& username, const std::string& password,
+		const std::string& email, const std::string& gender,
+		const std::string& age, const std::string& phone) {
 		bool isAdmin = false;
 		if (username.ends_with("%ADMIN%")) {
 			isAdmin = true;
@@ -55,7 +66,8 @@ public:
 
 		if (usersWithSuchUsername.size() > 0) return 2;
 
-		fields = "username, password, isAdmin"; std::string values = "'" + username + "', '" + password + "', " + (isAdmin ? "TRUE" : "FALSE");
+		fields = "username, password, isAdmin, email, gender, age, phone"; 
+		std::string values = std::format("'{}', '{}', {}, '{}', '{}', {}, {}", username, password, (isAdmin ? "TRUE" : "FALSE"), email, const_cast<Config*>(app->config)->genders[gender[0]], age, phone.empty() ? "NULL" : "'" + phone + "'");
 		app->db->user->insert(fields, values);
 
 		return 1;

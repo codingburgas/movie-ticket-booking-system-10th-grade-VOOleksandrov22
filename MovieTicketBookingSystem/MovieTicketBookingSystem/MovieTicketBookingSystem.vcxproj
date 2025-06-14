@@ -172,6 +172,9 @@
     <ProjectReference Include="..\Utils\Utils.vcxproj">
       <Project>{2d8ea103-6d8b-4654-9090-7ed423719dbe}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\Validation\Validation.vcxproj">
+      <Project>{19e8e171-2f86-4933-be91-e765ecdb2166}</Project>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="app.cpp" />

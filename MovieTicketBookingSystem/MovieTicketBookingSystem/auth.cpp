@@ -9,20 +9,18 @@
 #include "../EmailHandler/email.h"
 
 #include "../Form/form.h"
+#include "../Validation/validation.h"
 
 #include "../nlohmann/json.hpp"
 using json = nlohmann::json;
 
 
-#define MIN_PASSWORD_LENGTH 8
-#define MAX_PASSWORD_LENGTH 64
+
 
 const std::string passwordInstructions = R"(
 - 8 to 64 characters.
 - At least one uppercase letter, one lowercase, one digit, and one special character (e.g., !@#$%^&*).
 )";
-
-const std::string specialCharacters = "!@#$%^&*()-_=+[]{}|;:,.<>?/~";
 
 
 void App::loginBySavedSession() {
@@ -77,76 +75,6 @@ void App::auth(std::string message) {
 	};
 }
 
-void validatePassword(const FormResult& formData, const size_t& fieldIndex) {
-	const std::string& password = formData.at(fieldIndex).second;
-	if (password.length() < MIN_PASSWORD_LENGTH) {
-		throw std::runtime_error("Password must be at least " + std::to_string(MIN_PASSWORD_LENGTH) + " characters long.");
-	}
-
-	if (password.length() > MAX_PASSWORD_LENGTH) {
-		throw std::runtime_error("Password cannot exceed " + std::to_string(MAX_PASSWORD_LENGTH) + " characters.");
-	}
-
-	bool hasLower = false;
-	bool hasUpper = false;
-	bool hasDigit = false;
-	bool hasSpecial = false;
-
-	for (char c : password) {
-		if (std::islower(static_cast<unsigned char>(c))) {
-			hasLower = true;
-		}
-		else if (std::isupper(static_cast<unsigned char>(c))) {
-			hasUpper = true;
-		}
-		else if (std::isdigit(static_cast<unsigned char>(c))) {
-			hasDigit = true;
-		}
-		else if (specialCharacters.find(c) != std::string::npos) {
-			hasSpecial = true;
-		}
-	}
-
-	if (!hasLower) {
-		throw std::runtime_error("Password must contain at least one lowercase letter.");
-	}
-	if (!hasUpper) {
-		throw std::runtime_error("Password must contain at least one uppercase letter.");
-	}
-	if (!hasDigit) {
-		throw std::runtime_error("Password must contain at least one digit.");
-	}
-	if (!hasSpecial) {
-		throw std::runtime_error("Password must contain at least one special character (e.g., !@#$%^&*).");
-	}
-}
-
-void passwordMatch(const FormResult& formData, const size_t& fieldIndex) {
-	if (formData.at(formData.size() - 2).second != formData.at(fieldIndex).second) {
-		throw std::runtime_error("Passwords do not match");
-	}
-}
-
-void validateEmail(const FormResult& formData, const size_t& fieldIndex) {
-	const std::regex email_pattern(R"(^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$)");
-	const std::string& email = formData.at(fieldIndex).second;
-
-	if (email.empty()) {
-		throw std::runtime_error("Email cannot be empty.");
-	}
-
-	if (!std::regex_match(email, email_pattern)) {
-		throw std::runtime_error("Invalid email format.");
-	}
-}
-
-void validateVerificationCode(const FormResult& formData, const size_t& fieldIndex) {
-	const std::string& code = formData.at(fieldIndex).second;
-
-	if (code.length() != 6 || !std::all_of(code.begin(), code.end(), isdigit)) {
-		throw std::runtime_error("Verification code must be a 6-digit number.");
-	}
-}
 
 void App::login() {
 	FormResult input;
@@ -178,20 +106,28 @@ void App::signup() {
 			new Field({"username", "", "Enter username", "Any quote symbols are forbidden", false}),
 			new Field({"email", "@gmail.com", "Enter email", "Any quote symbols are forbidden", false, validateEmail}),
 			new Field({"password", "", "Enter password", passwordInstructions, true, validatePassword}),
-			new Field({"password", "", "Reenter the password", "", true, passwordMatch})
+			new Field({"password", "", "Reenter the password", "", true, passwordMatch}),
+			new Field({"gender", "", "Enter your gender - Choose from predefined options", "M(Male), F(Female), O(Other), P(Prefer not to say)", false, validateGender}),
+			new Field({"age", "", "Enter your age", "Must be a number between 0 and 150.", false, validateAge}),
+			new Field({"phone", "", "Enter your phone number", "Digits, spaces, hyphens, and a leading plus sign are allowed.", false, validatePhone})
 		}, "SIGNUP");
 	}
 	catch (const int& code) {
 		auth("The form submission was cancelled.\n\n");
 	}
 	
-
-	std::string username = input.at(0).second;
-	std::string email = input.at(1).second;
-	std::string password = input.at(2).second;
+	const std::string email = input.at(1).second;
 
 	int verificationCode = Utils::generateRandomSixDigitNumber();
-	send(config, email, "Verification code for movie ticket booking system", std::format("Your verification code is <b>{}</b>", std::to_string(verificationCode)));
+	send(config, email, "Verification code for movie ticket booking system", std::format("Your verification code is <b>{}</b>", verificationCode));
+
+	std::string username = input.at(0).second;
+	const std::string password = input.at(2).second;
+	const std::string gender = input.at(4).second;
+	const std::string age = input.at(5).second;
+	const std::string phone = input.at(6).second;
+	
+
 
 	try {
 		input = initForm({
@@ -208,7 +144,7 @@ void App::signup() {
 		return;
 	}
 
-	int status = User::initUser(this, username, password);
+	int status = User::initUser(this, username, password, email, gender, age, phone);
 	switch (status) {
 	case 1:
 		Session::initSession(this, username, password);

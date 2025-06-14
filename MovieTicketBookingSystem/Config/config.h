@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iostream>
+#include <map>
 
 
 class Config {
@@ -25,6 +26,14 @@ public:
 	std::string projectEmailPassword = "vfuh ojjm beza vfms";
 
 	// EMAIL SETTINGS
+
+
+	std::map<char, std::string> genders = {
+		{'M', "Male"},
+		{'F', "Female"},
+		{'O', "Other"},
+		{'P', "Prefer not to say"}
+	};
 
 	Config() {}
 };

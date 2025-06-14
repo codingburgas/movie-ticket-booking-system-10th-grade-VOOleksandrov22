@@ -86,9 +86,6 @@ void validateVerificationCode(const FormResult& formData, const size_t& fieldInd
 
 void validateGender(const FormResult& formData, const size_t& fieldIndex) {
     const std::string& gender = formData.at(fieldIndex).second;
-    if (gender.empty()) {
-        return;
-    }
     if (gender != "M" && gender != "F" && gender != "O" && gender != "P") {
         throw std::runtime_error("Gender must be 'M', 'F', 'O', or 'P'.");
     }
@@ -96,9 +93,6 @@ void validateGender(const FormResult& formData, const size_t& fieldIndex) {
 
 void validateAge(const FormResult& formData, const size_t& fieldIndex) {
     const std::string& ageStr = formData.at(fieldIndex).second;
-    if (ageStr.empty()) {
-        return;
-    }
 
     for (char c : ageStr) {
         if (!std::isdigit(static_cast<unsigned char>(c))) {
