@@ -35,5 +35,9 @@ public:
 		{'P', "Prefer not to say"}
 	};
 
+
 	Config() {}
+
+	const char getShortenedGender(const std::string& gender) const;
+
 };
