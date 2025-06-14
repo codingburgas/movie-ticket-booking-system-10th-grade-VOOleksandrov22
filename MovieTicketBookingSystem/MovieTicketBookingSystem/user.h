@@ -9,35 +9,46 @@
 
 class User {
 private:
-	const unsigned int id;
-	const std::string username;
-	const bool isAdmin;
-	const double balance;
-	
+    const unsigned int id;
+    const std::string username;
+    const bool isAdmin;
+    const double balance;
+    const std::string email;
+    const std::string gender;
+    const std::string age;
+    const std::string phone;
+
 public:
+    App* app;
 
+    User(App* app, unsigned int id, std::string username, bool isAdmin, double balance,
+        std::string email, std::string gender, std::string age, std::string phone)
+        : app(app), id(id), username(username), isAdmin(isAdmin), balance(balance),
+        email(email), gender(gender), age(age), phone(phone) {
+    }
 
-	User(App* app, unsigned int id, std::string username, bool isAdmin, double balance) : app(app), id(id), username(username), isAdmin(isAdmin), balance(balance) {}
-	User(App* app, Row& data) 
-		: 
-		app(app), 
-		id(std::stoul(data["id"])), 
-		username(data["username"]), 
-		isAdmin((data["isAdmin"] == "1") ? true : false),
-		balance(std::stod(data["balance"]))
-	{}
+    User(App* app, Row& data)
+        :
+        app(app),
+        id(std::stoul(data["id"])),
+        username(data["username"]),
+        isAdmin((data["isAdmin"] == "1") ? true : false),
+        balance(std::stod(data["balance"])),
+        email(data["email"]),
+        gender(data["gender"]),
+        age(data["age"]),
+        phone(data["phone"])
+    {
+    }
 
-
-	App* app;
-
-
-	std::string getUsername() const { return username; }
-
-	unsigned int getId() const { return id; }
-
-	bool getIsAdmin() const { return isAdmin; }
-
-	double getBalance() const { return balance; }
+    std::string getUsername() const { return username; }
+    unsigned int getId() const { return id; }
+    bool getIsAdmin() const { return isAdmin; }
+    double getBalance() const { return balance; }
+    std::string getEmail() const { return email; }
+    std::string getGender() const { return gender; }
+    std::string getAge() const { return age; }
+    std::string getPhone() const { return phone; }
 
 
 	/*

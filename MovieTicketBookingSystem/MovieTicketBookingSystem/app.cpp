@@ -161,10 +161,14 @@ void App::profilePage() {
 		system("cls");
 		auto user = currentSession->getUser();
 	
-		std::string data = std::format("Your profile data:\nUsername: {}\nBalance: {}$\nAdmin: {}\n", 
+		std::string data = std::format("Your profile data:\nUsername: {}\nEmail: {}\nBalance: {}$\nAdmin: {}\nGender: {}\nAge: {}\nPhone: {}\n\n", 
 			user.getUsername(), 
+			user.getEmail(),
 			Utils::String::toString(user.getBalance()),
-			(user.getIsAdmin() ? "true" : "false")
+			(user.getIsAdmin() ? "true" : "false"),
+			user.getGender(),
+			user.getAge(),
+			(user.getPhone().empty() ? "Undefined" : user.getPhone())
 		);
 
 		std::vector<std::string> menuOptions = {
