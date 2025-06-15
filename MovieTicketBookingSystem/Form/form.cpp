@@ -233,8 +233,6 @@ FormResult initForm(const std::vector<Field*>&& fields, const std::string&& subm
                 break;
             }
 
-
-
 			break;
 
         case '\b':

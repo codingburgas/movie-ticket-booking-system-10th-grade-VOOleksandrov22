@@ -41,28 +41,6 @@ std::string concatLinesFromVector(const std::vector<std::string>& strings, int i
     return result;
 }
 
-/*std::string concatenateLineByLine(const std::string& str1, const std::string str2) {
-    std::istringstream stream1(str1);
-    std::istringstream stream2(str2);
-
-    std::string line1, line2;
-    std::string result;
-
-    while (std::getline(stream1, line1) || std::getline(stream2, line2)) {
-        if (line1.empty()) line1 = ""; // Ensure correct concatenation
-        if (line2.empty()) line2 = "";
-
-        result += line1 + line2; // Concatenating lines and adding newline
-
-        // Reset for next iteration
-        line1.clear();
-        line2.clear();
-    }
-
-    return result;
-}*/
-
-
 void displayChoices(
     json& data,
     const size_t* highlightPos,
@@ -123,8 +101,6 @@ bool setPosToNearestVisible(json& data, std::function<bool(json&)> &skipCheck,si
         res = directionToRight();
         if (res) return true;
     }
-    //std::cout << "YELLOW";
-    //data.erase(row);
 
     return false;
 }
@@ -160,89 +136,91 @@ std::pair<size_t, size_t> Menu::getChoice(
         system("cls");
         std::cout << question << std::endl;
         displayChoices(data, highlightPos, itemSize, getHighlightedItemAsString, getRegularItemAsString, skipCheck);
-        char key = _getch();
-
+        int key = _getch();
 
         switch (key) {
-        case 72: // Up arrow
-            if (highlightPos[0] > 0) highlightPos[0]--;
-            else highlightPos[0] = data.size() - 1;
+        case 0: // Handle special keys (arrows, function keys, etc.)
+        case 224:
+            key = _getch(); // Get the actual key code after the 0 or 224 prefix
+            switch (key) {
+            case 72: // Up arrow
+                if (highlightPos[0] > 0) highlightPos[0]--;
+                else highlightPos[0] = data.size() - 1;
 
-            if (skipCheck(data[highlightPos[0]][highlightPos[1]])) {
-                bool found = false;
-                while (!found) {
-                    found = setPosToNearestVisible(data, skipCheck, highlightPos);
-                    if (!found) {
-                        highlightPos[0]--;
-                        if (highlightPos[0] < 0) highlightPos[0] = data.size() - 1;
-                    }
-                }
-
-            }
-
-            break;
-        case 80: // Down arrow
-            if (highlightPos[0] < data.size() - 1) highlightPos[0]++;
-            else highlightPos[0] = 0;
-
-            if (skipCheck(data[highlightPos[0]][highlightPos[1]])) {
-                bool found = false;
-                while (!found) {
-                    found = setPosToNearestVisible(data, skipCheck, highlightPos);
-                    if (!found) {
-                        highlightPos[0]++;
-                        if (highlightPos[0] >= data.size() - 1) highlightPos[0] = 0;
-                    }
-                }
-
-            }
-            break;
-        case 77: // right arrow
-            
-            if (highlightPos[1] < data[highlightPos[0]].size() - 1) highlightPos[1]++;
-            else{
-                highlightPos[1] = 0;
-            }
-
-            if (skipCheck(data[highlightPos[0]][highlightPos[1]])) {
-                bool found = false;
-                while (!found) {
-                    found = setPosToNearestVisible(data, skipCheck, highlightPos);
-                    if (!found) {
-                        highlightPos[1]++;
-                        if (highlightPos[1] >= data[highlightPos[0]].size() - 1) {
-                            highlightPos[1] = 0;
+                if (skipCheck(data[highlightPos[0]][highlightPos[1]])) {
+                    bool found = false;
+                    while (!found) {
+                        found = setPosToNearestVisible(data, skipCheck, highlightPos);
+                        if (!found) {
+                            highlightPos[0]--;
+                            if (highlightPos[0] < 0) highlightPos[0] = data.size() - 1;
                         }
                     }
+
                 }
 
-            }
-            break;
+                break;
+            case 80: // Down arrow
+                if (highlightPos[0] < data.size() - 1) highlightPos[0]++;
+                else highlightPos[0] = 0;
 
-        case 75: // Left arrow
-            if (highlightPos[1] > 0) highlightPos[1]--;
-            else highlightPos[1] = data[highlightPos[0]].size() - 1;
-
-            if (skipCheck(data[highlightPos[0]][highlightPos[1]])) {
-                bool found = false;
-                while (!found) {
-                    found = setPosToNearestVisible(data, skipCheck, highlightPos, false);
-                    if (!found) {
-                        highlightPos[1]--;
-                        if (highlightPos[1] < 0) highlightPos[1] = data[highlightPos[0]].size() - 1;
+                if (skipCheck(data[highlightPos[0]][highlightPos[1]])) {
+                    bool found = false;
+                    while (!found) {
+                        found = setPosToNearestVisible(data, skipCheck, highlightPos);
+                        if (!found) {
+                            highlightPos[0]++;
+                            if (highlightPos[0] >= data.size() - 1) highlightPos[0] = 0;
+                        }
                     }
+
+                }
+                break;
+            case 77: // right arrow
+
+                if (highlightPos[1] < data[highlightPos[0]].size() - 1) highlightPos[1]++;
+                else {
+                    highlightPos[1] = 0;
                 }
 
+                if (skipCheck(data[highlightPos[0]][highlightPos[1]])) {
+                    bool found = false;
+                    while (!found) {
+                        found = setPosToNearestVisible(data, skipCheck, highlightPos);
+                        if (!found) {
+                            highlightPos[1]++;
+                            if (highlightPos[1] >= data[highlightPos[0]].size() - 1) {
+                                highlightPos[1] = 0;
+                            }
+                        }
+                    }
+
+                }
+                break;
+
+            case 75: // Left arrow
+                if (highlightPos[1] > 0) highlightPos[1]--;
+                else highlightPos[1] = data[highlightPos[0]].size() - 1;
+
+                if (skipCheck(data[highlightPos[0]][highlightPos[1]])) {
+                    bool found = false;
+                    while (!found) {
+                        found = setPosToNearestVisible(data, skipCheck, highlightPos, false);
+                        if (!found) {
+                            highlightPos[1]--;
+                            if (highlightPos[1] < 0) highlightPos[1] = data[highlightPos[0]].size() - 1;
+                        }
+                    }
+
+                }
+                break;
             }
+
             break;
+
         case 13: // Enter
             system("cls");
             return { highlightPos[0], highlightPos[1] };
-
-            break;
-
-        default:
-            break;
         }
 
     }

@@ -36,23 +36,29 @@ size_t Menu::getChoice(std::string question) {
         system("cls");
         std::cout << question << std::endl;
         displayChoices(getOptions(), highlightIndex);
-        char key = _getch();
+        int key = _getch();
 
         switch (key) {
+        case 0: // Handle special keys (arrows, function keys, etc.)
+        case 224:
+            key = _getch(); // Get the actual key code after the 0 or 224 prefix
+
+            switch (key) {
             case 72: // Up arrow
                 if (highlightIndex > 0) highlightIndex--;
                 break;
             case 80: // Down arrow
                 if (highlightIndex < options.size() - 1) highlightIndex++;
                 break;
-            case 13: // Enter
-                system("cls");
-                return highlightIndex;
+            }
 
-                break;
-                
-            default:
-                break;
+            break;
+
+        case 13: // Enter
+            system("cls");
+            return highlightIndex;
+
+            break;
         }
     }
 }
@@ -67,24 +73,28 @@ size_t Menu::getChoice(const std::vector<std::string>& options, std::string ques
         system("cls");
         std::cout << question << std::endl;
         displayChoices(options, highlightIndex);
-        char key = _getch();
+        int key = _getch();
 
         switch (key) {
-        case 72: // Up arrow
-            if (highlightIndex > 0) highlightIndex--;
-            break;
-        case 80: // Down arrow
-            if (highlightIndex < options.size() - 1) highlightIndex++;
+        case 0: // Handle special keys (arrows, function keys, etc.)
+        case 224:
+            key = _getch(); // Get the actual key code after the 0 or 224 prefix
+            switch (key) {
+            case 72: // Up arrow
+                if (highlightIndex > 0) highlightIndex--;
+                break;
+            case 80: // Down arrow
+                if (highlightIndex < options.size() - 1) highlightIndex++;
+                break;
+            }
             break;
         case 13: // Enter
             system("cls");
             return highlightIndex;
 
             break;
-
-        default:
-            break;
         }
+        
     }
 }
 
