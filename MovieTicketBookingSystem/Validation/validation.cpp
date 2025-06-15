@@ -11,6 +11,23 @@
 const std::string specialCharacters = "!@#$%^&*()-_=+[]{}|;:,.<>?/~";
 
 
+void validateUsername(const FormResult& formData, const size_t& fieldIndex) {
+	const std::string& username = formData.at(fieldIndex).second;
+
+	if (username.length() < MIN_USERNAME_LENGTH) {
+		throw std::runtime_error("Username must be at least " + std::to_string(MIN_USERNAME_LENGTH) + " characters long.");
+	}
+	if (username.length() > MAX_USERNAME_LENGTH) {
+		throw std::runtime_error("Username cannot exceed " + std::to_string(MAX_USERNAME_LENGTH) + " characters.");
+	}
+
+	if (!username.empty() && (std::isspace(static_cast<unsigned char>(username.front())) || std::isspace(static_cast<unsigned char>(username.back())))) {
+		throw std::runtime_error("Username cannot start or end with a space.");
+	}
+}
+
+
+
 void validatePassword(const FormResult& formData, const size_t& fieldIndex) {
 	const std::string& password = formData.at(fieldIndex).second;
 	if (password.length() < MIN_PASSWORD_LENGTH) {

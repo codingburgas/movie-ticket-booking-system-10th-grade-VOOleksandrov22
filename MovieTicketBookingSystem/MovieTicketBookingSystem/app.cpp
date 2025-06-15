@@ -49,8 +49,7 @@ void App::defineHelperMethods() {
 				paintIn, RESET
 			);
 		}
-		/*std::cout << "data: " << data.dump(4) << std::endl << "User id: " << user.getId();
-		int c; std::cin >> c;*/
+		
 		if (data["data"]["bookedBy"].get<unsigned long>() == user.getId()) {
 			paintIn = GREEN;
 		}
@@ -132,12 +131,6 @@ void App::mainLoop() {
 			exit(0);
 		}},
 	};
-
-	/*std::vector<std::string> startingPageOptions = {
-		"Buy a ticket",
-		"Log out",
-		"Exit"
-	};*/
 
 	if (currentSession->getUser().getIsAdmin()) {
 		auto elementBeforeLast = redirects.end() - 2;

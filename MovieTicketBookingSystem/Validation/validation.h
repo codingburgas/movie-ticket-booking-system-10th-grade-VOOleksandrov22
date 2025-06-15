@@ -8,7 +8,18 @@ const size_t MIN_PASSWORD_LENGTH = 8;
 const size_t MAX_PASSWORD_LENGTH = 64;
 const std::string SPECIAL_CHARACTERS = "!@#$%^&*()-_=+[]{}|;:,.<>?/~";
 
+const int MIN_USERNAME_LENGTH = 3;
+const int MAX_USERNAME_LENGTH = 20;
 
+
+/**
+ * @brief Validates if a username meets specified complexity and character requirements.
+ * Checks for minimum/maximum length, leading/trailing spaces, and allowed character set.
+ * @param formData The collected form data.
+ * @param fieldIndex The index of the username field in formData.
+ * @throws std::runtime_error if the username fails any validation rule.
+ */
+void validateUsername(const FormResult& formData, const size_t& fieldIndex);
 
 /**
  * @brief Validates if a password meets specified complexity requirements.

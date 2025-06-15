@@ -100,11 +100,28 @@ void App::login() {
 }
 
 void App::signup() {
+	auto validateUsernameWithUniqueness = [this](const FormResult& formData, const size_t& fieldIndex) {
+			validateUsername(formData, fieldIndex);
+			const std::string& username = formData.at(fieldIndex).second;
+			std::string uniquenessQuery = std::format("SELECT id FROM User WHERE username = '{}'", username);
+			if (DB::resultSetToVector(db->db->execute(uniquenessQuery)).size() > 0) {
+				throw std::runtime_error("User with such username already exists");
+			}
+		};
+	auto validateEmailWithUniqueness = [this](const FormResult& formData, const size_t& fieldIndex) {
+		validateEmail(formData, fieldIndex);
+		const std::string& email = formData.at(fieldIndex).second;
+		std::string uniquenessQuery = std::format("SELECT id FROM User WHERE email = '{}'", email);
+		if (DB::resultSetToVector(db->db->execute(uniquenessQuery)).size() > 0) {
+			throw std::runtime_error("User with such email already exists");
+		}
+		};
+
 	FormResult input;
 	try {
 		input = initForm({
-			new Field({"username", "", "Enter username", "Any quote symbols are forbidden", false}),
-			new Field({"email", "@gmail.com", "Enter email", "Any quote symbols are forbidden", false, validateEmail}),
+			new Field({"username", "", "Enter username", "Any quote symbols are forbidden", false, validateUsernameWithUniqueness}),
+			new Field({"email", "@gmail.com", "Enter email", "Any quote symbols are forbidden", false, validateEmailWithUniqueness}),
 			new Field({"password", "", "Enter password", passwordInstructions, true, validatePassword}),
 			new Field({"password", "", "Reenter the password", "", true, passwordMatch}),
 			new Field({"gender", "", "Enter your gender - Choose from predefined options", "M(Male), F(Female), O(Other), P(Prefer not to say)", false, validateGender}),
@@ -127,7 +144,6 @@ void App::signup() {
 	const std::string age = input.at(5).second;
 	const std::string phone = input.at(6).second;
 	
-
 
 	try {
 		input = initForm({
