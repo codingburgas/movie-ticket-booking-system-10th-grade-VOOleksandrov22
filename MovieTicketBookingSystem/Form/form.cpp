@@ -66,21 +66,13 @@ void moveWindowUntilHighlightIsVisible(const int& highlightPosY, SMALL_RECT& win
 
     const int windowHeight = csbi.srWindow.Bottom - csbi.srWindow.Top;
 
-    //std::cout << std::format("Y: {}, Bottom: {}, Top: {}", highlightPosY, windowRectBeforeRefresh.Bottom, windowRectBeforeRefresh.Top);
-	if (highlightPosY > windowRectBeforeRefresh.Bottom) {
-		/*windowRectBeforeRefresh.Top += highlightPosY - windowRectBeforeRefresh.Bottom + 3;
-        windowRectBeforeRefresh.Bottom = windowRectBeforeRefresh.Top + windowHeight;*/
+    if (highlightPosY > windowRectBeforeRefresh.Bottom) {
 		windowRectBeforeRefresh.Bottom = highlightPosY + 3;
         windowRectBeforeRefresh.Top = windowRectBeforeRefresh.Bottom - windowHeight;
-        //std::cout << std::format("Set Y to {}, while it is {}", csbi.srWindow.Top + csbi.dwCursorPosition.Y - csbi.srWindow.Bottom, currentCursorCoords.Y);
-		//std::cout << "set windowRectBeforeRefresh.Top to " << windowRectBeforeRefresh.Top << "\n";
     }
     else if (highlightPosY < windowRectBeforeRefresh.Top) {
-        /*windowRectBeforeRefresh.Top -= windowRectBeforeRefresh.Top - highlightPosY + 3;
-        windowRectBeforeRefresh.Bottom = windowRectBeforeRefresh.Top + windowHeight;*/
 		windowRectBeforeRefresh.Top = highlightPosY - 5;
 		windowRectBeforeRefresh.Bottom = windowRectBeforeRefresh.Top + windowHeight;
-		//std::cout << "set windowRectBeforeRefresh.Top to " << windowRectBeforeRefresh.Top << "\n";
     }
 }
 
@@ -97,6 +89,10 @@ void displayForm(EnteredData& data, const int& highlightIndex, int& highlightPos
         // header
         std::cout << "╭" << Utils::String::toUppercase(pair.first->name) << Utils::String::stringRepeater("─", WIDTH - pair.first->name.size()) << "╮\n";
 
+        if (currentIndex == highlightIndex) {
+            GetConsoleScreenBufferInfo(hConsole, &csbi);
+            highlightPosY = csbi.dwCursorPosition.Y;
+        }
 
 		const std::string& value = pair.second.value;
         const size_t& caretPos = pair.second.caretPos;
@@ -127,12 +123,6 @@ void displayForm(EnteredData& data, const int& highlightIndex, int& highlightPos
             }
         }
 
-        if (currentIndex == highlightIndex) {
-            if (!GetConsoleScreenBufferInfo(hConsole, &csbi)) {
-                std::cerr << "You fucking nigger!!";
-            }
-			highlightPosY = csbi.dwCursorPosition.Y;
-        }
         
 
         // footer
@@ -213,7 +203,8 @@ FormResult initForm(const std::vector<Field*>&& fields, const std::string&& subm
                 data.at(highlightIndex).second.hidden = !data.at(highlightIndex).second.hidden;
                 break;
             }
-			//updateCoords(cursorPosBeforeRefresh, csbi);
+            GetConsoleScreenBufferInfo(hConsole, &csbi);
+            windowRectBeforeRefresh = csbi.srWindow;
             continue;
 		}
 
@@ -248,7 +239,8 @@ FormResult initForm(const std::vector<Field*>&& fields, const std::string&& subm
 
         case '\b':
             if (highlightIndex == data.size()) {
-                //updateCoords(cursorPosBeforeRefresh, csbi);
+                GetConsoleScreenBufferInfo(hConsole, &csbi);
+                windowRectBeforeRefresh = csbi.srWindow;
                 continue; // Ignore backspace if we are on the submit button
             }
             if (data.at(highlightIndex).second.caretPos > 0) {
@@ -260,8 +252,9 @@ FormResult initForm(const std::vector<Field*>&& fields, const std::string&& subm
         default:
 			if (highlightIndex == data.size()) {
                 if (key != '\r') {
-                    //updateCoords(cursorPosBeforeRefresh, csbi);
-                    continue; // Ignore any input if we are on the submit button
+                    GetConsoleScreenBufferInfo(hConsole, &csbi);
+                    windowRectBeforeRefresh = csbi.srWindow;
+                    continue;
                 }
                 
                 if (!data.isValid()) break;
@@ -273,5 +266,7 @@ FormResult initForm(const std::vector<Field*>&& fields, const std::string&& subm
             break;
         }
 
+        GetConsoleScreenBufferInfo(hConsole, &csbi);
+        windowRectBeforeRefresh = csbi.srWindow;
     }
 }
