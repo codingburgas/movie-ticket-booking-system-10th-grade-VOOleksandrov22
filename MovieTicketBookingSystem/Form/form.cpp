@@ -61,8 +61,31 @@ FormResult normalizeData(EnteredData& data) {
 }
 
 
+void moveWindowUntilHighlightIsVisible(const int& highlightPosY, SMALL_RECT& windowRectBeforeRefresh, HANDLE& hConsole, CONSOLE_SCREEN_BUFFER_INFO& csbi) {
+    GetConsoleScreenBufferInfo(hConsole, &csbi);
 
-void displayForm(EnteredData& data, const int& highlightIndex) {
+    const int windowHeight = csbi.srWindow.Bottom - csbi.srWindow.Top;
+
+    //std::cout << std::format("Y: {}, Bottom: {}, Top: {}", highlightPosY, windowRectBeforeRefresh.Bottom, windowRectBeforeRefresh.Top);
+	if (highlightPosY > windowRectBeforeRefresh.Bottom) {
+		/*windowRectBeforeRefresh.Top += highlightPosY - windowRectBeforeRefresh.Bottom + 3;
+        windowRectBeforeRefresh.Bottom = windowRectBeforeRefresh.Top + windowHeight;*/
+		windowRectBeforeRefresh.Bottom = highlightPosY + 3;
+        windowRectBeforeRefresh.Top = windowRectBeforeRefresh.Bottom - windowHeight;
+        //std::cout << std::format("Set Y to {}, while it is {}", csbi.srWindow.Top + csbi.dwCursorPosition.Y - csbi.srWindow.Bottom, currentCursorCoords.Y);
+		//std::cout << "set windowRectBeforeRefresh.Top to " << windowRectBeforeRefresh.Top << "\n";
+    }
+    else if (highlightPosY < windowRectBeforeRefresh.Top) {
+        /*windowRectBeforeRefresh.Top -= windowRectBeforeRefresh.Top - highlightPosY + 3;
+        windowRectBeforeRefresh.Bottom = windowRectBeforeRefresh.Top + windowHeight;*/
+		windowRectBeforeRefresh.Top = highlightPosY - 5;
+		windowRectBeforeRefresh.Bottom = windowRectBeforeRefresh.Top + windowHeight;
+		//std::cout << "set windowRectBeforeRefresh.Top to " << windowRectBeforeRefresh.Top << "\n";
+    }
+}
+
+
+void displayForm(EnteredData& data, const int& highlightIndex, int& highlightPosY, HANDLE& hConsole, CONSOLE_SCREEN_BUFFER_INFO& csbi) {
 
     std::cout << "Press \"esc\" to cancel form submission\nPress \"Ctrl + H\" to enable privacy mode\n\n";
 
@@ -104,7 +127,12 @@ void displayForm(EnteredData& data, const int& highlightIndex) {
             }
         }
 
-
+        if (currentIndex == highlightIndex) {
+            if (!GetConsoleScreenBufferInfo(hConsole, &csbi)) {
+                std::cerr << "You fucking nigger!!";
+            }
+			highlightPosY = csbi.dwCursorPosition.Y;
+        }
         
 
         // footer
@@ -126,6 +154,8 @@ void displayForm(EnteredData& data, const int& highlightIndex) {
 
     if (currentIndex == highlightIndex) {
         std::cout << RESET;
+        GetConsoleScreenBufferInfo(hConsole, &csbi);
+        highlightPosY = csbi.dwCursorPosition.Y;
     }
 
 }
@@ -142,22 +172,39 @@ void fillInInitialData(EnteredData& data, const std::vector<Field*>& fields) {
 }
 
 
-
 FormResult initForm(const std::vector<Field*>&& fields, const std::string&& submitButtonText) {
 
 	SUBMIT_BUTTON_TEXT = submitButtonText;
 
     EnteredData data = {};
     fillInInitialData(data, fields);
-    //        highlight pos                       value        cursor pos
-    // std::pair<int, std::pair<Field*, std::pair<std::string, size_t>>>
-    //HighlightData highlightData = { 0, data };
+   
+
 	int highlightIndex = 0;
+
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+
+    if (hConsole == INVALID_HANDLE_VALUE) {
+        throw std::runtime_error("Unable to obtain console handle");
+    }
+
+	GetConsoleScreenBufferInfo(hConsole, &csbi);
+    SMALL_RECT windowRectBeforeRefresh;
+	windowRectBeforeRefresh = csbi.srWindow;
 
     while (true) {
         system("cls");
-        displayForm(data, highlightIndex);
+
+        int highlightPosY;
+
+        displayForm(data, highlightIndex, highlightPosY, hConsole, csbi);
+		moveWindowUntilHighlightIsVisible(highlightPosY, windowRectBeforeRefresh, hConsole, csbi);
+		SetConsoleWindowInfo(hConsole, TRUE, &windowRectBeforeRefresh);
+
         int key = _getch();
+
+
         bool is_ctrl_pressed = (GetKeyState(VK_CONTROL) & 0x8000) != 0;
 		if (is_ctrl_pressed) {
             if (highlightIndex == data.size()) continue;
@@ -166,6 +213,7 @@ FormResult initForm(const std::vector<Field*>&& fields, const std::string&& subm
                 data.at(highlightIndex).second.hidden = !data.at(highlightIndex).second.hidden;
                 break;
             }
+			//updateCoords(cursorPosBeforeRefresh, csbi);
             continue;
 		}
 
@@ -199,7 +247,10 @@ FormResult initForm(const std::vector<Field*>&& fields, const std::string&& subm
 			break;
 
         case '\b':
-			if (highlightIndex == data.size()) continue; // Ignore backspace if we are on the submit button
+            if (highlightIndex == data.size()) {
+                //updateCoords(cursorPosBeforeRefresh, csbi);
+                continue; // Ignore backspace if we are on the submit button
+            }
             if (data.at(highlightIndex).second.caretPos > 0) {
                 data.at(highlightIndex).second.caretPos--;
                 data.at(highlightIndex).second.value.erase(data.at(highlightIndex).second.caretPos, 1);
@@ -208,7 +259,10 @@ FormResult initForm(const std::vector<Field*>&& fields, const std::string&& subm
 
         default:
 			if (highlightIndex == data.size()) {
-				if (key != '\r') continue; // Ignore any input if we are on the submit button
+                if (key != '\r') {
+                    //updateCoords(cursorPosBeforeRefresh, csbi);
+                    continue; // Ignore any input if we are on the submit button
+                }
                 
                 if (!data.isValid()) break;
                 return normalizeData(data);
@@ -218,5 +272,6 @@ FormResult initForm(const std::vector<Field*>&& fields, const std::string&& subm
 			data.at(highlightIndex).second.caretPos++;
             break;
         }
+
     }
 }
