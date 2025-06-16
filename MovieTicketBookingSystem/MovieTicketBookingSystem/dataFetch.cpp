@@ -1,5 +1,5 @@
 #include "app.h"
-#include "../../db_cpp/database.h"
+#include "../Database/database.h"
 
 
 
@@ -7,7 +7,7 @@ std::vector<std::string> App::getCities() {
 	//std::string query = "SELECT * FROM Cinema WHERE id IN (SELECT MIN(id) FROM Cinema GROUP BY city);";
 	std::string query = "select distinct city from Cinema;";
 
-	auto res = db->db->execute(query);
+	auto res = db->execute(query);
 
 	std::vector<std::string> cities = {};
 

@@ -12,7 +12,7 @@
 
 //#include <cppconn/resultset.h>
 
-#include "../../db_cpp/database.h"
+#include "../Database/database.h"
 #include "../Date/date.h"
 #include "session.h"
 #include "../Colors/colors.h"
@@ -103,7 +103,7 @@ void App::defineHelperMethods() {
 
 App::App() 
 	: 
-	db(new DbWrapper(config->url, config->username, config->password, config->schema, config->debugMode)),
+	db(new DB::Database(config->url, config->username, config->password, config->schema, config->debugMode)),
 	menu(new Menu())
 {
 	loginBySavedSession();
@@ -179,7 +179,7 @@ void App::profilePage() {
 		if (choice == menuOptions.size() - 2) {
 
 			std::string transactionQuery = std::format("SELECT * FROM Transaction WHERE userId = {} ORDER BY createdAt DESC;", user.getId());
-			auto transactions = DB::resultSetToVector(db->db->execute(transactionQuery));
+			auto transactions = DB::resultSetToVector(db->execute(transactionQuery));
 
 			if (transactions.size() == 0) {
 				std::cout << "No transactions found.\n";
@@ -217,15 +217,14 @@ void App::profilePage() {
 					isAdmin = true;
 				}
 
-				std::string updateQuery = std::format("update User set username = '{}', gender = '{}', age = '{}', phone = {}, isAdmin = {} where id = {}", 
-					username,
+				db->execute("update User set username = ?, gender = ?, age = ?, phone = ?, isAdmin = ? where id = ?", 
+					{ username,
 					const_cast<Config*>(config)->genders[gender[0]],
 					age,
-					phone.empty() ? "NULL" : "'" + phone + "'",
+					phone.empty() ? "NULL" : phone,
 					(isAdmin ? "TRUE" : "FALSE"),
-					user.getId());
+					user.getId() });
 
-				db->db->execute(updateQuery);
 			}
 			catch (const int& code) {}
 		}
@@ -243,7 +242,7 @@ void App::chooseCityMenu() {
 
 	for (auto& city : cities) {
 		std::string cinemaStatsQuery = std::format("SELECT COUNT(*), AVG(rating) FROM Cinema WHERE city = '{}';", city);
-		auto res = db->db->execute(cinemaStatsQuery);
+		auto res = db->execute(cinemaStatsQuery);
 
 		std::string option = city + " ";
 		if (res->next()) {
@@ -265,21 +264,18 @@ void App::chooseCityMenu() {
 }
 
 void App::chooseCinemaMenu(const std::string& city) {
-	std::string cinemaQuery = std::format("select * from Cinema where city = '{}';", city);
-	auto cinemas = DB::resultSetToVector(db->db->execute(cinemaQuery));
+	auto cinemas = DB::resultSetToVector(db->execute("select * from Cinema where city = ?;", { city }));
+
 
 	std::vector<std::string> menuOptions = {};
 
 	for (auto& cinema : cinemas) {
-		std::string vipHallCountQuery = std::format("select COUNT(*) from Hall where cinema_id = {} AND isVIP = TRUE;", cinema["id"]);
-		std::string nonVipHallCountQuery = std::format("select COUNT(*) from Hall where cinema_id = {} AND isVIP = FALSE;", cinema["id"]);
-
 		unsigned int vipCount = 0, nonVipCount = 0;
 
-		auto vips = db->db->execute(vipHallCountQuery);
+		auto vips = db->execute("select COUNT(*) from Hall where cinema_id = ? AND isVIP = TRUE;", { std::stoi(cinema["id"]) });
 		if (vips->next()) vipCount = vips->getInt(1);
 
-		auto nonVips = db->db->execute(nonVipHallCountQuery);
+		auto nonVips = db->execute("select COUNT(*) from Hall where cinema_id = ? AND isVIP = FALSE;", { std::stoi(cinema["id"]) });
 		if (nonVips->next()) nonVipCount = nonVips->getInt(1);
 
 		std::string option = std::format("{} : {}, {} hall(s)({} VIP)", cinema["name"], cinema["rating"], vipCount + nonVipCount, vipCount);
@@ -299,7 +295,7 @@ void App::chooseCinemaMenu(const std::string& city) {
 
 void App::chooseMovieMenu(const unsigned int& cinemaId) {
 	std::cout << cinemaId;
-	std::string sessionsQuery = std::format(
+	std::string sessionsQuery =
 		R"(select
 		ms.id,
 		ms.startsAt,
@@ -312,11 +308,9 @@ void App::chooseMovieMenu(const unsigned int& cinemaId) {
 		from hall h
 		join moviesession ms on ms.hall_id = h.id and ms.startsAt > now()
 		join movie m on ms.movie_id = m.id
-		where h.cinema_id = {};)",
-		cinemaId
-	);
+		where h.cinema_id = ?;)";
 
-	auto sessions = DB::resultSetToVector(db->db->execute(sessionsQuery));
+	auto sessions = DB::resultSetToVector(db->execute(sessionsQuery, { static_cast<int>(cinemaId) }));
 
 	std::vector<std::string> menuOptions = {};
 
@@ -470,18 +464,12 @@ void App::bookTicket(Row& session) {
 			return;
 		}
 
-		std::string createTransactionQuery = std::format(
-			"INSERT INTO Transaction (sum, userId, movieSessionId, seatsData) VALUES ({}, {}, {}, '{}');",
-			price, user.getId(), session["id"], bookedSeats.dump()
-		);
+		db->execute("INSERT INTO Transaction (sum, userId, movieSessionId, seatsData) VALUES (?, ?, ?, ?);",
+			{ price, user.getId(), std::stoi(session["id"]), bookedSeats.dump() });
 
-		db->db->execute(createTransactionQuery);
-
-		std::string updateSeatQuery = std::format(
-			"UPDATE MovieSession SET seats = '{}' WHERE id = {};",
-			seats.dump(), session["id"]
-		);
-		db->db->execute(updateSeatQuery);
+		
+		db->execute("UPDATE MovieSession SET seats = ? WHERE id = ?;",
+			{ seats.dump(), std::stoi(session["id"]) });
 		
 	}
 	else { // cancel

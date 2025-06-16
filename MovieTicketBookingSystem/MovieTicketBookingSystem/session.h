@@ -30,28 +30,26 @@ public:
 	void setId(unsigned int id) { id = id; }
 
 	const User getUser() const {
-		std::string fields = "*"; std::string condition = "id=" + std::to_string(userId);
-		auto userData = DB::resultSetToVector(app->db->user->select(fields, condition))[0];
+		auto userData = DB::resultSetToVector(app->db->execute(
+			"select * from User where id = ?;", 
+			{ static_cast<int>(userId) }))[0];
 		return User(app, userData);
 	}
 
 	static bool initSession(App* app, const std::string& credential, const std::string& password) {
-		std::string fields = "*"; std::string condition = std::format("(username = '{}' OR email = '{}') AND password = '{}'", 
-																		credential, 
-																		credential, 
-																		password);
-		auto users = DB::resultSetToVector(app->db->user->select(fields, condition));
+		auto users = DB::resultSetToVector(app->db->execute(
+			"select id from User where (username = ? OR email = ?) AND password = ?", 
+			{credential, credential, password}
+		));
 
 		if (users.size() == 0) return false;
 
-		auto userId = users[0]["id"];
+		auto userId = std::stoi(users[0]["id"]);
 
-		std::string fieldsInsert = "userId, expiresAt";
-		std::string valuesInsert = userId + ", date_add(now(), interval 2 hour)";
-		app->db->session->insert(fieldsInsert, valuesInsert);
+		app->db->execute("insert into Session(userId, expiresAt) values(?, date_add(now(), interval 2 hour));", {userId});
 
-		std::string lastId = "SELECT LAST_INSERT_ID();";
-		auto* res = app->db->db->execute(lastId);
+		
+		auto res = app->db->execute("SELECT LAST_INSERT_ID();");
 
 		res->next();
 		unsigned int sessionId = res->getInt(1);

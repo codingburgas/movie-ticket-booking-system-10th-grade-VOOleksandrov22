@@ -5,7 +5,7 @@
 #include <format>
 
 #include "app.h"
-#include "../../db_cpp/database.h"
+#include "../Database/database.h"
 
 class User {
 private:
@@ -72,14 +72,18 @@ public:
 			username = username.substr(0, username.size() - 7);
 		}
 
-		std::string fields = "id", condition = "username = '" + username + "'";
-		auto usersWithSuchUsername = DB::resultSetToVector( app->db->user->select(fields, condition) );
+        auto usersWithSuchUsername = DB::resultSetToVector(app->db->execute(
+            "select id from user where username = ? or email = ?",
+            {username, email}
+        ));
 
 		if (usersWithSuchUsername.size() > 0) return 2;
 
-		fields = "username, password, isAdmin, email, gender, age, phone"; 
-		std::string values = std::format("'{}', '{}', {}, '{}', '{}', {}, {}", username, password, (isAdmin ? "TRUE" : "FALSE"), email, const_cast<Config*>(app->config)->genders[gender[0]], age, phone.empty() ? "NULL" : "'" + phone + "'");
-		app->db->user->insert(fields, values);
+
+        std::string insertQuery = "insert into User(username, password, isAdmin, email, gender, age, phone) values (?, ?, ?, ?, ?, ?, ?)";
+        app->db->execute(
+            insertQuery,
+            { username, password, (isAdmin ? "TRUE" : "FALSE"), email, const_cast<Config*>(app->config)->genders[gender[0]], age, phone.empty() ? "NULL" : "'" + phone + "'" });
 
 		return 1;
 	}

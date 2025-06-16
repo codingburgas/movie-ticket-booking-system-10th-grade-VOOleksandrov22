@@ -3,7 +3,7 @@
 #include "app.h"
 #include "session.h"
 #include "user.h"
-#include "../../db_cpp/database.h"
+#include "../Database/database.h"
 #include "../Date/date.h"
 
 #include "../EmailHandler/email.h"
@@ -33,8 +33,10 @@ void App::loginBySavedSession() {
 
 		int sessionId = cache["sessionId"];
 
-		std::string query = std::format("SELECT * FROM Session WHERE id = {} AND expiresAt > now()", sessionId);
-		auto sessions = DB::resultSetToVector(db->db->execute(query));
+		auto sessions = DB::resultSetToVector(db->execute(
+			"SELECT * FROM Session WHERE id = ? AND expiresAt > now()",
+			{sessionId}
+		));
 
 
 
@@ -103,16 +105,20 @@ void App::signup() {
 	auto validateUsernameWithUniqueness = [this](const FormResult& formData, const size_t& fieldIndex) {
 			validateUsername(formData, fieldIndex);
 			const std::string& username = formData.at(fieldIndex).second;
-			std::string uniquenessQuery = std::format("SELECT id FROM User WHERE username = '{}'", username);
-			if (DB::resultSetToVector(db->db->execute(uniquenessQuery)).size() > 0) {
+
+			if (DB::resultSetToVector(db->execute(
+				"SELECT id FROM User WHERE username = ?",
+				{username})).size() > 0) {
 				throw std::runtime_error("User with such username already exists");
 			}
 		};
 	auto validateEmailWithUniqueness = [this](const FormResult& formData, const size_t& fieldIndex) {
 		validateEmail(formData, fieldIndex);
 		const std::string& email = formData.at(fieldIndex).second;
-		std::string uniquenessQuery = std::format("SELECT id FROM User WHERE email = '{}'", email);
-		if (DB::resultSetToVector(db->db->execute(uniquenessQuery)).size() > 0) {
+
+		if (DB::resultSetToVector(db->execute(
+			"SELECT id FROM User WHERE email = ?",
+			{email})).size() > 0) {
 			throw std::runtime_error("User with such email already exists");
 		}
 		};

@@ -8,6 +8,7 @@
 #include <iostream>
 #include <vector>
 #include <map>
+#include <variant>
 
 
 #include <mysql_driver.h>
@@ -16,6 +17,8 @@
 #include <cppconn/resultset.h>
 
 using Row = std::map<std::string, std::string>;
+
+using ParamVariant = std::variant<std::string, int, unsigned int, double, bool>;
 
 
 namespace DB {
@@ -29,17 +32,14 @@ namespace DB {
         Database(const std::string& url, const std::string& username, const std::string& password, const std::string& schema, bool debugMode = false);
 
         //Executes query and tries to return a ResultSet. If impossible, return nullptr
-        sql::ResultSet* execute(std::string &query);
+        std::unique_ptr<sql::ResultSet> execute(const std::string &query);
+        std::unique_ptr<sql::ResultSet> execute(const std::string& queryTemplate, const std::vector<ParamVariant>&& params);
 
         std::string getSchema(){ return schema; };
         sql::Connection* getConnection(){ return connection; };
         sql::mysql::MySQL_Driver* getDriver(){ return driver; };
-        std::vector <DBModel*> getModelsInitialised(){ return modelsInitialised; };
         bool getDebugMode(){ return debugMode; };
 
-
-        void addModel(DBModel* model);
-        void removeModel(DBModel* model);
 
         ~Database();
 
@@ -47,7 +47,6 @@ namespace DB {
         sql::mysql::MySQL_Driver* driver;
         sql::Connection* connection;
         sql::Statement* statement;
-        std::vector <DBModel*> modelsInitialised;
         bool debugMode = false;
         std::string schema;
     };
@@ -58,7 +57,7 @@ namespace DB {
 
     const std::string columnProperties[6] = {"Field", "Type", "Null", "Key", "Default", "Extra"};
 
-    std::vector<Row> resultSetToVector(sql::ResultSet* res);
+    std::vector<Row> resultSetToVector(std::unique_ptr<sql::ResultSet> res);
 
 }
 #endif //DB_H

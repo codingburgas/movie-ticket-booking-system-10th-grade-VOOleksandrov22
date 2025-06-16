@@ -4,7 +4,7 @@
 #include <functional>
 #include <map>
 #include "../Config/config.h"
-#include "../Database/dbWrapper.h"
+#include "../Database/database.h"
 #include "../Menu/menu.h"
 #include "../nlohmann/json.hpp"
 
@@ -24,7 +24,7 @@ public:
 
 	const Config* config = new Config();
 
-	const DbWrapper* db;
+	DB::Database* db;
 
 	Menu* menu;
 
