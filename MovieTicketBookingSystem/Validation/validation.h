@@ -82,3 +82,55 @@ void validateAge(const FormResult& formData, const size_t& fieldIndex);
  * @throws std::runtime_error if the phone number contains invalid characters.
  */
 void validatePhone(const FormResult& formData, const size_t& fieldIndex);
+
+
+
+/**
+ * @brief Validates a credit card number.
+ * Checks for length and ensures it contains only digits.
+ * @param formData The collected form data.
+ * @param fieldIndex The index of the card number field in formData.
+ * @throws std::runtime_error if the card number fails any validation rule.
+ */
+void validateCardNumber(const FormResult& formData, const size_t& fieldIndex);
+
+
+/**
+ * @brief Validates the card holder's name.
+ * Checks for non-empty string and allowed characters (letters, spaces, hyphens, periods).
+ * @param formData The collected form data.
+ * @param fieldIndex The index of the card holder field in formData.
+ * @throws std::runtime_error if the card holder name fails any validation rule.
+ */
+void validateCardHolder(const FormResult& formData, const size_t& fieldIndex);
+
+
+/**
+ * @brief Validates the CVC/CVV code.
+ * Checks for length (3 or 4 digits) and ensures it contains only digits.
+ * @param formData The collected form data.
+ * @param fieldIndex The index of the CVC field in formData.
+ * @throws std::runtime_error if the CVC fails any validation rule.
+ */
+void validateCVC(const FormResult& formData, const size_t& fieldIndex);
+
+
+
+/**
+ * @brief Validates the card's expiry date (MM/YY format) using regex.
+ * Checks format, valid month, and ensures it's not in the past.
+ * @param formData The collected form data.
+ * @param fieldIndex The index of the expiry date field in formData.
+ * @throws std::runtime_error if the expiry date fails any validation rule.
+ */
+void validateExpiryDate(const FormResult& formData, const size_t& fieldIndex);
+
+
+/**
+ * @brief Validates a monetary amount.
+ * Checks for non-empty string, valid number format (integers or decimals), and positive value.
+ * @param formData The collected form data.
+ * @param fieldIndex The index of the amount field in formData.
+ * @throws std::runtime_error if the amount fails any validation rule.
+ */
+void validateAmount(const FormResult& formData, const size_t& fieldIndex);

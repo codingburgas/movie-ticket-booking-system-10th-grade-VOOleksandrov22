@@ -10,6 +10,8 @@
 
 using json = nlohmann::json;
 
+class User;
+
 class Session;
 
 
@@ -60,5 +62,8 @@ public:
 
 	void profilePage();
 
+	void updateProfileDataPage(User& user);
+
+	void depositPage();
 	
 };

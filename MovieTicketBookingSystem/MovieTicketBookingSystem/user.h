@@ -9,14 +9,14 @@
 
 class User {
 private:
-    const unsigned int id;
-    const std::string username;
-    const bool isAdmin;
-    const double balance;
-    const std::string email;
-    const std::string gender;
-    const std::string age;
-    const std::string phone;
+    unsigned int id;
+    std::string username;
+    bool isAdmin;
+    double balance;
+    std::string email;
+    std::string gender;
+    std::string age;
+    std::string phone;
 
 public:
     App* app;
@@ -25,6 +25,25 @@ public:
         std::string email, std::string gender, std::string age, std::string phone)
         : app(app), id(id), username(username), isAdmin(isAdmin), balance(balance),
         email(email), gender(gender), age(age), phone(phone) {
+    }
+
+    User& operator=(const User& other) {
+        if (this == &other) { // Self-assignment check
+            return *this;
+        }
+
+        // Copy each member variable
+        app = other.app;
+        id = other.id;
+        username = other.username; // std::string handles deep copy
+        isAdmin = other.isAdmin;
+        balance = other.balance;
+        email = other.email;
+        gender = other.gender;
+        age = other.age;
+        phone = other.phone;
+
+        return *this;
     }
 
     User(App* app, Row& data)
@@ -38,8 +57,7 @@ public:
         gender(data["gender"]),
         age(data["age"]),
         phone(data["phone"])
-    {
-    }
+    {}
 
     std::string getUsername() const { return username; }
     unsigned int getId() const { return id; }
