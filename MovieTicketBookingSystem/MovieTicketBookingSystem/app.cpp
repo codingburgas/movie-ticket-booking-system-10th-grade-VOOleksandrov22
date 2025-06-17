@@ -408,6 +408,26 @@ void App::bookTicket(Row& session) {
 			continue;
 		}
 
+		if (seats[seatChosen.first][seatChosen.second]["data"]["bookedBy"].get<unsigned long>() == user.getId()) {
+			std::vector<std::string> menuOptions = {
+				"NO",
+				"YES"
+			};
+			size_t choice = menu->getChoice(menuOptions, getSeatData(seats[seatChosen.first][seatChosen.second]) + "\n\nYou are about to remove booking for this seat.\nDO YOU CONFIRM?");
+
+			if (choice == 1) {
+				seats[seatChosen.first][seatChosen.second]["data"]["bookedBy"] = 0; // remove booking
+				for (size_t i = 0; i < bookedSeats.size(); i++) {
+					if (bookedSeats[i]["data"]["position"] == json::array({ seatChosen.first, seatChosen.second })) {
+						bookedSeats.erase(bookedSeats.begin() + i);
+						break;
+					}
+				}
+			}
+			
+			continue;
+		}
+
 		std::vector<std::string> menuOptions = {
 			"Book another seat",
 			"Payment",
