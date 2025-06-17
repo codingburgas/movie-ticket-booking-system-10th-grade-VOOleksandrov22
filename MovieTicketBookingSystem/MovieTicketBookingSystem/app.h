@@ -1,14 +1,29 @@
 #pragma once
 
 #include <iostream>
-#include <functional>
 #include <map>
+#include <conio.h>
+#include <vector>
+#include <cstdlib>
+#include <functional>
+#include <format>
+#include "app.h"
 #include "../Config/config.h"
+#include "../Form/form.h"
+#include "../Validation/validation.h"
+#include "../menu/menu.h"
+
+//#include <cppconn/resultset.h>
+
 #include "../Database/database.h"
-#include "../Menu/menu.h"
-#include "../nlohmann/json.hpp"
+#include "session.h"
+#include "../Colors/colors.h"
+
+#include <string>
 
 using json = nlohmann::json;
+
+using RedirectFunction = std::function<void()>;
 
 class User;
 
