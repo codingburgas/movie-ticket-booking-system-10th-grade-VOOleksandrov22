@@ -172,6 +172,28 @@ void App::mainLoop() {
 }
 
 
+void App::printTransactions(const User& user) {
+	auto transactions = DB::resultSetToVector(db->execute(
+		"SELECT * FROM Transaction WHERE userId = ? ORDER BY createdAt DESC;",
+		{ user.getId() }));
+
+	if (transactions.size() == 0) {
+		std::cout << "No transactions found.\n";
+	}
+	else {
+		std::cout << "Your transactions:\n";
+		for (auto& transaction : transactions) {
+			std::cout << "ID: " << transaction["id"] << ", Amount: " << transaction["sum"] << "$, Created at: " << transaction["createdAt"] << "\n";
+			auto seatsData = json::parse(transaction["seatsData"]);
+			std::cout << "Seats amount: " << seatsData.size() << "\n\n";
+		}
+	}
+
+	std::cout << "Press any key to continue...\n";
+	_getch();
+}
+
+
 void App::profilePage() {
 	while (true) {
 		system("cls");
@@ -198,25 +220,7 @@ void App::profilePage() {
 		size_t choice = menu->getChoice(menuOptions, data + "Choose an action:");
 		if (choice == menuOptions.size() - 1) return; // back
 		if (choice == menuOptions.size() - 2) {
-
-			auto transactions = DB::resultSetToVector(db->execute(
-				"SELECT * FROM Transaction WHERE userId = ? ORDER BY createdAt DESC;",
-				{ user.getId() }));
-
-			if (transactions.size() == 0) {
-				std::cout << "No transactions found.\n";
-			}
-			else {
-				std::cout << "Your transactions:\n";
-				for (auto& transaction : transactions) {
-					std::cout << "ID: " << transaction["id"] << ", Amount: " << transaction["sum"] << "$, Created at: " << transaction["createdAt"] << "\n";
-					auto seatsData = json::parse(transaction["seatsData"]);
-					std::cout << "Seats amount: " << seatsData.size() << "\n\n";
-				}
-			}
-
-			std::cout << "Press any key to continue...\n";
-			_getch();
+			printTransactions(user);
  		}
 		if (choice == 0) {
 			updateProfileDataPage(user);

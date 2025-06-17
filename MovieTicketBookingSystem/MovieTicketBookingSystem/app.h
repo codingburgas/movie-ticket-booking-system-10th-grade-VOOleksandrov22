@@ -66,6 +66,6 @@ public:
 
 	void depositPage();
 
-
+	void printTransactions(const User& user);
 	
 };
