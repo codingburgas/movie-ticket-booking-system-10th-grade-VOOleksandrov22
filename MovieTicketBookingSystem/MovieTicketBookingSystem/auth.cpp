@@ -4,7 +4,6 @@
 #include "session.h"
 #include "user.h"
 #include "../Database/database.h"
-#include "../Date/date.h"
 
 #include "../EmailHandler/email.h"
 

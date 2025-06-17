@@ -13,7 +13,6 @@
 //#include <cppconn/resultset.h>
 
 #include "../Database/database.h"
-#include "../Date/date.h"
 #include "session.h"
 #include "../Colors/colors.h"
 
@@ -236,7 +235,7 @@ void App::updateProfileDataPage(User& user) {
 		db->execute("update User set username = ?, gender = ?, age = ?, phone = ?, isAdmin = ? where id = ?",
 			{ username,
 			const_cast<Config*>(config)->genders[gender[0]],
-			std::stoi(age),
+			age,
 			phone.empty() ? "NULL" : phone,
 			isAdmin,
 			user.getId() 
@@ -414,9 +413,10 @@ void App::bookTicket(Row& session) {
 			continue;
 		}
 		
-		seats[seatChosen.first][seatChosen.second]["data"]["position"] = json::array({ seatChosen.first, seatChosen.second });
+		
 		seats[seatChosen.first][seatChosen.second]["data"]["bookedBy"] = user.getId();
 		bookedSeats.push_back(seats[seatChosen.first][seatChosen.second]);
+		bookedSeats[bookedSeats.size() - 1]["data"]["position"] = json::array({seatChosen.first, seatChosen.second});
 
 		if (choice == 1) { // payment
 			bookMoreSeats = false;
