@@ -95,6 +95,7 @@ void App::defineHelperMethods() {
 	};
 
 	skipCheck = [this](json& data) -> bool {
+		std::string debugInfo = data.dump(4);
 		return data["data"]["isBlank"].get<bool>() || data["data"]["bookedBy"] != 0;
 		};
 }
@@ -178,8 +179,9 @@ void App::profilePage() {
 		if (choice == menuOptions.size() - 1) return; // back
 		if (choice == menuOptions.size() - 2) {
 
-			std::string transactionQuery = std::format("SELECT * FROM Transaction WHERE userId = {} ORDER BY createdAt DESC;", user.getId());
-			auto transactions = DB::resultSetToVector(db->execute(transactionQuery));
+			auto transactions = DB::resultSetToVector(db->execute(
+				"SELECT * FROM Transaction WHERE userId = ? ORDER BY createdAt DESC;",
+				{ user.getId() }));
 
 			if (transactions.size() == 0) {
 				std::cout << "No transactions found.\n";

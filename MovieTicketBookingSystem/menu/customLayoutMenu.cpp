@@ -5,6 +5,7 @@
 #include <windows.h>
 #include "menu.h"
 #include "../Colors/colors.h"
+#include <array>
 
 
 std::string concatLinesFromVector(const std::vector<std::string>& strings, int itemSize[2]) {
@@ -67,42 +68,70 @@ void displayChoices(
 }
 
 
-bool setPosToNearestVisible(json& data, std::function<bool(json&)> &skipCheck,size_t pos[2], bool rightDirectionFirst = true) {
-    const size_t& row = pos[0];
+enum Direction {
+    LEFT,
+    UP,
+    RIGHT,
+    DOWN
+};
 
-    auto directionToRight = [&]() -> bool {
-        for (size_t i = pos[1] + 1; i < data[row].size(); i++) {
-            if (i >= data[row].size()) break;
-            if (!skipCheck(data[row][i])) pos[1] = i;
-            return true;
+void movePosInDirection(size_t pos[2], json& data, const Direction& direction) {
+    std::string debugInfo = std::format("({}, {})\n\n{}", pos[0], pos[1], data[pos[0]][pos[1]].dump(4));
+
+    switch (direction) {
+    case Direction::LEFT:
+        if (pos[1] > 0) {
+            pos[1]--;
         }
-        return false;
-        };
-
-    auto directionToLeft = [&]() -> bool {
-        for (size_t i = pos[1] - 1; i != std::string::npos; i--) {
-            if (i == std::string::npos) break;
-            if (!skipCheck(data[row][i])) pos[1] = i;
-            return true;
+        else {
+			if (pos[0] == 0) pos[0] = data.size() - 1; // Wrap around to the last row if at the first row
+			else pos[0]--; // Move to the previous row
+            pos[1] = data[pos[0]].size() - 1; 
         }
-        return false;
-        };
-
-    bool res;
-    if (rightDirectionFirst) {
-        res = directionToRight();
-        if (res) return true;
-        res = directionToLeft();
-        if (res) return true;
+        break;
+   
+    case Direction::RIGHT:
+        if (pos[1] < data[pos[0]].size() - 1) {
+            pos[1]++;
+        }
+        else {
+			if (pos[0] == data.size() - 1) pos[0] = 0; // Wrap around to the first row if at the last row
+			else pos[0]++; // Move to the next row
+            pos[1] = 0;
+        }
+        break;
+   
+    case Direction::UP:
+        if (pos[0] > 0) {
+            pos[0]--;
+        }
+        else {
+            pos[0] = data.size() - 1;
+        }
+        break;
+   
+    case Direction::DOWN:
+        if (pos[0] < data.size() - 1) {
+            pos[0]++;
+        }
+        else {
+            pos[0] = 0;
+        }
+        break;
     }
-    else {
-        res = directionToLeft();
-        if (res) return true;
-        res = directionToRight();
-        if (res) return true;
-    }
 
-    return false;
+}
+
+
+void setPosToNearestValid(json& data, std::function<bool(json&)> &skipCheck, size_t pos[2], const Direction& directionToMove) {
+	size_t startingPos[2] = { pos[0], pos[1] };
+    do {
+		movePosInDirection(pos, data, directionToMove);
+        if (!skipCheck(data[pos[0]][pos[1]])) {
+            return;
+        }
+    } while (pos[0] != startingPos[0] || pos[1] != startingPos[1]);
+    
 }
 
 
@@ -132,6 +161,10 @@ std::pair<size_t, size_t> Menu::getChoice(
         }
     }
 
+	if (!set) {
+		throw std::runtime_error("No valid item found in the data.");
+	}
+
     while (true) {
         system("cls");
         std::cout << question << std::endl;
@@ -144,75 +177,18 @@ std::pair<size_t, size_t> Menu::getChoice(
             key = _getch(); // Get the actual key code after the 0 or 224 prefix
             switch (key) {
             case 72: // Up arrow
-                if (highlightPos[0] > 0) highlightPos[0]--;
-                else highlightPos[0] = data.size() - 1;
-
-                if (skipCheck(data[highlightPos[0]][highlightPos[1]])) {
-                    bool found = false;
-                    while (!found) {
-                        found = setPosToNearestVisible(data, skipCheck, highlightPos);
-                        if (!found) {
-                            highlightPos[0]--;
-                            if (highlightPos[0] < 0) highlightPos[0] = data.size() - 1;
-                        }
-                    }
-
-                }
+				setPosToNearestValid(data, skipCheck, highlightPos, Direction::UP);
 
                 break;
             case 80: // Down arrow
-                if (highlightPos[0] < data.size() - 1) highlightPos[0]++;
-                else highlightPos[0] = 0;
-
-                if (skipCheck(data[highlightPos[0]][highlightPos[1]])) {
-                    bool found = false;
-                    while (!found) {
-                        found = setPosToNearestVisible(data, skipCheck, highlightPos);
-                        if (!found) {
-                            highlightPos[0]++;
-                            if (highlightPos[0] >= data.size() - 1) highlightPos[0] = 0;
-                        }
-                    }
-
-                }
+				setPosToNearestValid(data, skipCheck, highlightPos, Direction::DOWN);
                 break;
             case 77: // right arrow
-
-                if (highlightPos[1] < data[highlightPos[0]].size() - 1) highlightPos[1]++;
-                else {
-                    highlightPos[1] = 0;
-                }
-
-                if (skipCheck(data[highlightPos[0]][highlightPos[1]])) {
-                    bool found = false;
-                    while (!found) {
-                        found = setPosToNearestVisible(data, skipCheck, highlightPos);
-                        if (!found) {
-                            highlightPos[1]++;
-                            if (highlightPos[1] >= data[highlightPos[0]].size() - 1) {
-                                highlightPos[1] = 0;
-                            }
-                        }
-                    }
-
-                }
+				setPosToNearestValid(data, skipCheck, highlightPos, Direction::RIGHT);
                 break;
 
             case 75: // Left arrow
-                if (highlightPos[1] > 0) highlightPos[1]--;
-                else highlightPos[1] = data[highlightPos[0]].size() - 1;
-
-                if (skipCheck(data[highlightPos[0]][highlightPos[1]])) {
-                    bool found = false;
-                    while (!found) {
-                        found = setPosToNearestVisible(data, skipCheck, highlightPos, false);
-                        if (!found) {
-                            highlightPos[1]--;
-                            if (highlightPos[1] < 0) highlightPos[1] = data[highlightPos[0]].size() - 1;
-                        }
-                    }
-
-                }
+				setPosToNearestValid(data, skipCheck, highlightPos, Direction::LEFT);
                 break;
             }
 
