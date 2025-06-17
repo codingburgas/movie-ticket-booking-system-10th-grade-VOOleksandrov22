@@ -13,6 +13,10 @@ private:
 public:
 	Dict() = default;
 
+	Dict(const std::vector<std::pair<F, S>>& initialData) : data(initialData) {}
+
+	Dict(std::initializer_list<std::pair<F, S>> initialList) : data(initialList) {}
+
 	std::pair<F, S>& at(const size_t index) {
 		if (index < data.size()) {
 			return data[index];
@@ -28,7 +32,7 @@ public:
 		throw std::out_of_range("Index out of range");
 	}
 
-	void insert(const F& key, const S& value) {
+	void emplaceOrUpdate(const F& key, const S& value) {
 		for (auto& pair : data) {
 			if (pair.first == key) {
 				pair.second = value;
@@ -36,6 +40,10 @@ public:
 			}
 		}
 		data.emplace_back(key, value);
+	}
+
+	void insert(const F& key, const S& value, const size_t& pos) {
+		data.insert(data.begin() + pos, { key, value });
 	}
 
 	S& operator[](const F& key) {

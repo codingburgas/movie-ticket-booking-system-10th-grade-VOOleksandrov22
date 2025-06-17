@@ -142,7 +142,8 @@ void App::mainLoop() {
 
 	auto user = currentSession->getUser();
 
-	std::vector<std::pair<std::string, RedirectFunction>> redirects = {
+
+	Dict<std::string, RedirectFunction> redirects = {
 		{"My profile", [this]() -> void { this->profilePage(); }},
 		{"Buy a ticket", [this]() -> void { this->chooseCityMenu(); }},
 		{"Log out", [this]() -> void { this->logout(); } },
@@ -150,13 +151,13 @@ void App::mainLoop() {
 			system("cls");
 			std::cout << "\nTill next time! (^///^)\n";
 			exit(0);
-		}},
+		}}
 	};
 
-	if (currentSession->getUser().getIsAdmin()) {
-		auto elementBeforeLast = redirects.end() - 2;
-		redirects.insert(elementBeforeLast,
-			{ "Admin panel", [this]() -> void { std::cout << "TO DO: make admin page"; } }
+	if (user.getIsAdmin()) {
+		redirects.insert("Admin panel", 
+			[this]() -> void { std::cout << "TO DO: make admin page"; },
+			redirects.size() - 2
 		);
 	}
 
@@ -167,7 +168,7 @@ void App::mainLoop() {
 		}
 		size_t choice = menu->getChoice(actions, "Actions are:");
 
-		redirects[choice].second();
+		redirects.at(choice).second();
 	}
 }
 
@@ -219,9 +220,7 @@ void App::profilePage() {
 
 		size_t choice = menu->getChoice(menuOptions, data + "Choose an action:");
 		if (choice == menuOptions.size() - 1) return; // back
-		if (choice == menuOptions.size() - 2) {
-			printTransactions(user);
- 		}
+		
 		if (choice == 0) {
 			updateProfileDataPage(user);
 		}
@@ -230,6 +229,8 @@ void App::profilePage() {
 		}
 		else if (choice == 2) {
 			depositPage();
+		}else if (choice == 3) {
+			printTransactions(user);
 		}
 	}
 	

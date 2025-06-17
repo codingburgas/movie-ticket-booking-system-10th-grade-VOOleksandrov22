@@ -55,7 +55,7 @@ public:
 FormResult normalizeData(EnteredData& data) {
     FormResult result;
     for (const auto& pair : data) {
-        result.insert(pair.first, pair.second.value);
+        result.emplaceOrUpdate(pair.first, pair.second.value);
     }
     return result;
 }
