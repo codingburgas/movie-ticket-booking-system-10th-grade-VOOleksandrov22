@@ -17,12 +17,12 @@ class Session;
 
 class App {
 private:
-	std::function<std::string(json&)> regular;
-	std::function<std::string(json&)> highlight;
-	std::function<bool(json&)> skipCheck;
+	std::function<std::string(json&, const User&)> regular;
+	std::function<std::string(json&, const User&)> highlight;
+	std::function<bool(json&, const User&)> skipCheck;
 public:
 
-	
+	std::map<std::string, std::string> tempValues; // Temporary values for forms and other purposes
 
 	const Config* config = new Config();
 
@@ -65,5 +65,7 @@ public:
 	void updateProfileDataPage(User& user);
 
 	void depositPage();
+
+
 	
 };
