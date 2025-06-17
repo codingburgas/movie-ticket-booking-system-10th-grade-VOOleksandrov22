@@ -8,7 +8,7 @@
 #include <array>
 
 
-std::string concatLinesFromVector(const std::vector<std::string>& strings, int itemSize[2]) {
+std::string concatLinesFromVector(const std::vector<std::string>& strings, const std::array<int, 2>& itemSize) {
     
     std::vector<std::istringstream> streams;
     for (const auto& str : strings) {
@@ -45,7 +45,7 @@ std::string concatLinesFromVector(const std::vector<std::string>& strings, int i
 void displayChoices(
     json& data,
     const size_t* highlightPos,
-    int itemSize[2],
+    const std::array<int, 2>& itemSize,
     std::function<std::string(json&)> &getHighlightedItemAsString,
     std::function<std::string(json&)> &getRegularItemAsString,
     std::function<bool(json&)> skipCheck
@@ -140,7 +140,7 @@ std::pair<size_t, size_t> Menu::getChoice(
     std::function<std::string(json&)>& getHighlightedItemAsString,
     std::function<std::string(json&)>& getRegularItemAsString,
     std::function<bool(json&)> skipCheck,
-    int itemSize[2],
+    const std::array<int, 2>& itemSize,
     std::string question
 ) {
 

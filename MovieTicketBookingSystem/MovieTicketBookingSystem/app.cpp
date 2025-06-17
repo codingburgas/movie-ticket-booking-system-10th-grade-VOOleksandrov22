@@ -21,6 +21,14 @@
 using RedirectFunction = std::function<void()>;
 
 
+std::string addLineUnderBlockIfHighlighted(const std::string& block, json& data, const App* app) {
+	if (data.contains("isHighlighted")) {
+		data.erase("isHighlighted");
+		return block + "\n" + BLUE + std::string(app->config->customMenuLayoutItemSize[0], '-') + RESET;
+	}
+	return block + "\n" + std::string(app->config->customMenuLayoutItemSize[0], ' ');
+}
+
 
 void App::defineHelperMethods() {
 	auto user = currentSession->getUser();
@@ -32,10 +40,9 @@ void App::defineHelperMethods() {
 		if (data["data"].contains("isConfirmation")) {
 			if (data.contains("isHighlighted")) {
 				paintIn = BLUE;
-				data.erase("isHighlighted");
 			}
 			std::string text = data["data"]["text"].get<std::string>();
-			return std::format(
+			return addLineUnderBlockIfHighlighted(std::format(
 				"{}╭────────╮{}\n"
 				"{}|        |{}\n"
 				"{}|{:^8}|{}\n"
@@ -46,7 +53,7 @@ void App::defineHelperMethods() {
 				paintIn, text, RESET,
 				paintIn, RESET,
 				paintIn, RESET
-			);
+			), data, this);
 		}
 		
 		if (data["data"]["bookedBy"].get<unsigned long>() == user.getId()) {
@@ -54,7 +61,6 @@ void App::defineHelperMethods() {
 		}
 		else if (data.contains("isHighlighted")) {
 			paintIn = BLUE;
-			data.erase("isHighlighted");
 		} else if (data["data"]["bookedBy"].get<unsigned long>() != 0) {
 			paintIn = RED;
 		}
@@ -67,11 +73,12 @@ void App::defineHelperMethods() {
 				"          \n"
 				"          \n"
 				"          \n"
+				"          \n"
 				"          ";
 		}
 
 		std::string text = data["data"]["text"].get<std::string>();
-		return std::format(
+		return addLineUnderBlockIfHighlighted(std::format(
 			"{}╭────────╮{}\n"
 			"{}|{:^8}|{}\n"
 			"{}|{:^8}|{}\n"
@@ -85,7 +92,7 @@ void App::defineHelperMethods() {
 			? std::format("{}{}{}", YELLOW, std::format("{:^8}", "VIP"), paintIn)
 			: std::format("{:^8}", ""),
 			RESET, paintIn, RESET
-		);
+		), data, this);
 	};
 
 	highlight = [this](json& data) -> std::string {
@@ -93,9 +100,9 @@ void App::defineHelperMethods() {
 		return regular(data);
 	};
 
-	skipCheck = [this](json& data) -> bool {
+	skipCheck = [this, user](json& data) -> bool {
 		std::string debugInfo = data.dump(4);
-		return data["data"]["isBlank"].get<bool>() || data["data"]["bookedBy"] != 0;
+		return data["data"]["isBlank"].get<bool>() || (data["data"]["bookedBy"] != 0 && data["data"]["bookedBy"] != user.getId());
 		};
 }
 
@@ -392,7 +399,7 @@ void App::bookTicket(Row& session) {
 			highlight,
 			regular,
 			skipCheck,
-			itemSize,
+			config->customMenuLayoutItemSize,
 			std::format("Choose a seat for a \"{}\" at {}!", session["title"], session["startsAt"])
 		);
 
@@ -459,7 +466,7 @@ void App::bookTicket(Row& session) {
 		highlight,
 		regular,
 		confirmationScreenSkipCheck,
-		itemSize,
+		config->customMenuLayoutItemSize,
 		std::format("You are about to book {} seat(s) for \"{}\" at {}. This will cost {}$(Your balance is {}$).\nDo you confirm?",
 			bookedSeats.size(), session["title"], session["startsAt"], price, user.getBalance())
 	);

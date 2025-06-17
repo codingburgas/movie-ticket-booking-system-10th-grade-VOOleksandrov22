@@ -1,6 +1,7 @@
 #pragma once
 #include <iostream>
 #include <vector>
+#include <array>
 #include "../nlohmann/json.hpp"
 
 using json = nlohmann::json;
@@ -22,7 +23,7 @@ public:
 		std::function<std::string(json&)>& getHighlightedItemAsString,
 		std::function<std::string(json&)>& getRegularItemAsString,
 		std::function<bool(json&)> skipCheck,
-		int itemSize[2],
+		const std::array<int, 2>& itemSize,
 		std::string question = ""
 	);
 
