@@ -161,11 +161,12 @@ void App::mainLoop() {
 		);
 	}
 
+	std::vector<std::string> actions = {};
+	for (const auto& redirect : redirects) {
+		actions.push_back(redirect.first);
+	}
+
 	while (running) {
-		std::vector<std::string> actions = {};
-		for (const auto& redirect : redirects) {
-			actions.push_back(redirect.first);
-		}
 		size_t choice = menu->getChoice(actions, "Actions are:");
 
 		redirects.at(choice).second();
@@ -196,12 +197,27 @@ void App::printTransactions(const User& user) {
 
 
 void App::profilePage() {
-	while (true) {
-		system("cls");
-		User user = currentSession->getUser();
-	
-		std::string data = std::format("Your profile data:\nUsername: {}\nEmail: {}\nBalance: {}$\nAdmin: {}\nGender: {}\nAge: {}\nPhone: {}\n\n", 
-			user.getUsername(), 
+	bool running = true;
+
+	auto user = currentSession->getUser();
+
+
+	Dict<std::string, RedirectFunction> redirects = {
+		{"Update profile info", [this, &user]() -> void { this->updateProfileDataPage(user); }},
+		{"Change password", [this]() -> void { }},
+		{"Deposit money", [this]() -> void { this->depositPage(); }},
+		{"View transactions", [this, &user]() -> void { this->printTransactions(user); }},
+		{"<< Back", [this, &running]() -> void { running = false; }}
+	};
+
+	std::vector<std::string> actions = {};
+	for (const auto& redirect : redirects) {
+		actions.push_back(redirect.first);
+	}
+
+	while (running) {
+		std::string data = std::format("Your profile data:\nUsername: {}\nEmail: {}\nBalance: {}$\nAdmin: {}\nGender: {}\nAge: {}\nPhone: {}\n\n",
+			user.getUsername(),
 			user.getEmail(),
 			Utils::String::toString(user.getBalance()),
 			(user.getIsAdmin() ? "true" : "false"),
@@ -209,31 +225,10 @@ void App::profilePage() {
 			user.getAge(),
 			(user.getPhone().empty() ? "Undefined" : user.getPhone())
 		);
+		size_t choice = menu->getChoice(actions, data + "Choose an action: ");
 
-		std::vector<std::string> menuOptions = {
-			"Change data",
-			"Change password",
-			"Deposit money",
-			"View transactions",
-			"<< Back"
-		};
-
-		size_t choice = menu->getChoice(menuOptions, data + "Choose an action:");
-		if (choice == menuOptions.size() - 1) return; // back
-		
-		if (choice == 0) {
-			updateProfileDataPage(user);
-		}
-		else if (choice == 1) {
-			
-		}
-		else if (choice == 2) {
-			depositPage();
-		}else if (choice == 3) {
-			printTransactions(user);
-		}
+		redirects.at(choice).second();
 	}
-	
 }
 
 
@@ -406,15 +401,15 @@ void App::bookTicket(Row& session) {
 	double price = 0;
 	auto user = currentSession->getUser();
 
-	std::function<std::string(json&)> regularWithUser = [this, user](json& data) -> std::string {
+	std::function<std::string(json&)> regularWithUser = [this, &user](json& data) -> std::string {
 		return this->regular(data, user);
 		};
 
-	std::function<std::string(json&)> highlightWithUser = [this, user](json& data) -> std::string {
+	std::function<std::string(json&)> highlightWithUser = [this, &user](json& data) -> std::string {
 		return this->highlight(data, user);
 		};
 
-	std::function<bool(json&)> skipCheckWithUser = [this, user](json& data) -> bool {
+	std::function<bool(json&)> skipCheckWithUser = [this, &user](json& data) -> bool {
 		return this->skipCheck(data, user);
 		};
 
