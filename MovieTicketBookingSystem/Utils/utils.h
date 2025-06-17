@@ -25,7 +25,7 @@ namespace Utils {
 
 		std::vector<std::string> split(const std::string& s, const std::string delimiter);
 
-		std::string center(const std::string str, const int width, const bool containsLargeChars = false);
+		std::string center(const std::string str, const int width, const bool containsLargeChars = false, const std::string& fillSpaceWith = " ");
 	}
 
 	int generateRandomSixDigitNumber();

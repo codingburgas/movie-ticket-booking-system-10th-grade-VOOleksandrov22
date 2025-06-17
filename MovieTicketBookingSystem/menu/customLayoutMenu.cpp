@@ -8,7 +8,7 @@
 #include "../Utils/utils.h"
 #include <array>
 
-#define SEPARATOR_BETWEEN_ITEMS " "
+const std::string SEPARATOR_BETWEEN_ITEMS = " ";
 
 std::string concatLinesFromVector(const std::vector<std::string>& strings, const std::array<int, 2>& itemSize) {
     
@@ -48,15 +48,11 @@ std::string getYAxisString(const std::string& index, const int& itemHeight, cons
     std::string res = Utils::String::stringRepeater("─", longestIndexSize) + "╮\n";
     size_t middle = (itemHeight - 2) / 2;
 
-	for (int i = 0; i < itemHeight - 2; i++) {
-		if (i == middle) {
-			res += Utils::String::center(index, longestIndexSize);
-		}
-		else {
-			res += std::string(longestIndexSize, ' ');
-		}
-		res += "│\n";
-	}
+    res += Utils::String::stringRepeater(std::string(longestIndexSize, ' ') + "│\n", middle);
+
+    res += Utils::String::center(index, longestIndexSize) + "│\n";
+
+    res += Utils::String::stringRepeater(std::string(longestIndexSize, ' ') + "│\n", itemHeight - 2 - middle - 1);
 
     res += Utils::String::stringRepeater("─", longestIndexSize) + "╯";
 
@@ -72,11 +68,12 @@ void displayChoices(
     std::function<bool(json&)> skipCheck,
     const bool& axesVisible
 ) {
+    size_t longestYIndexSize;
     for (size_t i = 0; i < data.size(); i++) {
         std::vector<std::string> row;
         if (axesVisible) {
-            size_t longestIndexSize = std::to_string(data.size()).size();
-            row = { getYAxisString(std::to_string(i + 1), itemSize[1] - 1, longestIndexSize) + "\n" + std::string(longestIndexSize + 1, ' ') };
+            longestYIndexSize = std::to_string(data.size()).size();
+            row = { getYAxisString(std::to_string(i + 1), itemSize[1] - 1, longestYIndexSize) + "\n" + std::string(longestYIndexSize + 1, ' ') };
         }
         else row = {};
 
@@ -90,6 +87,23 @@ void displayChoices(
         }
         std::cout << concatLinesFromVector(row, itemSize);
     }
+    
+	if (axesVisible) {
+		size_t maxRowLength = 0;
+		for (const json& row : data){
+			if (row.size() > maxRowLength) maxRowLength = row.size();
+        }
+
+        std::cout << std::string(longestYIndexSize + 3, ' ');
+
+        //size_t middle = (itemSize[0] - 2) / 2;
+		for (size_t i = 0; i < maxRowLength; i++) {
+            std::cout << 
+                std::string(SEPARATOR_BETWEEN_ITEMS.size(), ' ')
+                << "╰" << Utils::String::center(std::to_string(i+1), itemSize[0] - 2, false, "─")
+                << "╯";
+		}
+	}
 }
 
 

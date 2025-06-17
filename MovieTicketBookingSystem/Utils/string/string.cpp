@@ -64,9 +64,9 @@ std::vector<std::string> Utils::String::split(const std::string& s, const std::s
 
 
 
-std::string Utils::String::center(const std::string str, const int width, const bool containsLargeChars) {
+std::string Utils::String::center(const std::string str, const int width, const bool containsLargeChars, const std::string& fillSpaceWith) {
 	const int size = containsLargeChars ? str.size() / 3 : str.size();
 	if (size >= width) return str;
 	int padding = (width - size) / 2;
-	return std::string(padding, ' ') + str + std::string(width - size - padding, ' ');
+	return Utils::String::stringRepeater(fillSpaceWith, padding) + str + Utils::String::stringRepeater(fillSpaceWith, width - size - padding);
 }
