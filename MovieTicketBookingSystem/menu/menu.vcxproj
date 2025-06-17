@@ -141,6 +141,9 @@
     <ProjectReference Include="..\Colors\Colors.vcxproj">
       <Project>{f78d0a9a-4425-4d64-bcd7-664c98b27592}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\Utils\Utils.vcxproj">
+      <Project>{2d8ea103-6d8b-4654-9090-7ed423719dbe}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

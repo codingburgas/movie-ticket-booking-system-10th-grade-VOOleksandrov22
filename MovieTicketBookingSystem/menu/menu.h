@@ -24,7 +24,8 @@ public:
 		std::function<std::string(json&)>& getRegularItemAsString,
 		std::function<bool(json&)> skipCheck,
 		const std::array<int, 2>& itemSize,
-		std::string question = ""
+		const std::string& question = "",
+		bool axesVisible = true
 	);
 
 	size_t getChoice(const std::vector<std::string>& options,std::string question = "");

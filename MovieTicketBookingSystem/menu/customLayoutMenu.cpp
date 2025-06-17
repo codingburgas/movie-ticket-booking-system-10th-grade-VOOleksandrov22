@@ -5,6 +5,7 @@
 #include <windows.h>
 #include "menu.h"
 #include "../Colors/colors.h"
+#include "../Utils/utils.h"
 #include <array>
 
 
@@ -42,28 +43,51 @@ std::string concatLinesFromVector(const std::vector<std::string>& strings, const
     return result;
 }
 
+std::string getYAxisString(const std::string& index, const int& itemHeight, const size_t& longestIndexSize) {
+    std::string res = Utils::String::stringRepeater("─", longestIndexSize) + "╮\n";
+    size_t middle = (itemHeight - 2) / 2;
+
+	for (int i = 0; i < itemHeight - 2; i++) {
+		if (i == middle) {
+			res += Utils::String::center(index, longestIndexSize);
+		}
+		else {
+			res += std::string(longestIndexSize, ' ');
+		}
+		res += "│\n";
+	}
+
+    res += Utils::String::stringRepeater("─", longestIndexSize) + "╯";
+
+    return res;
+}
+
 void displayChoices(
     json& data,
     const size_t* highlightPos,
     const std::array<int, 2>& itemSize,
     std::function<std::string(json&)> &getHighlightedItemAsString,
     std::function<std::string(json&)> &getRegularItemAsString,
-    std::function<bool(json&)> skipCheck
+    std::function<bool(json&)> skipCheck,
+    const bool& axesVisible
 ) {
     for (size_t i = 0; i < data.size(); i++) {
-        std::vector<std::string> row = {};
+        std::vector<std::string> row;
+        if (axesVisible) {
+            size_t longestIndexSize = std::to_string(data.size()).size();
+            row = { getYAxisString(std::to_string(i + 1), itemSize[1] - 1, longestIndexSize) + "\n" + std::string(longestIndexSize + 1, ' ') };
+        }
+        else row = {};
+
         for (size_t j = 0; j < data[i].size(); j++) {
             if (i == highlightPos[0] && j == highlightPos[1]) {
-                //row = concatenateLineByLine(row, getHighlightedItemAsString(data[i][j])) + "";
                 row.push_back(getHighlightedItemAsString(data[i][j]));
             }
             else {
-                //row = concatenateLineByLine(row, getRegularItemAsString(data[i][j]));
                 row.push_back(getRegularItemAsString(data[i][j]));
             }
         }
         std::cout << concatLinesFromVector(row, itemSize);
-
     }
 }
 
@@ -141,7 +165,8 @@ std::pair<size_t, size_t> Menu::getChoice(
     std::function<std::string(json&)>& getRegularItemAsString,
     std::function<bool(json&)> skipCheck,
     const std::array<int, 2>& itemSize,
-    std::string question
+    const std::string& question,
+    bool axesVisible
 ) {
 
 
@@ -168,7 +193,7 @@ std::pair<size_t, size_t> Menu::getChoice(
     while (true) {
         system("cls");
         std::cout << question << std::endl;
-        displayChoices(data, highlightPos, itemSize, getHighlightedItemAsString, getRegularItemAsString, skipCheck);
+        displayChoices(data, highlightPos, itemSize, getHighlightedItemAsString, getRegularItemAsString, skipCheck, axesVisible);
         int key = _getch();
 
         switch (key) {

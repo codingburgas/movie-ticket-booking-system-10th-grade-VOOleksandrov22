@@ -24,7 +24,7 @@ using RedirectFunction = std::function<void()>;
 std::string addLineUnderBlockIfHighlighted(const std::string& block, json& data, const App* app) {
 	if (data.contains("isHighlighted")) {
 		data.erase("isHighlighted");
-		return block + "\n" + BLUE + std::string(app->config->customMenuLayoutItemSize[0], '-') + RESET;
+		return block + "\n" + BLUE + std::string(app->config->customMenuLayoutItemSize[0], '=') + RESET;
 	}
 	return block + "\n" + std::string(app->config->customMenuLayoutItemSize[0], ' ');
 }
