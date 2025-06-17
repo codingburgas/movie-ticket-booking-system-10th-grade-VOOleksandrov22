@@ -8,6 +8,7 @@
 #include "../Utils/utils.h"
 #include <array>
 
+#define SEPARATOR_BETWEEN_ITEMS " "
 
 std::string concatLinesFromVector(const std::vector<std::string>& strings, const std::array<int, 2>& itemSize) {
     
@@ -21,7 +22,7 @@ std::string concatLinesFromVector(const std::vector<std::string>& strings, const
 
     while (hasMoreLines) {
         hasMoreLines = false;
-        std::string concatenatedLine;
+        std::string concatenatedLine = SEPARATOR_BETWEEN_ITEMS;
 
         // Iterate through all streams and concatenate corresponding lines
         for (auto& stream : streams) {
@@ -32,7 +33,7 @@ std::string concatLinesFromVector(const std::vector<std::string>& strings, const
             else {
                 line = std::string(itemSize[0], ' ');
             }
-            concatenatedLine += line;
+            concatenatedLine += SEPARATOR_BETWEEN_ITEMS + line;
         }
 
         if (hasMoreLines) {
