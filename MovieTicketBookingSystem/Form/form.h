@@ -6,6 +6,7 @@
 #include <functional>
 
 #include "../Dict/dict.h"
+#include "../Clipboard/clipboard.h"
 
 
 struct Field;

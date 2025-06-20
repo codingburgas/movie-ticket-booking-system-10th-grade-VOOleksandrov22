@@ -46,7 +46,7 @@
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -135,6 +135,9 @@
     <ClInclude Include="form.h" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Clipboard\Clipboard.vcxproj">
+      <Project>{cf8b9b30-3a3e-43ae-93d4-86f5dc220caa}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\Colors\Colors.vcxproj">
       <Project>{f78d0a9a-4425-4d64-bcd7-664c98b27592}</Project>
     </ProjectReference>

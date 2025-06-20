@@ -10,6 +10,7 @@
 #include <iterator>
 #include <windows.h>
 #include <ranges>
+#include <array>
 
 
 #define WIDTH 70
@@ -20,7 +21,7 @@ std::string SUBMIT_BUTTON_TEXT;
 
 struct AdditionalFieldData {
     std::string value;
-    size_t caretPos;
+    std::pair<size_t, long> caretPos;
 	std::string errorMessage;
     bool hidden;
 };
@@ -89,38 +90,62 @@ void displayForm(EnteredData& data, const int& highlightIndex, int& highlightPos
         // header
         std::cout << "╭" << Utils::String::toUppercase(pair.first->name) << Utils::String::stringRepeater("─", WIDTH - pair.first->name.size()) << "╮\n";
 
-        if (currentIndex == highlightIndex) {
+
+        const std::string& value = pair.second.value;
+        const size_t& caretPos = pair.second.caretPos.first;
+		const long& selectionDirection = pair.second.caretPos.second;
+
+        std::string strToPrint = (pair.second.hidden) ? std::string(value.size(), '*') : value;
+
+        if (value == "") strToPrint += pair.first->placeholder;
+
+
+        if (currentIndex != highlightIndex) {
             GetConsoleScreenBufferInfo(hConsole, &csbi);
             highlightPosY = csbi.dwCursorPosition.Y;
-        }
 
-		const std::string& value = pair.second.value;
-        const size_t& caretPos = pair.second.caretPos;
 
-        std::string strToPrint;
+            for (size_t i = 0; i < strToPrint.size(); i += WIDTH - 2) {
+                std::vector<std::string> splittedLine = Utils::String::split(strToPrint.substr(i, WIDTH - 2), "\r");
 
-		if (pair.second.hidden) {
-            strToPrint = ((currentIndex == highlightIndex)
-                ? std::string(caretPos, '*') + "|" + std::string(value.size() - caretPos, '*') 
-                : std::string(value.size(), '*'));
+                for (const std::string& line : splittedLine) {
+                    std::cout << "| " << std::left << std::setw(WIDTH - 2) << line << " |\n";
+                }
+            }
         }
         else {
-            strToPrint = ((currentIndex == highlightIndex)
-                ? value.substr(0, caretPos) + "|" + value.substr(caretPos)
-                : value);
-        }
+			size_t printedOnLine = 0;
+			std::cout << "| ";
 
-		if (value == "") strToPrint += pair.first->placeholder;
-
-		
-        
-
-        for (size_t i = 0; i < strToPrint.size(); i += WIDTH - 2) {
-            std::vector<std::string> splittedLine = Utils::String::split(strToPrint.substr(i, WIDTH - 2), "\r");
-
-            for (const std::string& line : splittedLine) {
-                std::cout << "| " << std::left << std::setw(WIDTH - 2) << line << " |\n";
+            for (size_t i = 0; i < strToPrint.size(); i += 1) {
+                if (i == caretPos || i == caretPos + selectionDirection) {
+                    std::cout << RESET << BG_WHITE << MAGENTA << '|';
+                    printedOnLine++;
+                }
+                if (strToPrint[i] == '\n' || strToPrint[i] == '\r') {
+                    std::cout << std::string(WIDTH - 2 - printedOnLine, ' ') << RESET << YELLOW << " |\n| ";
+					printedOnLine = 0;
+                    continue;
+                }
+				if (printedOnLine >= WIDTH - 2) {
+					std::cout << RESET << YELLOW << " |\n| ";
+					printedOnLine = 0;
+                    continue;
+				}
+                
+                if ((i >= caretPos + selectionDirection && i <= caretPos) || (i >= caretPos && i <= caretPos + selectionDirection)) {
+					std::cout << RESET << BG_WHITE << MAGENTA << strToPrint[i];
+                    printedOnLine++;
+                    continue;
+                }
+				std::cout << RESET << YELLOW << strToPrint[i];
+                printedOnLine++;
             }
+            if (caretPos == strToPrint.size() || caretPos + selectionDirection == strToPrint.size()) {
+                std::cout << RESET << BG_WHITE << MAGENTA << "|" << RESET;
+				printedOnLine++;
+            }
+            std::cout << std::string(WIDTH - 2 - printedOnLine, ' ') << RESET << YELLOW << " |\n";
         }
 
         
@@ -152,9 +177,9 @@ void displayForm(EnteredData& data, const int& highlightIndex, int& highlightPos
 
 void fillInInitialData(EnteredData& data, const std::vector<Field*>& fields) {
     for (auto& field : fields) {
-        data[field] = { 
-            field->defaultValue, 
-            field->defaultValue.size(),
+        data[field] = {
+            field->defaultValue,
+            { field->defaultValue.size(), 0 },
             "",
 			field->isHidden
         };
@@ -195,8 +220,10 @@ FormResult initForm(const std::vector<Field*>&& fields, const std::string&& subm
         int key = _getch();
 
 
-        bool is_ctrl_pressed = (GetKeyState(VK_CONTROL) & 0x8000) != 0;
-		if (is_ctrl_pressed) {
+        bool isCtrlPressed = (GetKeyState(VK_CONTROL) & 0x8000) != 0;
+        bool isShiftPressed = (GetKeyState(VK_SHIFT) & 0x8000) != 0;
+
+		if (isCtrlPressed) {
             if (highlightIndex == data.size()) continue;
             switch (key) {
 			case 8: // Ctrl + H
@@ -223,13 +250,24 @@ FormResult initForm(const std::vector<Field*>&& fields, const std::string&& subm
                 if (highlightIndex < fields.size()) highlightIndex++;
                 break;
             case 75: // left arrow
-                if (data.at(highlightIndex).second.caretPos > 0) data.at(highlightIndex).second.caretPos--;
+                if (!isShiftPressed) {
+                    if (data.at(highlightIndex).second.caretPos.first > 0) data.at(highlightIndex).second.caretPos.first--;
+                }
+                else {
+                    if (data.at(highlightIndex).second.caretPos.first + data.at(highlightIndex).second.caretPos.second - 1 >= 0) data.at(highlightIndex).second.caretPos.second--;
+                }
+                
                 break;
             case 77: // right arrow
-                if (data.at(highlightIndex).second.caretPos < data.at(highlightIndex).second.value.size()) data.at(highlightIndex).second.caretPos++;
+                if (!isShiftPressed) {
+                    if (data.at(highlightIndex).second.caretPos.first < data.at(highlightIndex).second.value.size()) data.at(highlightIndex).second.caretPos.first++;
+                }
+                else {
+                    if (data.at(highlightIndex).second.caretPos.first + data.at(highlightIndex).second.caretPos.second + 1 <= data.at(highlightIndex).second.value.size()) data.at(highlightIndex).second.caretPos.second++;
+                }
                 break;
             case 83: // delete
-                if (data.at(highlightIndex).second.caretPos != data.at(highlightIndex).second.value.size()) data.at(highlightIndex).second.value.erase(data.at(highlightIndex).second.caretPos, 1);
+                if (data.at(highlightIndex).second.caretPos.first != data.at(highlightIndex).second.value.size()) data.at(highlightIndex).second.value.erase(data.at(highlightIndex).second.caretPos.first, 1);
                 break;
             }
 
@@ -241,9 +279,9 @@ FormResult initForm(const std::vector<Field*>&& fields, const std::string&& subm
                 windowRectBeforeRefresh = csbi.srWindow;
                 continue; // Ignore backspace if we are on the submit button
             }
-            if (data.at(highlightIndex).second.caretPos > 0) {
-                data.at(highlightIndex).second.caretPos--;
-                data.at(highlightIndex).second.value.erase(data.at(highlightIndex).second.caretPos, 1);
+            if (data.at(highlightIndex).second.caretPos.first > 0) {
+                data.at(highlightIndex).second.caretPos.first--;
+                data.at(highlightIndex).second.value.erase(data.at(highlightIndex).second.caretPos.first, 1);
             }
             break;
 
@@ -259,8 +297,8 @@ FormResult initForm(const std::vector<Field*>&& fields, const std::string&& subm
                 return normalizeData(data);
                 
 			}
-            data.at(highlightIndex).second.value.insert(data.at(highlightIndex).second.caretPos, 1, key);
-			data.at(highlightIndex).second.caretPos++;
+            data.at(highlightIndex).second.value.insert(data.at(highlightIndex).second.caretPos.first, 1, key);
+			data.at(highlightIndex).second.caretPos.first++;
             break;
         }
 
