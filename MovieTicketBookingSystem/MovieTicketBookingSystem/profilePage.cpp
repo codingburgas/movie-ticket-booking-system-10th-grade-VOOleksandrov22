@@ -17,7 +17,7 @@ void App::profilePage() {
 		{"Update Profile Info", [this, &user]() -> void { this->updateProfileDataPage(user); }},
 		{"Deposit Money", [this, &user]() -> void { this->depositPage(user); }},
 		{"View Transactions", [this, &user]() -> void { this->printTransactions(user); }},
-		{"Change Password", [this]() -> void {}},
+		{"Change Password", [this, &user]() -> void { this->changePassword(user); }},
 		{"<< Back", [this, &running]() -> void { running = false; }}
 	};
 
@@ -227,3 +227,28 @@ void App::depositPage(User& user) {
 	user = currentSession->getUser(); // update user data after deposit
 }
 
+
+void passwordsMatch(const FormResult& formData, const size_t& fieldIndex) {
+	//   password                   reentered password
+	if (formData.at(1).second != formData.at(fieldIndex).second) {
+		throw std::runtime_error("Passwords do not match");
+	}
+}
+
+void App::changePassword(const User& user) {
+	FormResult input;
+	try {
+		input = initForm({
+			new Field({"current password", "", "Enter your current password", std::format("Password for {}", user.getUsername()), true}),
+			new Field({"new password", "", "Enter your new password", passwordInstructions, true, validatePassword}),
+			new Field({"confirm new password", "", "Reenter your new password", "Must match the new password.", true, passwordsMatch})
+			}, "CONFIRM");
+		std::string password = DB::resultSetToVector(db->execute("select password from User where id = ?", { user.getId() }))[0]["password"];
+		if (input.at(0).second != password) {
+			throw std::runtime_error("Current password is incorrect");
+		}
+		db->execute("update User set password = ? where id = ?", { input.at(1).second, currentSession->getUser().getId() });
+		std::cout << "Password changed successfully.\n";
+	}
+	catch (const int& code) {}
+}

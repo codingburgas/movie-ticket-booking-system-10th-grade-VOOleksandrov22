@@ -16,12 +16,6 @@ using json = nlohmann::json;
 
 
 
-const std::string passwordInstructions = R"(
-- 8 to 64 characters.
-- At least one uppercase letter, one lowercase, one digit, and one special character (e.g., !@#$%^&*).
-)";
-
-
 void App::loginBySavedSession() {
 	try {
 		json cache = Utils::File::readJsonFile(config->pathToCache);

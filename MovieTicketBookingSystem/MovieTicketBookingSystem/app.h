@@ -29,6 +29,12 @@ class User;
 class Session;
 
 
+const std::string passwordInstructions = R"(
+- 8 to 64 characters.
+- At least one uppercase letter, one lowercase, one digit, and one special character (e.g., !@#$%^&*).
+)";
+
+
 class App {
 private:
 	std::function<std::string(json&, const User&)> regular;
@@ -80,5 +86,7 @@ public:
 	void depositPage(User& user);
 
 	void printTransactions(const User& user);
+
+	void changePassword(const User& user);
 	
 };
