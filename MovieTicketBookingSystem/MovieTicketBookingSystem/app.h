@@ -77,7 +77,7 @@ public:
 
 	void updateProfileDataPage(User& user);
 
-	void depositPage();
+	void depositPage(User& user);
 
 	void printTransactions(const User& user);
 	

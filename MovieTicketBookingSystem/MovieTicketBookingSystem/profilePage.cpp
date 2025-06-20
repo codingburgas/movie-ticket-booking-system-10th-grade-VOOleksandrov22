@@ -2,6 +2,10 @@
 #include "session.h"
 
 
+#include <chrono>
+#include <sstream>
+
+
 
 void App::profilePage() {
 	bool running = true;
@@ -11,7 +15,7 @@ void App::profilePage() {
 
 	Dict<std::string, RedirectFunction> redirects = {
 		{"Update Profile Info", [this, &user]() -> void { this->updateProfileDataPage(user); }},
-		{"Deposit Money", [this]() -> void { this->depositPage(); }},
+		{"Deposit Money", [this, &user]() -> void { this->depositPage(user); }},
 		{"View Transactions", [this, &user]() -> void { this->printTransactions(user); }},
 		{"Change Password", [this]() -> void {}},
 		{"<< Back", [this, &running]() -> void { running = false; }}
@@ -39,29 +43,41 @@ void App::profilePage() {
 }
 
 
+enum class TimeRelation {
+	InPast,
+	InFuture,
+	InvalidFormat
+};
+
+
+TimeRelation checkTimeRelation(const std::string& time_str) {
+	const auto now = std::chrono::system_clock::now();
+
+
+	std::chrono::system_clock::time_point parsed_time_point;
+	std::istringstream ss(time_str);
+
+	ss >> std::chrono::parse("%Y-%m-%d %H:%M:%S", parsed_time_point);
+
+	if (ss.fail()) {
+		return TimeRelation::InvalidFormat;
+	}
+
+
+
+
+	if (parsed_time_point > now) {
+		return TimeRelation::InFuture;
+	}
+	else {
+		return TimeRelation::InPast;
+	}
+	
+}
+
 
 void App::printTransactions(const User& user) {
-	auto transactions = DB::resultSetToVector(db->execute(
-		R"(
-		SELECT
-			t.id,
-			t.movieSessionId,
-			t.sum,
-			t.seatsData,
-			t.createdAt,
-			m.title AS movieTitle,
-			ms.startsAt AS sessionStartsAt
-		FROM
-			Transaction AS t
-		JOIN
-			MovieSession AS ms ON t.movieSessionId = ms.id
-		JOIN
-			Movie AS m ON ms.movieId = m.id
-		WHERE
-			t.userId = ?
-		ORDER BY
-			t.createdAt DESC;
-		)",
+	auto transactions = DB::resultSetToVector(db->execute("select * from transaction where userId = ? order by createdAt desc;",
 		{ user.getId() }));
 
 	if (transactions.size() == 0) {
@@ -72,29 +88,57 @@ void App::printTransactions(const User& user) {
 		std::cout << "          YOUR BOOKINGS HISTORY        \n";
 		std::cout << "───────────────────────────────────────\n\n";
 
+		
 		for (auto& transaction : transactions) {
-			std::cout << std::format("Transaction ID: {}\nPrice: {}$\nMovie: {}\n", 
-				transaction["id"], 
-				transaction["sum"],
-				std::format("{} at {}", transaction["movieTitle"], transaction["sessionStartsAt"]));
+			if (transaction["type"] == "BOOK") {
+				auto movie = DB::resultSetToVector(db->execute(
+					R"(SELECT
+					m.title AS title,
+					ms.startsAt AS startsAt
+					FROM
+					MovieSession as ms
+					JOIN
+					Movie AS m ON ms.movieId = m.id
+					WHERE
+					ms.id = ?;)"
+				, { transaction["movieSessionId"] }))[0];
+				if (checkTimeRelation(movie["startsAt"]) == TimeRelation::InFuture) {
+					std::cout << ORANGE;
+				}
+				std::cout << std::format("Transaction ID: {}\nPrice: {}$\nMovie: {}\n",
+					transaction["id"],
+					transaction["sum"],
+					std::format("{} at {}", movie["title"], movie["startsAt"]));
 
-			auto seatsData = json::parse(transaction["seatsData"]);
+				auto seatsData = json::parse(transaction["seatsData"]);
 
-			std::cout << "Seats booked: \n\n";
+				std::cout << "Seats booked: \n\n";
 
-			for (size_t i = 0; i < seatsData.size(); i++) {
-				const auto& seat = seatsData[i];
-				std::cout << std::format("{}.\n\t - Identifier: {}(Row {}, Column {})\n\t - Price: {}$\n\t - VIP: {}\n", 
-					i+1, 
-					seat["data"]["text"].get<std::string>(),
-					seat["data"]["position"][0].get<unsigned int>() + 1,
-					seat["data"]["position"][1].get<unsigned int>() + 1,
-					seat["data"]["price"].get<double>(),
-					seat["data"]["isVIP"].get<bool>() ? "Yes" : "No"
-				);
+				for (size_t i = 0; i < seatsData.size(); i++) {
+					const auto& seat = seatsData[i];
+					std::cout << std::format("{}.\n\t - Identifier: {}(Row {}, Column {})\n\t - Price: {}$\n\t - VIP: {}\n",
+						i + 1,
+						seat["data"]["text"].get<std::string>(),
+						seat["data"]["position"][0].get<unsigned int>() + 1,
+						seat["data"]["position"][1].get<unsigned int>() + 1,
+						seat["data"]["price"].get<double>(),
+						seat["data"]["isVIP"].get<bool>() ? "Yes" : "No"
+					);
+				}
+
+				std::cout << RESET;
+				std::cout << "───────────────────────────────────────\n\n";
 			}
+			else {
+				std::cout << GREEN;
+				std::cout << std::format("Transaction ID: {}\nAmount: {}$\n",
+					transaction["id"],
+					transaction["sum"]);
 
-			std::cout << "───────────────────────────────────────\n\n";
+				std::cout << RESET;
+				std::cout << "───────────────────────────────────────\n\n";
+			}
+			
 			
 		}
 	}
@@ -145,8 +189,7 @@ void App::updateProfileDataPage(User& user) {
 
 
 
-void App::depositPage() {
-	const auto user = currentSession->getUser();
+void App::depositPage(User& user) {
 
 	FormResult input;
 	try {
@@ -179,6 +222,8 @@ void App::depositPage() {
 
 	const double amount = std::stod(input.at(4).second);
 
-	db->execute("update User set balance = balance + ? where id = ?", { amount, user.getId() });
+	//db->execute("update User set balance = balance + ? where id = ?", { amount, user.getId() });
+	db->execute("insert into Transaction(userId, sum, type) values(?, ?, 'DEPOSIT')", { user.getId(), amount });
+	user = currentSession->getUser(); // update user data after deposit
 }
 
