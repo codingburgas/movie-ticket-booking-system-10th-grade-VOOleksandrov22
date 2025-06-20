@@ -235,6 +235,7 @@ std::pair<size_t, size_t> Menu::getChoice(
             break;
 
         case 13: // Enter
+
             system("cls");
             return { highlightPos[0], highlightPos[1] };
         }

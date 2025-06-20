@@ -1,4 +1,5 @@
 #include "app.h"
+#include "session.h"
 
 
 
@@ -9,10 +10,10 @@ void App::profilePage() {
 
 
 	Dict<std::string, RedirectFunction> redirects = {
-		{"Update profile info", [this, &user]() -> void { this->updateProfileDataPage(user); }},
-		{"Change password", [this]() -> void {}},
-		{"Deposit money", [this]() -> void { this->depositPage(); }},
-		{"View transactions", [this, &user]() -> void { this->printTransactions(user); }},
+		{"Update Profile Info", [this, &user]() -> void { this->updateProfileDataPage(user); }},
+		{"Deposit Money", [this]() -> void { this->depositPage(); }},
+		{"View Transactions", [this, &user]() -> void { this->printTransactions(user); }},
+		{"Change Password", [this]() -> void {}},
 		{"<< Back", [this, &running]() -> void { running = false; }}
 	};
 
@@ -41,18 +42,60 @@ void App::profilePage() {
 
 void App::printTransactions(const User& user) {
 	auto transactions = DB::resultSetToVector(db->execute(
-		"SELECT * FROM Transaction WHERE userId = ? ORDER BY createdAt DESC;",
+		R"(
+		SELECT
+			t.id,
+			t.movieSessionId,
+			t.sum,
+			t.seatsData,
+			t.createdAt,
+			m.title AS movieTitle,
+			ms.startsAt AS sessionStartsAt
+		FROM
+			Transaction AS t
+		JOIN
+			MovieSession AS ms ON t.movieSessionId = ms.id
+		JOIN
+			Movie AS m ON ms.movieId = m.id
+		WHERE
+			t.userId = ?
+		ORDER BY
+			t.createdAt DESC;
+		)",
 		{ user.getId() }));
 
 	if (transactions.size() == 0) {
 		std::cout << "No transactions found.\n";
 	}
 	else {
-		std::cout << "Your transactions:\n";
+		std::cout << "───────────────────────────────────────\n";
+		std::cout << "          YOUR BOOKINGS HISTORY        \n";
+		std::cout << "───────────────────────────────────────\n\n";
+
 		for (auto& transaction : transactions) {
-			std::cout << "ID: " << transaction["id"] << ", Amount: " << transaction["sum"] << "$, Created at: " << transaction["createdAt"] << "\n";
+			std::cout << std::format("Transaction ID: {}\nPrice: {}$\nMovie: {}\n", 
+				transaction["id"], 
+				transaction["sum"],
+				std::format("{} at {}", transaction["movieTitle"], transaction["sessionStartsAt"]));
+
 			auto seatsData = json::parse(transaction["seatsData"]);
-			std::cout << "Seats amount: " << seatsData.size() << "\n\n";
+
+			std::cout << "Seats booked: \n\n";
+
+			for (size_t i = 0; i < seatsData.size(); i++) {
+				const auto& seat = seatsData[i];
+				std::cout << std::format("{}.\n\t - Identifier: {}(Row {}, Column {})\n\t - Price: {}$\n\t - VIP: {}\n", 
+					i+1, 
+					seat["data"]["text"].get<std::string>(),
+					seat["data"]["position"][0].get<unsigned int>() + 1,
+					seat["data"]["position"][1].get<unsigned int>() + 1,
+					seat["data"]["price"].get<double>(),
+					seat["data"]["isVIP"].get<bool>() ? "Yes" : "No"
+				);
+			}
+
+			std::cout << "───────────────────────────────────────\n\n";
+			
 		}
 	}
 
@@ -138,3 +181,4 @@ void App::depositPage() {
 
 	db->execute("update User set balance = balance + ? where id = ?", { amount, user.getId() });
 }
+

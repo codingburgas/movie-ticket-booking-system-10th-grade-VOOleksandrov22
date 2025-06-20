@@ -175,6 +175,7 @@
     <ClCompile Include="auth.cpp" />
     <ClCompile Include="dataFetch.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="profilePage.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="app.h" />

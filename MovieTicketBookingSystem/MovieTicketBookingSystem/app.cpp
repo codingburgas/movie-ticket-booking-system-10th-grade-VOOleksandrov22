@@ -1,3 +1,4 @@
+#include "session.h"
 #include "app.h"
 
 
@@ -195,10 +196,10 @@ void App::chooseCinemaMenu(const std::string& city) {
 	for (auto& cinema : cinemas) {
 		unsigned int vipCount = 0, nonVipCount = 0;
 
-		auto vips = db->execute("select COUNT(*) from Hall where cinema_id = ? AND isVIP = TRUE;", { std::stoi(cinema["id"]) });
+		auto vips = db->execute("select COUNT(*) from Hall where cinemaId = ? AND isVIP = TRUE;", { std::stoi(cinema["id"]) });
 		if (vips->next()) vipCount = vips->getInt(1);
 
-		auto nonVips = db->execute("select COUNT(*) from Hall where cinema_id = ? AND isVIP = FALSE;", { std::stoi(cinema["id"]) });
+		auto nonVips = db->execute("select COUNT(*) from Hall where cinemaId = ? AND isVIP = FALSE;", { std::stoi(cinema["id"]) });
 		if (nonVips->next()) nonVipCount = nonVips->getInt(1);
 
 		std::string option = std::format("{} : {}, {} hall(s)({} VIP)", cinema["name"], cinema["rating"], vipCount + nonVipCount, vipCount);
@@ -227,11 +228,11 @@ void App::chooseMovieMenu(const unsigned int& cinemaId) {
 		m.rating,
 		m.description,
 		m.duration,
-		h.id as hall_id
+		h.id as hallId
 		from hall h
-		join moviesession ms on ms.hall_id = h.id and ms.startsAt > now()
-		join movie m on ms.movie_id = m.id
-		where h.cinema_id = ?;)";
+		join moviesession ms on ms.hallId = h.id and ms.startsAt > now()
+		join movie m on ms.movieId = m.id
+		where h.cinemaId = ?;)";
 
 	auto sessions = DB::resultSetToVector(db->execute(sessionsQuery, { static_cast<int>(cinemaId) }));
 

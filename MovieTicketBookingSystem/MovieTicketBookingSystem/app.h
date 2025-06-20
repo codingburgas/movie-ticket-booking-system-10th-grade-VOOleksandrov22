@@ -16,7 +16,6 @@
 //#include <cppconn/resultset.h>
 
 #include "../Database/database.h"
-#include "session.h"
 #include "../Colors/colors.h"
 
 #include <string>
@@ -40,7 +39,6 @@ public:
 	std::map<std::string, std::string> tempValues; // Temporary values for forms and other purposes
 
 	const Config* config = new Config();
-
 	DB::Database* db;
 
 	Menu* menu;
