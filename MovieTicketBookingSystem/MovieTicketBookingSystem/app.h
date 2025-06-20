@@ -88,5 +88,7 @@ public:
 	void printTransactions(const User& user);
 
 	void changePassword(const User& user);
+
+	void forgotPassword();
 	
 };

@@ -14,8 +14,8 @@ const int MAX_FUTURE_CARD_YEARS = 15;
 const std::string specialCharacters = "!@#$%^&*()-_=+[]{}|;:,.<>?/~";
 
 
-void validateUsername(const FormResult& formData, const size_t& fieldIndex) {
-	const std::string& username = formData.at(fieldIndex).second;
+void validateUsernameStr(const std::string& value) {
+	const std::string& username = value;
 
 	if (username.length() < MIN_USERNAME_LENGTH) {
 		throw std::runtime_error("Username must be at least " + std::to_string(MIN_USERNAME_LENGTH) + " characters long.");
@@ -31,8 +31,8 @@ void validateUsername(const FormResult& formData, const size_t& fieldIndex) {
 
 
 
-void validatePassword(const FormResult& formData, const size_t& fieldIndex) {
-	const std::string& password = formData.at(fieldIndex).second;
+void validatePasswordStr(const std::string& value) {
+	const std::string& password = value;
 	if (password.length() < MIN_PASSWORD_LENGTH) {
 		throw std::runtime_error("Password must be at least " + std::to_string(MIN_PASSWORD_LENGTH) + " characters long.");
 	}
@@ -82,9 +82,9 @@ void passwordMatch(const FormResult& formData, const size_t& fieldIndex) {
 	}
 }
 
-void validateEmail(const FormResult& formData, const size_t& fieldIndex) {
+void validateEmailStr(const std::string& value) {
 	const std::regex email_pattern(R"(^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$)");
-	const std::string& email = formData.at(fieldIndex).second;
+	const std::string& email = value;
 
 	if (email.empty()) {
 		throw std::runtime_error("Email cannot be empty.");
@@ -95,8 +95,8 @@ void validateEmail(const FormResult& formData, const size_t& fieldIndex) {
 	}
 }
 
-void validateVerificationCode(const FormResult& formData, const size_t& fieldIndex) {
-	const std::string& code = formData.at(fieldIndex).second;
+void validateVerificationCodeStr(const std::string& value) {
+	const std::string& code = value;
 
 	if (code.length() != 6 || !std::all_of(code.begin(), code.end(), isdigit)) {
 		throw std::runtime_error("Verification code must be a 6-digit number.");
@@ -104,15 +104,15 @@ void validateVerificationCode(const FormResult& formData, const size_t& fieldInd
 }
 
 
-void validateGender(const FormResult& formData, const size_t& fieldIndex) {
-    const std::string& gender = formData.at(fieldIndex).second;
+void validateGenderStr(const std::string& value) {
+    const std::string& gender = value;
     if (gender != "M" && gender != "F" && gender != "O" && gender != "P") {
         throw std::runtime_error("Gender must be 'M', 'F', 'O', or 'P'.");
     }
 }
 
-void validateAge(const FormResult& formData, const size_t& fieldIndex) {
-    const std::string& ageStr = formData.at(fieldIndex).second;
+void validateAgeStr(const std::string& value) {
+    const std::string& ageStr = value;
 
     for (char c : ageStr) {
         if (!std::isdigit(static_cast<unsigned char>(c))) {
@@ -135,8 +135,8 @@ void validateAge(const FormResult& formData, const size_t& fieldIndex) {
 }
 
 
-void validatePhone(const FormResult& formData, const size_t& fieldIndex) {
-    const std::string& phone = formData.at(fieldIndex).second;
+void validatePhoneStr(const std::string& value) {
+    const std::string& phone = value;
     if (phone.empty()) {
         return;
     }
@@ -157,8 +157,8 @@ void validatePhone(const FormResult& formData, const size_t& fieldIndex) {
  * @param fieldIndex The index of the card number field in formData.
  * @throws std::runtime_error if the card number fails any validation rule.
  */
-void validateCardNumber(const FormResult& formData, const size_t& fieldIndex) {
-	const std::string& cardNumber = formData.at(fieldIndex).second;
+void validateCardNumberStr(const std::string& value) {
+	const std::string& cardNumber = value;
 
 	if (cardNumber.empty()) {
 		throw std::runtime_error("Card number cannot be empty.");
@@ -181,8 +181,8 @@ void validateCardNumber(const FormResult& formData, const size_t& fieldIndex) {
  * @param fieldIndex The index of the card holder field in formData.
  * @throws std::runtime_error if the card holder name fails any validation rule.
  */
-void validateCardHolder(const FormResult& formData, const size_t& fieldIndex) {
-	const std::string& cardHolder = formData.at(fieldIndex).second;
+void validateCardHolderStr(const std::string& value) {
+	const std::string& cardHolder = value;
 
 	if (cardHolder.empty()) {
 		throw std::runtime_error("Card holder name cannot be empty.");
@@ -210,8 +210,8 @@ void validateCardHolder(const FormResult& formData, const size_t& fieldIndex) {
  * @param fieldIndex The index of the CVC field in formData.
  * @throws std::runtime_error if the CVC fails any validation rule.
  */
-void validateCVC(const FormResult& formData, const size_t& fieldIndex) {
-	const std::string& cvc = formData.at(fieldIndex).second;
+void validateCVCStr(const std::string& value) {
+	const std::string& cvc = value;
 
 	if (cvc.empty()) {
 		throw std::runtime_error("CVC cannot be empty.");
@@ -236,8 +236,8 @@ void validateCVC(const FormResult& formData, const size_t& fieldIndex) {
  * @param fieldIndex The index of the expiry date field in formData.
  * @throws std::runtime_error if the expiry date fails any validation rule.
  */
-void validateExpiryDate(const FormResult& formData, const size_t& fieldIndex) {
-	const std::string& expiryDate = formData.at(fieldIndex).second;
+void validateExpiryDateStr(const std::string& value) {
+	const std::string& expiryDate = value;
 
 	if (expiryDate.empty()) {
 		throw std::runtime_error("Expiry date cannot be empty.");
@@ -291,8 +291,8 @@ void validateExpiryDate(const FormResult& formData, const size_t& fieldIndex) {
  * @param fieldIndex The index of the amount field in formData.
  * @throws std::runtime_error if the amount fails any validation rule.
  */
-void validateAmount(const FormResult& formData, const size_t& fieldIndex) {
-	const std::string& amountStr = formData.at(fieldIndex).second;
+void validateAmountStr(const std::string& value) {
+	const std::string& amountStr = value;
 
 	if (amountStr.empty()) {
 		throw std::runtime_error("Amount cannot be empty.");
@@ -337,4 +337,56 @@ void validateAmount(const FormResult& formData, const size_t& fieldIndex) {
 	catch (const std::invalid_argument& e) {
 		throw std::runtime_error("Amount is not a valid number (parsing error).");
 	}
+}
+
+
+
+void validateUsername(const FormResult& formData, const size_t& fieldIndex) {
+	validateUsernameStr(formData.at(fieldIndex).second);
+}
+
+void validatePassword(const FormResult& formData, const size_t& fieldIndex) {
+	validatePasswordStr(formData.at(fieldIndex).second);
+}
+
+
+
+void validateEmail(const FormResult& formData, const size_t& fieldIndex) {
+	validateEmailStr(formData.at(fieldIndex).second);
+}
+
+void validateVerificationCode(const FormResult& formData, const size_t& fieldIndex) {
+	validateVerificationCodeStr(formData.at(fieldIndex).second);
+}
+
+void validateGender(const FormResult& formData, const size_t& fieldIndex) {
+	validateGenderStr(formData.at(fieldIndex).second);
+}
+
+void validateAge(const FormResult& formData, const size_t& fieldIndex) {
+	validateAgeStr(formData.at(fieldIndex).second);
+}
+
+void validatePhone(const FormResult& formData, const size_t& fieldIndex) {
+	validatePhoneStr(formData.at(fieldIndex).second);
+}
+
+void validateCardNumber(const FormResult& formData, const size_t& fieldIndex) {
+	validateCardNumberStr(formData.at(fieldIndex).second);
+}
+
+void validateCardHolder(const FormResult& formData, const size_t& fieldIndex) {
+	validateCardHolderStr(formData.at(fieldIndex).second);
+}
+
+void validateCVC(const FormResult& formData, const size_t& fieldIndex) {
+	validateCVCStr(formData.at(fieldIndex).second);
+}
+
+void validateExpiryDate(const FormResult& formData, const size_t& fieldIndex) {
+	validateExpiryDateStr(formData.at(fieldIndex).second);
+}
+
+void validateAmount(const FormResult& formData, const size_t& fieldIndex) {
+	validateAmountStr(formData.at(fieldIndex).second);
 }

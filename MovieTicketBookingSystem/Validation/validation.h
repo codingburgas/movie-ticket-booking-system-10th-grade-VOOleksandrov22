@@ -19,7 +19,9 @@ const int MAX_USERNAME_LENGTH = 20;
  * @param fieldIndex The index of the username field in formData.
  * @throws std::runtime_error if the username fails any validation rule.
  */
+void validateUsernameStr(const std::string& value);
 void validateUsername(const FormResult& formData, const size_t& fieldIndex);
+
 
 /**
  * @brief Validates if a password meets specified complexity requirements.
@@ -29,7 +31,9 @@ void validateUsername(const FormResult& formData, const size_t& fieldIndex);
  * @param fieldIndex The index of the password field in formData.
  * @throws std::runtime_error if the password fails any validation rule.
  */
+void validatePasswordStr(const std::string& value);
 void validatePassword(const FormResult& formData, const size_t& fieldIndex);
+
 
 /**
  * @brief Validates if the current password field matches a previously entered password.
@@ -46,6 +50,7 @@ void passwordMatch(const FormResult& formData, const size_t& fieldIndex);
  * @param fieldIndex The index of the email field in formData.
  * @throws std::runtime_error if the email is empty or has an invalid format.
  */
+void validateEmailStr(const std::string& value);
 void validateEmail(const FormResult& formData, const size_t& fieldIndex);
 
 /**
@@ -54,6 +59,7 @@ void validateEmail(const FormResult& formData, const size_t& fieldIndex);
  * @param fieldIndex The index of the verification code field in formData.
  * @throws std::runtime_error if the code is not a 6-digit number.
  */
+void validateVerificationCodeStr(const std::string& value);
 void validateVerificationCode(const FormResult& formData, const size_t& fieldIndex);
 
 /**
@@ -63,6 +69,7 @@ void validateVerificationCode(const FormResult& formData, const size_t& fieldInd
  * @param fieldIndex The index of the gender field in formData.
  * @throws std::runtime_error if the gender is invalid.
  */
+void validateGenderStr(const std::string& value);
 void validateGender(const FormResult& formData, const size_t& fieldIndex);
 
 /**
@@ -72,6 +79,7 @@ void validateGender(const FormResult& formData, const size_t& fieldIndex);
  * @param fieldIndex The index of the age field in formData.
  * @throws std::runtime_error if the age is invalid.
  */
+void validateAgeStr(const std::string& value);
 void validateAge(const FormResult& formData, const size_t& fieldIndex);
 
 /**
@@ -81,9 +89,8 @@ void validateAge(const FormResult& formData, const size_t& fieldIndex);
  * @param fieldIndex The index of the phone field in formData.
  * @throws std::runtime_error if the phone number contains invalid characters.
  */
+void validatePhoneStr(const std::string& value);
 void validatePhone(const FormResult& formData, const size_t& fieldIndex);
-
-
 
 /**
  * @brief Validates a credit card number.
@@ -92,8 +99,8 @@ void validatePhone(const FormResult& formData, const size_t& fieldIndex);
  * @param fieldIndex The index of the card number field in formData.
  * @throws std::runtime_error if the card number fails any validation rule.
  */
+void validateCardNumberStr(const std::string& value);
 void validateCardNumber(const FormResult& formData, const size_t& fieldIndex);
-
 
 /**
  * @brief Validates the card holder's name.
@@ -102,8 +109,8 @@ void validateCardNumber(const FormResult& formData, const size_t& fieldIndex);
  * @param fieldIndex The index of the card holder field in formData.
  * @throws std::runtime_error if the card holder name fails any validation rule.
  */
+void validateCardHolderStr(const std::string& value);
 void validateCardHolder(const FormResult& formData, const size_t& fieldIndex);
-
 
 /**
  * @brief Validates the CVC/CVV code.
@@ -112,9 +119,8 @@ void validateCardHolder(const FormResult& formData, const size_t& fieldIndex);
  * @param fieldIndex The index of the CVC field in formData.
  * @throws std::runtime_error if the CVC fails any validation rule.
  */
+void validateCVCStr(const std::string& value);
 void validateCVC(const FormResult& formData, const size_t& fieldIndex);
-
-
 
 /**
  * @brief Validates the card's expiry date (MM/YY format) using regex.
@@ -123,8 +129,8 @@ void validateCVC(const FormResult& formData, const size_t& fieldIndex);
  * @param fieldIndex The index of the expiry date field in formData.
  * @throws std::runtime_error if the expiry date fails any validation rule.
  */
+void validateExpiryDateStr(const std::string& value);
 void validateExpiryDate(const FormResult& formData, const size_t& fieldIndex);
-
 
 /**
  * @brief Validates a monetary amount.
@@ -133,4 +139,5 @@ void validateExpiryDate(const FormResult& formData, const size_t& fieldIndex);
  * @param fieldIndex The index of the amount field in formData.
  * @throws std::runtime_error if the amount fails any validation rule.
  */
+void validateAmountStr(const std::string& value);
 void validateAmount(const FormResult& formData, const size_t& fieldIndex);

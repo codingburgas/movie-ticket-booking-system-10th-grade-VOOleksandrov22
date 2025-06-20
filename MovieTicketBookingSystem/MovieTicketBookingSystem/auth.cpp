@@ -51,7 +51,7 @@ void App::loginBySavedSession() {
 
 
 void App::auth(std::string message) {
-	std::vector<std::string> loginOptions = { "Login", "Signup", "Exit" };
+	std::vector<std::string> loginOptions = { "Login", "Signup", "Forgot my password", "Exit" };
 	menu->setOptions(loginOptions);
 
 
@@ -65,6 +65,9 @@ void App::auth(std::string message) {
 		signup();
 		break;
 	case 2:
+		forgotPassword();
+		break;
+	case 3:
 		exit(1);
 		break;
 	};
@@ -198,4 +201,65 @@ void App::logout() {
 	catch (const std::exception& e) {
 		std::cout << "Error: " << e.what() << std::endl;
 	}
+}
+
+
+void App::forgotPassword() {
+	FormResult input;
+	try {
+		input = initForm({
+			new Field({"credential", "", "Enter your username or email", "Any quote symbols are forbidden", false}),
+			}, "SUBMIT");
+	}
+	catch (const int& code) {
+		auth("The form submission was cancelled.\n\n");
+		return;
+	}
+	std::string email, credential = input.at(0).second;
+	try {
+		validateEmailStr(credential);
+		email = credential;
+	}
+	catch (...) {
+		email = DB::resultSetToVector(db->execute(
+			"SELECT email FROM User WHERE username = ?",
+			{ credential }
+		))[0]["email"];
+	}
+	
+	int verificationCode = Utils::generateRandomSixDigitNumber();
+	send(config, email, "Verification code for password change for movie ticket booking system", std::format("Your verification code for password change is <b>{}</b>", verificationCode));
+
+	try {
+		input = initForm({
+			new Field({"Verification code", "", "Enter verification code", "6 digits", false, validateVerificationCode})
+			}, "CHECK");
+	}
+	catch (const int& code) {
+		auth("The form submission was cancelled.\n\n");
+		return;
+	}
+
+	if (std::stoi(input.at(0).second) != verificationCode) {
+		auth("Incorrect verification code entered\n\n");
+		return;
+	}
+
+	try {
+		input = initForm({
+			new Field({"password", "", "Enter new password", passwordInstructions, true, validatePassword}),
+			new Field({"password confirmation", "", "Reenter the password", "", true, [](const FormResult& formData, const size_t& fieldIndex) -> void {
+				if (formData.at(1).second != formData.at(fieldIndex).second) {
+					throw std::runtime_error("Passwords do not match");
+				}
+				}})
+			}, "CHANGE");
+	}
+	catch (const int& code) {
+		auth("The form submission was cancelled.\n\n");
+		return;
+	}
+
+	db->execute("UPDATE User SET password = ? WHERE email = ?", { input.at(0).second, email });
+	auth("Password changed successfully! You can now login with your new password.\n\n");
 }
