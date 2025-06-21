@@ -254,7 +254,8 @@ FormResult initForm(const std::vector<Field*>&& fields, const std::string&& subm
                     if (data.at(highlightIndex).second.caretPos.first > 0) data.at(highlightIndex).second.caretPos.first--;
                 }
                 else {
-                    if (data.at(highlightIndex).second.caretPos.first + data.at(highlightIndex).second.caretPos.second - 1 >= 0) data.at(highlightIndex).second.caretPos.second--;
+                    int test = data.at(highlightIndex).second.caretPos.first + data.at(highlightIndex).second.caretPos.second - 1;
+                    if (test >= 0) data.at(highlightIndex).second.caretPos.second--;
                 }
                 
                 break;
