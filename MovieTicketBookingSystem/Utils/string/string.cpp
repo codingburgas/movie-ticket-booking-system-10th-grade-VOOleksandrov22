@@ -70,3 +70,17 @@ std::string Utils::String::center(const std::string str, const int width, const 
 	int padding = (width - size) / 2;
 	return Utils::String::stringRepeater(fillSpaceWith, padding) + str + Utils::String::stringRepeater(fillSpaceWith, width - size - padding);
 }
+
+std::string Utils::String::left(const std::string str, const int width, const std::string& fillSpaceWith) {
+	const size_t size = str.size();
+	if (size >= width) return str;
+	int padding = width - size;
+	return str + Utils::String::stringRepeater(fillSpaceWith, padding);
+}
+
+std::string Utils::String::right(const std::string str, const int width, const std::string& fillSpaceWith) {
+	const size_t size = str.size();
+	if (size >= width) return str;
+	int padding = width - size;
+	return Utils::String::stringRepeater(fillSpaceWith, padding) + str;
+}

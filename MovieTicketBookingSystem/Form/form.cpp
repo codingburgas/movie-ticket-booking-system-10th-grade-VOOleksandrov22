@@ -80,15 +80,15 @@ void moveWindowUntilHighlightIsVisible(const int& highlightPosY, SMALL_RECT& win
 
 void displayForm(EnteredData& data, const int& highlightIndex, int& highlightPosY, HANDLE& hConsole, CONSOLE_SCREEN_BUFFER_INFO& csbi) {
 
-    std::cout << "Press \"esc\" to cancel form submission\nPress \"Ctrl + H\" to enable privacy mode\n\n";
+    std::string output = "Press \"esc\" to cancel form submission\nPress \"Ctrl + H\" to enable privacy mode\n\n";
 
     int currentIndex = 0;
     for (const auto& pair : data) {
         if (currentIndex == highlightIndex) {
-            std::cout << YELLOW;
+            output += YELLOW;
         }
         // header
-        std::cout << "╭" << Utils::String::toUppercase(pair.first->name) << Utils::String::stringRepeater("─", WIDTH - pair.first->name.size()) << "╮\n";
+        output += "╭" + Utils::String::toUppercase(pair.first->name) + Utils::String::stringRepeater("─", WIDTH - pair.first->name.size()) + "╮\n";
 
 
         const std::string& value = pair.second.value;
@@ -109,69 +109,72 @@ void displayForm(EnteredData& data, const int& highlightIndex, int& highlightPos
                 std::vector<std::string> splittedLine = Utils::String::split(strToPrint.substr(i, WIDTH - 2), "\r");
 
                 for (const std::string& line : splittedLine) {
-                    std::cout << "| " << std::left << std::setw(WIDTH - 2) << line << " |\n";
+                    output += "| " + Utils::String::left(line, WIDTH-2, " ") + " |\n";
                 }
             }
         }
         else {
 			size_t printedOnLine = 0;
-			std::cout << "| ";
+			output += "| ";
 
             for (size_t i = 0; i < strToPrint.size(); i += 1) {
                 if (i == caretPos || i == caretPos + selectionDirection) {
-                    std::cout << RESET << BG_WHITE << MAGENTA << '|';
+                    output += RESET + std::string(BG_WHITE) + MAGENTA + '|';
                     printedOnLine++;
                 }
                 if (strToPrint[i] == '\n' || strToPrint[i] == '\r') {
-                    std::cout << std::string(WIDTH - 2 - printedOnLine, ' ') << RESET << YELLOW << " |\n| ";
+                    output += std::string(WIDTH - 2 - printedOnLine, ' ') + RESET + YELLOW + " |\n| ";
 					printedOnLine = 0;
                     continue;
                 }
 				if (printedOnLine >= WIDTH - 2) {
-					std::cout << RESET << YELLOW << " |\n| ";
+                    output += RESET + std::string(YELLOW) + " |\n| ";
 					printedOnLine = 0;
                     continue;
 				}
                 
-                if ((i >= caretPos + selectionDirection && i <= caretPos) || (i >= caretPos && i <= caretPos + selectionDirection)) {
-					std::cout << RESET << BG_WHITE << MAGENTA << strToPrint[i];
+                if ((i >= caretPos + selectionDirection && i < caretPos) || (i >= caretPos && i < caretPos + selectionDirection)) {
+                    output += RESET + std::string(BG_WHITE) + MAGENTA + strToPrint[i];
                     printedOnLine++;
                     continue;
                 }
-				std::cout << RESET << YELLOW << strToPrint[i];
+                output += RESET + std::string(YELLOW) + strToPrint[i];
                 printedOnLine++;
             }
             if (caretPos == strToPrint.size() || caretPos + selectionDirection == strToPrint.size()) {
-                std::cout << RESET << BG_WHITE << MAGENTA << "|" << RESET;
+                output += RESET + std::string(BG_WHITE) + MAGENTA + "|" + RESET;
 				printedOnLine++;
             }
-            std::cout << std::string(WIDTH - 2 - printedOnLine, ' ') << RESET << YELLOW << " |\n";
+            output += std::string(WIDTH - 2 - printedOnLine, ' ') + RESET + YELLOW + " |\n";
+
         }
 
         
 
         // footer
-        std::cout << "╰" << Utils::String::stringRepeater("─", WIDTH) << "╯\n";
+        output += "╰" + Utils::String::stringRepeater("─", WIDTH) + "╯\n";
 
-        std::cout << RESET << ((pair.first->instructions.size() != 0) ? pair.first->instructions + "\n" : "") << RED << pair.second.errorMessage << RESET << "\n";
-        
-
+        output += RESET + ((pair.first->instructions.size() != 0) ? pair.first->instructions + "\n" : "") + RED + pair.second.errorMessage + RESET + "\n";
+       
         currentIndex++;
     }
 
     if (currentIndex == highlightIndex) {
-		std::cout << YELLOW;
+		output += YELLOW;
     }
 
-	std::cout << Utils::String::center("╭" + Utils::String::stringRepeater("─", SUBMIT_BUTTON_WIDTH) + "╮", WIDTH, true) << "\n"
-              << Utils::String::center("|" + Utils::String::center(SUBMIT_BUTTON_TEXT, SUBMIT_BUTTON_WIDTH) + "|", WIDTH, false) << "\n"
-              << Utils::String::center("╰" + Utils::String::stringRepeater("─", SUBMIT_BUTTON_WIDTH) + "╯", WIDTH, true) << "\n";
+    output += Utils::String::center("╭" + Utils::String::stringRepeater("─", SUBMIT_BUTTON_WIDTH) + "╮", WIDTH, true) + "\n"
+              + Utils::String::center("|" + Utils::String::center(SUBMIT_BUTTON_TEXT, SUBMIT_BUTTON_WIDTH) + "|", WIDTH, false) + "\n"
+              + Utils::String::center("╰" + Utils::String::stringRepeater("─", SUBMIT_BUTTON_WIDTH) + "╯", WIDTH, true) + "\n";
 
     if (currentIndex == highlightIndex) {
-        std::cout << RESET;
+        output += RESET;
         GetConsoleScreenBufferInfo(hConsole, &csbi);
         highlightPosY = csbi.dwCursorPosition.Y;
     }
+
+
+    std::cout << output;
 
 }
 
