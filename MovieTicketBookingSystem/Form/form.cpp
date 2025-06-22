@@ -13,6 +13,7 @@
 #include <array>
 
 
+
 #define WIDTH 70
 #define SUBMIT_BUTTON_WIDTH 30
 
@@ -257,6 +258,8 @@ FormResult initForm(const std::vector<Field*>&& fields, const std::string&& subm
                 if (!isShiftPressed) {
 					highlightData->caretPos.first = min(highlightData->caretPos.first, highlightData->caretPos.first + highlightData->caretPos.second);
                     highlightData->caretPos.second = 0;
+
+					if (highlightData->caretPos.first > 0) highlightData->caretPos.first--;
                 }
                 else {
                     int test = highlightData->caretPos.first + highlightData->caretPos.second - 1;
@@ -266,15 +269,28 @@ FormResult initForm(const std::vector<Field*>&& fields, const std::string&& subm
                 break;
             case 77: // right arrow
                 if (!isShiftPressed) {
-                    highlightData->caretPos.first = max(highlightData->caretPos.first, highlightData->caretPos.first + highlightData->caretPos.second);
+                    highlightData->caretPos.first = max(highlightData->caretPos.first, highlightData->caretPos.first + highlightData->caretPos.second) + 1;
                     highlightData->caretPos.second = 0;
+
+                    if (highlightData->caretPos.first > highlightData->value.size()) highlightData->caretPos.first = highlightData->value.size();
                 }
                 else {
                     if (highlightData->caretPos.first + highlightData->caretPos.second + 1 <= highlightData->value.size()) highlightData->caretPos.second++;
                 }
                 break;
             case 83: // delete
-                if (highlightData->caretPos.first != highlightData->value.size()) highlightData->value.erase(highlightData->caretPos.first, 1);
+                if (highlightData->caretPos.second == 0) {
+                    if (highlightData->caretPos.first != highlightData->value.size()) highlightData->value.erase(highlightData->caretPos.first, 1);
+                }
+                else {
+                    highlightData->value.erase(
+                        min(highlightData->caretPos.first, highlightData->caretPos.first + highlightData->caretPos.second),
+                        highlightData->caretPos.second);
+
+					highlightData->caretPos.first = min(highlightData->caretPos.first, highlightData->caretPos.first + highlightData->caretPos.second);
+					highlightData->caretPos.second = 0;
+                }
+
                 break;
             }
 
