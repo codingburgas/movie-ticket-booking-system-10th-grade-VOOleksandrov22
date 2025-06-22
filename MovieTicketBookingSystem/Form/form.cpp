@@ -197,7 +197,7 @@ FormResult initForm(const std::vector<Field*>&& fields, const std::string&& subm
     EnteredData data = {};
     fillInInitialData(data, fields);
    
-
+    AdditionalFieldData* highlightData;
 	int highlightIndex = 0;
 
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -214,6 +214,7 @@ FormResult initForm(const std::vector<Field*>&& fields, const std::string&& subm
     while (true) {
         system("cls");
 
+        highlightData = &data.at(highlightIndex).second;
         int highlightPosY;
 
         displayForm(data, highlightIndex, highlightPosY, hConsole, csbi);
@@ -254,24 +255,26 @@ FormResult initForm(const std::vector<Field*>&& fields, const std::string&& subm
                 break;
             case 75: // left arrow
                 if (!isShiftPressed) {
-                    if (data.at(highlightIndex).second.caretPos.first > 0) data.at(highlightIndex).second.caretPos.first--;
+					highlightData->caretPos.first = min(highlightData->caretPos.first, highlightData->caretPos.first + highlightData->caretPos.second);
+                    highlightData->caretPos.second = 0;
                 }
                 else {
-                    int test = data.at(highlightIndex).second.caretPos.first + data.at(highlightIndex).second.caretPos.second - 1;
-                    if (test >= 0) data.at(highlightIndex).second.caretPos.second--;
+                    int test = highlightData->caretPos.first + highlightData->caretPos.second - 1;
+                    if (test >= 0) highlightData->caretPos.second--;
                 }
                 
                 break;
             case 77: // right arrow
                 if (!isShiftPressed) {
-                    if (data.at(highlightIndex).second.caretPos.first < data.at(highlightIndex).second.value.size()) data.at(highlightIndex).second.caretPos.first++;
+                    highlightData->caretPos.first = max(highlightData->caretPos.first, highlightData->caretPos.first + highlightData->caretPos.second);
+                    highlightData->caretPos.second = 0;
                 }
                 else {
-                    if (data.at(highlightIndex).second.caretPos.first + data.at(highlightIndex).second.caretPos.second + 1 <= data.at(highlightIndex).second.value.size()) data.at(highlightIndex).second.caretPos.second++;
+                    if (highlightData->caretPos.first + highlightData->caretPos.second + 1 <= highlightData->value.size()) highlightData->caretPos.second++;
                 }
                 break;
             case 83: // delete
-                if (data.at(highlightIndex).second.caretPos.first != data.at(highlightIndex).second.value.size()) data.at(highlightIndex).second.value.erase(data.at(highlightIndex).second.caretPos.first, 1);
+                if (highlightData->caretPos.first != highlightData->value.size()) highlightData->value.erase(highlightData->caretPos.first, 1);
                 break;
             }
 
@@ -283,9 +286,9 @@ FormResult initForm(const std::vector<Field*>&& fields, const std::string&& subm
                 windowRectBeforeRefresh = csbi.srWindow;
                 continue; // Ignore backspace if we are on the submit button
             }
-            if (data.at(highlightIndex).second.caretPos.first > 0) {
-                data.at(highlightIndex).second.caretPos.first--;
-                data.at(highlightIndex).second.value.erase(data.at(highlightIndex).second.caretPos.first, 1);
+            if (highlightData->caretPos.first > 0) {
+                highlightData->caretPos.first--;
+                highlightData->value.erase(highlightData->caretPos.first, 1);
             }
             break;
 
@@ -301,8 +304,8 @@ FormResult initForm(const std::vector<Field*>&& fields, const std::string&& subm
                 return normalizeData(data);
                 
 			}
-            data.at(highlightIndex).second.value.insert(data.at(highlightIndex).second.caretPos.first, 1, key);
-			data.at(highlightIndex).second.caretPos.first++;
+            highlightData->value.insert(highlightData->caretPos.first, 1, key);
+			highlightData->caretPos.first++;
             break;
         }
 
