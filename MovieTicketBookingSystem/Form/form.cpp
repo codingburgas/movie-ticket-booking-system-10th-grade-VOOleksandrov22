@@ -279,13 +279,18 @@ FormResult initForm(const std::vector<Field*>&& fields, const std::string&& subm
                 }
                 break;
             case 83: // delete
+                if (highlightIndex == data.size()) {
+                    GetConsoleScreenBufferInfo(hConsole, &csbi);
+                    windowRectBeforeRefresh = csbi.srWindow;
+                    continue; // Ignore backspace if we are on the submit button
+                }
                 if (highlightData->caretPos.second == 0) {
                     if (highlightData->caretPos.first != highlightData->value.size()) highlightData->value.erase(highlightData->caretPos.first, 1);
                 }
                 else {
                     highlightData->value.erase(
                         min(highlightData->caretPos.first, highlightData->caretPos.first + highlightData->caretPos.second),
-                        highlightData->caretPos.second);
+                        abs(highlightData->caretPos.second));
 
 					highlightData->caretPos.first = min(highlightData->caretPos.first, highlightData->caretPos.first + highlightData->caretPos.second);
 					highlightData->caretPos.second = 0;
@@ -302,10 +307,21 @@ FormResult initForm(const std::vector<Field*>&& fields, const std::string&& subm
                 windowRectBeforeRefresh = csbi.srWindow;
                 continue; // Ignore backspace if we are on the submit button
             }
-            if (highlightData->caretPos.first > 0) {
-                highlightData->caretPos.first--;
-                highlightData->value.erase(highlightData->caretPos.first, 1);
+            if (highlightData->caretPos.second == 0) {
+                if (highlightData->caretPos.first > 0) {
+                    highlightData->caretPos.first--;
+                    highlightData->value.erase(highlightData->caretPos.first, 1);
+                }
             }
+            else {
+                highlightData->value.erase(
+                    min(highlightData->caretPos.first, highlightData->caretPos.first + highlightData->caretPos.second),
+                    abs(highlightData->caretPos.second));
+
+                highlightData->caretPos.first = min(highlightData->caretPos.first, highlightData->caretPos.first + highlightData->caretPos.second);
+                highlightData->caretPos.second = 0;
+            }
+            
             break;
 
         default:
@@ -320,7 +336,7 @@ FormResult initForm(const std::vector<Field*>&& fields, const std::string&& subm
                 return normalizeData(data);
                 
 			}
-            highlightData->value.insert(highlightData->caretPos.first, 1, key);
+            highlightData->value.insert(highlightData->caretPos.first, 1, '\n');
 			highlightData->caretPos.first++;
             break;
         }
