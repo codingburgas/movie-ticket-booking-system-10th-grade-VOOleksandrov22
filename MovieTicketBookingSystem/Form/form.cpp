@@ -1,6 +1,7 @@
 #include "form.h"
 #include "../Colors/colors.h"
 #include "../Utils/utils.h"
+#include "../Clipboard/clipboard.h"
 
 
 #include <conio.h>
@@ -234,7 +235,46 @@ FormResult initForm(const std::vector<Field*>&& fields, const std::string&& subm
 			case 8: // Ctrl + H
                 data.at(highlightIndex).second.hidden = !data.at(highlightIndex).second.hidden;
                 break;
+
+            case 13: // Ctrl + Enter
+                if (!data.isValid()) continue;
+                return normalizeData(data);
+			case 3: // Ctrl + C
+				if (highlightIndex == data.size()) {
+					GetConsoleScreenBufferInfo(hConsole, &csbi);
+					windowRectBeforeRefresh = csbi.srWindow;
+					continue; // Ignore Ctrl + C if we are on the submit button
+				}
+
+                writeToClipboard((highlightData->caretPos.second == 0) ?
+                    highlightData->value :
+                    highlightData->value.substr(min(highlightData->caretPos.first, highlightData->caretPos.first + highlightData->caretPos.second), abs(highlightData->caretPos.second)));                    
+				break;
+
+            case 22: // Ctrl + V
+				if (highlightIndex == data.size()) {
+					GetConsoleScreenBufferInfo(hConsole, &csbi);
+					windowRectBeforeRefresh = csbi.srWindow;
+					continue; // Ignore Ctrl + V if we are on the submit button
+				}
+				std::string clipboardText = readFromClipboard();
+				if (clipboardText.empty()) continue;
+                if (highlightData->caretPos.second == 0) {
+                    highlightData->value.insert(highlightData->caretPos.first, clipboardText);
+                }
+                else {
+                    highlightData->caretPos.first = min(highlightData->caretPos.first, highlightData->caretPos.first + highlightData->caretPos.second);
+					highlightData->value.erase(
+						highlightData->caretPos.first,
+						abs(highlightData->caretPos.second));
+
+                    highlightData->caretPos.second = 0;
+					highlightData->value.insert(highlightData->caretPos.first, clipboardText);
+
+					highlightData->caretPos.first += clipboardText.size();
+                }
             }
+            
             GetConsoleScreenBufferInfo(hConsole, &csbi);
             windowRectBeforeRefresh = csbi.srWindow;
             continue;
