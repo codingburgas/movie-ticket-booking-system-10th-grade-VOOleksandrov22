@@ -209,36 +209,29 @@ void fillInInitialData(EnteredData& data, const std::vector<Field*>& fields) {
 }
 
 
-bool handleCtrlCommands(const int& key, EnteredData& data, AdditionalFieldData* highlightData, const int& highlightIndex, SMALL_RECT& windowRectBeforeRefresh, const HANDLE& hConsole, CONSOLE_SCREEN_BUFFER_INFO& csbi) {
-    if (highlightIndex == data.size()) return false;
+bool handleCtrlCommands(const int& key, AdditionalFieldData* highlightData, SMALL_RECT& windowRectBeforeRefresh, const HANDLE& hConsole, CONSOLE_SCREEN_BUFFER_INFO& csbi) {
+    if (!highlightData) {
+        GetConsoleScreenBufferInfo(hConsole, &csbi);
+        windowRectBeforeRefresh = csbi.srWindow;
+        return false;
+    }
 
     std::string clipboardText;
     switch (key) {
     case 8: // Ctrl + H
-        data.at(highlightIndex).second.hidden = !data.at(highlightIndex).second.hidden;
+        highlightData->hidden = !highlightData->hidden;
         break;
 
     case 13: // Ctrl + Enter
         return true;
     case 3: // Ctrl + C
-        if (highlightIndex == data.size()) {
-            GetConsoleScreenBufferInfo(hConsole, &csbi);
-            windowRectBeforeRefresh = csbi.srWindow;
-            return false; // Ignore Ctrl + C if we are on the submit button
-        }
-
         writeToClipboard((highlightData->caretPos.second == 0) ?
             highlightData->value :
             highlightData->value.substr(min(highlightData->caretPos.first, highlightData->caretPos.first + highlightData->caretPos.second), abs(highlightData->caretPos.second)));
         break;
     case 22: // Ctrl + V
-        if (highlightIndex == data.size()) {
-            GetConsoleScreenBufferInfo(hConsole, &csbi);
-            windowRectBeforeRefresh = csbi.srWindow;
-            return; // Ignore Ctrl + V if we are on the submit button
-        }
         clipboardText = readFromClipboard();
-        if (clipboardText.empty()) return;
+        if (clipboardText.empty()) return false;
         if (highlightData->caretPos.second == 0) {
             highlightData->value.insert(highlightData->caretPos.first, clipboardText);
         }
@@ -255,12 +248,6 @@ bool handleCtrlCommands(const int& key, EnteredData& data, AdditionalFieldData* 
         }
         break;
     case 24: // Ctrl + X
-        if (highlightIndex == data.size()) {
-            GetConsoleScreenBufferInfo(hConsole, &csbi);
-            windowRectBeforeRefresh = csbi.srWindow;
-            return; // Ignore Ctrl + X if we are on the submit button
-        }
-
         if (highlightData->caretPos.second != 0) {
             highlightData->caretPos.first = min(highlightData->caretPos.first, highlightData->caretPos.first + highlightData->caretPos.second);
 
@@ -274,6 +261,8 @@ bool handleCtrlCommands(const int& key, EnteredData& data, AdditionalFieldData* 
         }
         break;
     }
+
+    return false;
 }
 
 FormResult initForm(const std::vector<Field*>&& fields, const std::string&& submitButtonText) {
@@ -300,7 +289,13 @@ FormResult initForm(const std::vector<Field*>&& fields, const std::string&& subm
     while (true) {
         system("cls");
 
-        highlightData = &data.at(highlightIndex).second;
+        if (highlightIndex < data.size()) {
+            highlightData = &data.at(highlightIndex).second;
+		}
+		else {
+			highlightData = nullptr; // Submit button
+		}
+        
         int highlightPosY;
 
         displayForm(data, highlightIndex, highlightPosY, hConsole, csbi);
@@ -314,7 +309,7 @@ FormResult initForm(const std::vector<Field*>&& fields, const std::string&& subm
         bool isShiftPressed = (GetKeyState(VK_SHIFT) & 0x8000) != 0;
 
 		if (isCtrlPressed) {
-            if (handleCtrlCommands(key, data, highlightData, highlightIndex, windowRectBeforeRefresh, hConsole, csbi)) {
+            if (handleCtrlCommands(key, highlightData, windowRectBeforeRefresh, hConsole, csbi)) {
                 if (data.isValid()) {
 					return normalizeData(data);
                 }
@@ -340,6 +335,8 @@ FormResult initForm(const std::vector<Field*>&& fields, const std::string&& subm
                 if (highlightIndex < fields.size()) highlightIndex++;
                 break;
             case 75: // left arrow
+                if (!highlightData) break;
+
                 if (!isShiftPressed) {
 					highlightData->caretPos.first = min(highlightData->caretPos.first, highlightData->caretPos.first + highlightData->caretPos.second);
                     highlightData->caretPos.second = 0;
@@ -353,6 +350,7 @@ FormResult initForm(const std::vector<Field*>&& fields, const std::string&& subm
                 
                 break;
             case 77: // right arrow
+                if (!highlightData) break;
                 if (!isShiftPressed) {
                     highlightData->caretPos.first = max(highlightData->caretPos.first, highlightData->caretPos.first + highlightData->caretPos.second) + 1;
                     highlightData->caretPos.second = 0;
@@ -364,7 +362,7 @@ FormResult initForm(const std::vector<Field*>&& fields, const std::string&& subm
                 }
                 break;
             case 83: // delete
-                if (highlightIndex == data.size()) {
+                if (!highlightData) {
                     GetConsoleScreenBufferInfo(hConsole, &csbi);
                     windowRectBeforeRefresh = csbi.srWindow;
                     continue; // Ignore backspace if we are on the submit button
@@ -387,7 +385,7 @@ FormResult initForm(const std::vector<Field*>&& fields, const std::string&& subm
 			break;
 
         case '\b':
-            if (highlightIndex == data.size()) {
+            if (!highlightData) {
                 GetConsoleScreenBufferInfo(hConsole, &csbi);
                 windowRectBeforeRefresh = csbi.srWindow;
                 continue; // Ignore backspace if we are on the submit button
@@ -399,18 +397,19 @@ FormResult initForm(const std::vector<Field*>&& fields, const std::string&& subm
                 }
             }
             else {
+                highlightData->caretPos.first = min(highlightData->caretPos.first, highlightData->caretPos.first + highlightData->caretPos.second);
+
                 highlightData->value.erase(
-                    min(highlightData->caretPos.first, highlightData->caretPos.first + highlightData->caretPos.second),
+                    highlightData->caretPos.first,
                     abs(highlightData->caretPos.second));
 
-                highlightData->caretPos.first = min(highlightData->caretPos.first, highlightData->caretPos.first + highlightData->caretPos.second);
                 highlightData->caretPos.second = 0;
             }
             
             break;
 
         default:
-			if (highlightIndex == data.size()) {
+			if (!highlightData) {
                 if (key != '\r') {
                     GetConsoleScreenBufferInfo(hConsole, &csbi);
                     windowRectBeforeRefresh = csbi.srWindow;
@@ -419,10 +418,19 @@ FormResult initForm(const std::vector<Field*>&& fields, const std::string&& subm
                 
                 if (!data.isValid()) break;
                 return normalizeData(data);
-                
 			}
-            highlightData->value.insert(highlightData->caretPos.first, 1, '\n');
-			highlightData->caretPos.first++;
+            if (highlightData->caretPos.second != 0) {
+                highlightData->caretPos.first = min(highlightData->caretPos.first, highlightData->caretPos.first + highlightData->caretPos.second);
+
+                highlightData->value.erase(
+                    highlightData->caretPos.first,
+                    abs(highlightData->caretPos.second));
+
+                highlightData->caretPos.second = 0;
+            }
+
+            highlightData->value.insert(highlightData->caretPos.first, 1, key);
+            highlightData->caretPos.first++;
             break;
         }
 
