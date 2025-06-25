@@ -16,14 +16,24 @@ void Menu::setOptions(const std::vector<std::string>& newOptions) {
 }
 
 void displayChoices(const std::vector<std::string>& options, const int& highlightIndex) {
+    size_t size = 24; // for color modifiers
+    for (const std::string& option : options) {
+		size += option.size() + 5; // 5 for " > " and "   " and new-line char
+    }
+    std::string output;
+    output.reserve(size);
+
+
     for (int i = 0; i < options.size(); ++i) {
         if (i == highlightIndex) {
-            std::cout << BOLD << YELLOW << " >  " << options[i] << RESET << "\n"; // Highlighted option
+            output += BOLD + std::string(YELLOW) + " >  " + options[i] + RESET + "\n"; // Highlighted option
         }
         else {
-            std::cout << "  " << options[i] << "\n"; // Non-highlighted option
+            output += "  " + options[i] + "\n"; // Non-highlighted option
         }
     }
+
+    std::cout << output;
 }
 
 
