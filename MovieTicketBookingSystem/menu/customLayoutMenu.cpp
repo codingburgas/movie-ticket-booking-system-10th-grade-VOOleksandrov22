@@ -68,6 +68,8 @@ void displayChoices(
     std::function<bool(json&)> skipCheck,
     const bool& axesVisible
 ) {
+    std::string output;
+    output.reserve(400 * 600);
     size_t longestYIndexSize;
     for (size_t i = 0; i < data.size(); i++) {
         std::vector<std::string> row;
@@ -85,7 +87,7 @@ void displayChoices(
                 row.push_back(getRegularItemAsString(data[i][j]));
             }
         }
-        std::cout << concatLinesFromVector(row, itemSize);
+        output += concatLinesFromVector(row, itemSize);
     }
     
 	if (axesVisible) {
@@ -94,14 +96,13 @@ void displayChoices(
 			if (row.size() > maxRowLength) maxRowLength = row.size();
         }
 
-        std::cout << std::string(longestYIndexSize + 3, ' ');
+        output += std::string(longestYIndexSize + 3, ' ');
 
-        //size_t middle = (itemSize[0] - 2) / 2;
 		for (size_t i = 0; i < maxRowLength; i++) {
-            std::cout << 
+            output += 
                 std::string(SEPARATOR_BETWEEN_ITEMS.size(), ' ')
-                << "╰" << Utils::String::center(std::to_string(i+1), itemSize[0] - 2, false, "─")
-                << "╯";
+                + "╰" + Utils::String::center(std::to_string(i+1), itemSize[0] - 2, false, "─")
+                + "╯";
 		}
 	}
 }
