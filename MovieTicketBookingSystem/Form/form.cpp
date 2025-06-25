@@ -82,9 +82,26 @@ void moveWindowUntilHighlightIsVisible(const int& highlightPosY, SMALL_RECT& win
 
 void displayForm(EnteredData& data, const int& highlightIndex, int& highlightPosY, HANDLE& hConsole, CONSOLE_SCREEN_BUFFER_INFO& csbi) {
 
-    std::string output = "Press \"esc\" to cancel form submission\nPress \"Ctrl + H\" to enable privacy mode\n\n";
+    std::string output;
 
+    // count approximate output string size
     int currentIndex = 0;
+    size_t size = 77; // instructions
+    for (const auto& pair : data) {
+        size += (pair.second.value.size() / WIDTH + 2) * (WIDTH + 1);
+
+        if (currentIndex == highlightIndex) {
+            size += 8 * pair.second.value.size(); // for color modifiers
+        }
+    }
+
+    size += 3 * WIDTH; // for submit button
+
+    output.reserve(size);
+
+    output += "Press \"esc\" to cancel form submission\nPress \"Ctrl + H\" to enable privacy mode\n\n";
+
+    currentIndex = 0;
     for (const auto& pair : data) {
         if (currentIndex == highlightIndex) {
             output += YELLOW;
