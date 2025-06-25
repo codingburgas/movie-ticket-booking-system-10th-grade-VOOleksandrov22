@@ -250,28 +250,27 @@ FormResult initForm(const std::vector<Field*>&& fields, const std::string&& subm
                     highlightData->value :
                     highlightData->value.substr(min(highlightData->caretPos.first, highlightData->caretPos.first + highlightData->caretPos.second), abs(highlightData->caretPos.second)));                    
 				break;
-
             case 22: // Ctrl + V
-				if (highlightIndex == data.size()) {
-					GetConsoleScreenBufferInfo(hConsole, &csbi);
-					windowRectBeforeRefresh = csbi.srWindow;
-					continue; // Ignore Ctrl + V if we are on the submit button
-				}
-				std::string clipboardText = readFromClipboard();
-				if (clipboardText.empty()) continue;
+                if (highlightIndex == data.size()) {
+                    GetConsoleScreenBufferInfo(hConsole, &csbi);
+                    windowRectBeforeRefresh = csbi.srWindow;
+                    continue; // Ignore Ctrl + V if we are on the submit button
+                }
+                std::string clipboardText = readFromClipboard();
+                if (clipboardText.empty()) continue;
                 if (highlightData->caretPos.second == 0) {
                     highlightData->value.insert(highlightData->caretPos.first, clipboardText);
                 }
                 else {
                     highlightData->caretPos.first = min(highlightData->caretPos.first, highlightData->caretPos.first + highlightData->caretPos.second);
-					highlightData->value.erase(
-						highlightData->caretPos.first,
-						abs(highlightData->caretPos.second));
+                    highlightData->value.erase(
+                        highlightData->caretPos.first,
+                        abs(highlightData->caretPos.second));
 
                     highlightData->caretPos.second = 0;
-					highlightData->value.insert(highlightData->caretPos.first, clipboardText);
+                    highlightData->value.insert(highlightData->caretPos.first, clipboardText);
 
-					highlightData->caretPos.first += clipboardText.size();
+                    highlightData->caretPos.first += clipboardText.size();
                 }
             }
             
