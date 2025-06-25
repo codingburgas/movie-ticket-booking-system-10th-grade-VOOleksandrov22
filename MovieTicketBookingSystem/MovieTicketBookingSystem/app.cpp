@@ -17,7 +17,6 @@ void App::defineHelperMethods() {
 	regular = [this](json& data, const User& user) -> std::string {
 		std::string paintIn = RESET;
 
-
 		if (data["data"].contains("isConfirmation")) {
 			if (data.contains("isHighlighted")) {
 				paintIn = BLUE;
@@ -37,18 +36,30 @@ void App::defineHelperMethods() {
 			), data, this);
 		}
 
-		double bookedSeatsPrice = 0.0;
-		if (this->tempValues.contains("bookedSeatsPrice")) {
-			bookedSeatsPrice = std::stod(this->tempValues["bookedSeatsPrice"]);
+		double currentlyChosenSeatsPrice = 0.0;
+		json currentlyChosenSeats = json::array();
+		if (this->tempValues.contains("currentlyChosenSeats")) {
+			currentlyChosenSeats = json::parse(this->tempValues["currentlyChosenSeats"]);
 		}
 
-		if (data["data"]["bookedBy"].get<unsigned long>() == user.getId()) {
+		bool seatChosen = false;
+		for (const auto& seat : currentlyChosenSeats) {
+			if (seat["data"]["text"] == data["data"]["text"]) {
+				seatChosen = true;
+			}
+			currentlyChosenSeatsPrice += seat["data"]["price"].get<double>();
+		}
+
+		if (seatChosen) {
+			paintIn = MAGENTA;
+		} 
+		else if (data["data"]["bookedBy"].get<unsigned long>() == user.getId()) {
 			paintIn = GREEN;
 		}
 		else if (data["data"]["bookedBy"].get<unsigned long>() != 0) {
 			paintIn = RED;
 		} 
-		else if (data["data"]["price"].get<double>() + bookedSeatsPrice > user.getBalance()) {
+		else if (data["data"]["price"].get<double>() + currentlyChosenSeatsPrice > user.getBalance()) {
 			paintIn = ORANGE;
 		}
 		else if (data.contains("isHighlighted")) {
@@ -92,12 +103,23 @@ void App::defineHelperMethods() {
 
 	skipCheck = [this](json& data, const User& user) -> bool {
 		std::string debugInfo = data.dump(4);
-		double bookedSeatsPrice = 0.0;
-		if (this->tempValues.contains("bookedSeatsPrice")) {
-			bookedSeatsPrice = std::stod(this->tempValues["bookedSeatsPrice"]);
+		double currentlyChosenSeatsPrice = 0.0;
+		json currentlyChosenSeats = json::array();
+		if (this->tempValues.contains("currentlyChosenSeats")) {
+			currentlyChosenSeats = json::parse(this->tempValues["currentlyChosenSeats"]);
 		}
+
+		bool seatChosen = false;
+		for (const auto& seat : currentlyChosenSeats) {
+			if (seat["data"]["text"] == data["data"]["text"]) {
+				seatChosen = true;
+			}
+			currentlyChosenSeatsPrice += seat["data"]["price"].get<double>();
+		}
+
+		bool seatBooked = (data["data"]["bookedBy"] != 0) && !seatChosen;
 		
-		return data["data"]["isBlank"].get<bool>() || (data["data"]["bookedBy"] != 0 && data["data"]["bookedBy"] != user.getId()) || user.getBalance() < bookedSeatsPrice + data["data"]["price"].get<double>();
+		return data["data"]["isBlank"].get<bool>() || seatBooked || user.getBalance() < currentlyChosenSeatsPrice + data["data"]["price"].get<double>();
 		};
 }
 
@@ -320,7 +342,7 @@ void App::bookTicket(Row& session) {
 
 		if (skipCheckWithUser(seats[seatChosen.first][seatChosen.second])) { // if the seat is blank or booked
 			std::cout << "This seat is impossible to book, please contact us about the situation!\n";
-			tempValues.erase("bookedSeatsPrice"); // remove the temporary value for booked seats price
+			tempValues.erase("currentlyChosenSeats"); // remove the temporary value for booked seats
 			continue;
 		}
 
@@ -336,8 +358,9 @@ void App::bookTicket(Row& session) {
 				for (size_t i = 0; i < bookedSeats.size(); i++) {
 					if (bookedSeats[i]["data"]["position"] == json::array({ seatChosen.first, seatChosen.second })) {
 						price -= bookedSeats[i]["data"]["price"].get<double>();
-						tempValues["bookedSeatsPrice"] = Utils::String::toString(price, 2);
 						bookedSeats.erase(bookedSeats.begin() + i);
+
+						tempValues["currentlyChosenSeats"] = bookedSeats.dump();
 						break;
 					}
 				}
@@ -364,7 +387,7 @@ void App::bookTicket(Row& session) {
 		bookedSeats[bookedSeats.size() - 1]["data"]["position"] = json::array({seatChosen.first, seatChosen.second});
 
 		price += bookedSeats[bookedSeats.size() - 1]["data"]["price"].get<double>();
-		tempValues["bookedSeatsPrice"] = Utils::String::toString(price, 2);
+		tempValues["currentlyChosenSeats"] = bookedSeats.dump();
 
 		if (choice == 1) { // payment
 			bookMoreSeats = false;
@@ -431,17 +454,14 @@ void App::bookTicket(Row& session) {
 		db->execute("UPDATE MovieSession SET seats = ? WHERE id = ?;",
 			{ seats.dump(), std::stoi(session["id"]) });
 
-		tempValues.erase("bookedSeatsPrice"); // remove the temporary value for booked seats price
+		tempValues.erase("currentlyChosenSeats"); // remove the temporary value for booked seats
 		
 	}
 	else { // cancel
-		tempValues.erase("bookedSeatsPrice"); // remove the temporary value for booked seats price
+		tempValues.erase("currentlyChosenSeats"); // remove the temporary value for booked seats
 		return;
 		
 	}
 	
 	
 }
-
-
-

@@ -105,6 +105,8 @@ void displayChoices(
                 + "╯";
 		}
 	}
+
+	std::cout << output;
 }
 
 
