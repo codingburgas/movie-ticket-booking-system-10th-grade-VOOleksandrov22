@@ -231,6 +231,8 @@ FormResult initForm(const std::vector<Field*>&& fields, const std::string&& subm
 
 		if (isCtrlPressed) {
             if (highlightIndex == data.size()) continue;
+
+            std::string clipboardText;
             switch (key) {
 			case 8: // Ctrl + H
                 data.at(highlightIndex).second.hidden = !data.at(highlightIndex).second.hidden;
@@ -256,7 +258,7 @@ FormResult initForm(const std::vector<Field*>&& fields, const std::string&& subm
                     windowRectBeforeRefresh = csbi.srWindow;
                     continue; // Ignore Ctrl + V if we are on the submit button
                 }
-                std::string clipboardText = readFromClipboard();
+                clipboardText = readFromClipboard();
                 if (clipboardText.empty()) continue;
                 if (highlightData->caretPos.second == 0) {
                     highlightData->value.insert(highlightData->caretPos.first, clipboardText);
@@ -272,7 +274,28 @@ FormResult initForm(const std::vector<Field*>&& fields, const std::string&& subm
 
                     highlightData->caretPos.first += clipboardText.size();
                 }
+                break;
+			case 24: // Ctrl + X
+				if (highlightIndex == data.size()) {
+					GetConsoleScreenBufferInfo(hConsole, &csbi);
+					windowRectBeforeRefresh = csbi.srWindow;
+					continue; // Ignore Ctrl + X if we are on the submit button
+				}
+
+				if (highlightData->caretPos.second != 0) {
+                    highlightData->caretPos.first = min(highlightData->caretPos.first, highlightData->caretPos.first + highlightData->caretPos.second);
+                    
+                    writeToClipboard(highlightData->value.substr(highlightData->caretPos.first, abs(highlightData->caretPos.second)));
+                    
+                    highlightData->value.erase(
+                        highlightData->caretPos.first,
+                        abs(highlightData->caretPos.second));
+
+                    highlightData->caretPos.second = 0;
+                }
+                break;
             }
+            
             
             GetConsoleScreenBufferInfo(hConsole, &csbi);
             windowRectBeforeRefresh = csbi.srWindow;
