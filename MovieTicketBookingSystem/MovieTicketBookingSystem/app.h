@@ -12,6 +12,7 @@
 #include "../Form/form.h"
 #include "../Validation/validation.h"
 #include "../menu/menu.h"
+#include "../Redirect/redirect.h"
 
 //#include <cppconn/resultset.h>
 

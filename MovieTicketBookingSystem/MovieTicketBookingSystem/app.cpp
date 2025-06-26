@@ -171,9 +171,26 @@ void App::mainLoop() {
 	}
 
 	while (running) {
-		size_t choice = menu->getChoice(actions, "Actions are:");
+		try {
+			size_t choice = menu->getChoice(actions, "Actions are:");
 
-		redirects.at(choice).second();
+			redirects.at(choice).second();
+		}
+		catch (const Redirect& redirect) {
+			switch (redirect.getType())
+			{
+			case MessageType::SUCCESS:
+				std::cout << GREEN; break;
+			case MessageType::WARNING:
+				std::cout << ORANGE; break;
+			case MessageType::ERROR:
+				std::cout << RED; break;
+			}
+
+			std::cout << redirect.getMessage() << RESET;
+			redirect.redirectFunction();
+		}
+		
 	}
 }
 
@@ -378,10 +395,13 @@ void App::bookTicket(Row& session) {
 				bookMoreSeats = false;
 			}
 			else if (seatChosen.second == 1) { // deposit
-				depositPage(user);
-				continue;
+				throw Redirect(
+					std::format("Update balance for a \"{}\" at {}!\n\n", session["title"], session["startsAt"]),
+					[this, &user]() -> void { depositPage(user); });
 			}
 			else if (seatChosen.second == 2) { // exit
+
+				// TO DO: Add redirect to movie choosing
 				return;
 			}
 			continue;
@@ -417,7 +437,6 @@ void App::bookTicket(Row& session) {
 
 		price += bookedSeats[bookedSeats.size() - 1]["data"]["price"].get<double>();
 		tempValues["currentlyChosenSeats"] = bookedSeats.dump();
-
 	}
 
 	seats.erase(seats.end() - 1); // remove buttons from the seats array
@@ -458,20 +477,17 @@ void App::bookTicket(Row& session) {
 			bookedSeats.size(), session["title"], session["startsAt"], price, user.getBalance())
 	);
 
-	if (choice.first != seats.size() - 1) {
-		std::cout << "This option is impossible to choose, please contact us about the situation!\n";
-		int x; std::cin >> x;
-		return;
-	}
 
 	seats.erase(seats.end() - 1); // remove confirmation buttons from the seats array
 
 	
 	if (choice.second == 0) { // confirm
 		if (currentSession->getUser().getBalance() < price) {
-			std::cout << "You don't have enough money to book this ticket!\n";
-			int x; std::cin >> x;
-			// TODO: add redirect to deposit page
+			throw Redirect(
+				"You don't have enough money to book this ticket!\n\n",
+				[this, &user]() -> void { this->depositPage(user); },
+				MessageType::ERROR
+			);	
 			return;
 		}
 

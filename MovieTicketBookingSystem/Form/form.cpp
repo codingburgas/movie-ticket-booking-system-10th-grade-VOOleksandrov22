@@ -287,8 +287,6 @@ FormResult initForm(const std::vector<Field*>&& fields, const std::string&& subm
 	windowRectBeforeRefresh = csbi.srWindow;
 
     while (true) {
-        system("cls");
-
         if (highlightIndex < data.size()) {
             highlightData = &data.at(highlightIndex).second;
 		}
@@ -317,6 +315,7 @@ FormResult initForm(const std::vector<Field*>&& fields, const std::string&& subm
             
             GetConsoleScreenBufferInfo(hConsole, &csbi);
             windowRectBeforeRefresh = csbi.srWindow;
+            system("cls");
             continue;
 		}
 
@@ -365,6 +364,7 @@ FormResult initForm(const std::vector<Field*>&& fields, const std::string&& subm
                 if (!highlightData) {
                     GetConsoleScreenBufferInfo(hConsole, &csbi);
                     windowRectBeforeRefresh = csbi.srWindow;
+                    system("cls");
                     continue; // Ignore backspace if we are on the submit button
                 }
                 if (highlightData->caretPos.second == 0) {
@@ -388,6 +388,7 @@ FormResult initForm(const std::vector<Field*>&& fields, const std::string&& subm
             if (!highlightData) {
                 GetConsoleScreenBufferInfo(hConsole, &csbi);
                 windowRectBeforeRefresh = csbi.srWindow;
+                system("cls");
                 continue; // Ignore backspace if we are on the submit button
             }
             if (highlightData->caretPos.second == 0) {
@@ -413,6 +414,7 @@ FormResult initForm(const std::vector<Field*>&& fields, const std::string&& subm
                 if (key != '\r') {
                     GetConsoleScreenBufferInfo(hConsole, &csbi);
                     windowRectBeforeRefresh = csbi.srWindow;
+                    system("cls");
                     continue;
                 }
                 
@@ -436,5 +438,6 @@ FormResult initForm(const std::vector<Field*>&& fields, const std::string&& subm
 
         GetConsoleScreenBufferInfo(hConsole, &csbi);
         windowRectBeforeRefresh = csbi.srWindow;
+        system("cls");
     }
 }
