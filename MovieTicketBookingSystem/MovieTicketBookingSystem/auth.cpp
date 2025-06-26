@@ -51,6 +51,7 @@ void App::loginBySavedSession() {
 
 
 void App::auth(std::string message) {
+	system("cls");
 	std::vector<std::string> loginOptions = { "Login", "Signup", "Forgot my password", "Exit" };
 	menu->setOptions(loginOptions);
 

@@ -84,7 +84,7 @@ public:
 
 	void updateProfileDataPage(User& user);
 
-	void depositPage(User& user);
+	void depositPage(User& user, const std::function<void()>& redirectTo);
 
 	void printTransactions(const User& user);
 

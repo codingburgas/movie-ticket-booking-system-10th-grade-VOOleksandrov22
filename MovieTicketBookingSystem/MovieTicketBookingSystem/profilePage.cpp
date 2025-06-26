@@ -15,7 +15,7 @@ void App::profilePage() {
 
 	Dict<std::string, RedirectFunction> redirects = {
 		{"Update Profile Info", [this, &user]() -> void { this->updateProfileDataPage(user); }},
-		{"Deposit Money", [this, &user]() -> void { this->depositPage(user); }},
+		{"Deposit Money", [this, &user]() -> void { this->depositPage(user, [this]() { this->profilePage(); }); }},
 		{"View Transactions", [this, &user]() -> void { this->printTransactions(user); }},
 		{"Change Password", [this, &user]() -> void { this->changePassword(user); }},
 		{"<< Back", [this, &running]() -> void { running = false; }}
@@ -189,7 +189,7 @@ void App::updateProfileDataPage(User& user) {
 
 
 
-void App::depositPage(User& user) {
+void App::depositPage(User& user, const std::function<void()>& redirectTo) {
 
 	FormResult input;
 	try {
@@ -220,11 +220,18 @@ void App::depositPage(User& user) {
 	}
 	catch (const int& code) {}
 
+
 	const double amount = std::stod(input.at(4).second);
 
 	//db->execute("update User set balance = balance + ? where id = ?", { amount, user.getId() });
 	db->execute("insert into Transaction(userId, sum, type) values(?, ?, 'DEPOSIT')", { user.getId(), amount });
 	user = currentSession->getUser(); // update user data after deposit
+
+	throw Redirect(
+		std::format("{}$ were successfully deposited to your account!", amount),
+		redirectTo,
+		MessageType::SUCCESS
+	);
 }
 
 

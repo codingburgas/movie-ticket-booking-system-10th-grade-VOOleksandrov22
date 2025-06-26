@@ -38,39 +38,7 @@ void displayChoices(const std::vector<std::string>& options, const int& highligh
 
 
 size_t Menu::getChoice(std::string question) {
-
-
-    int highlightIndex = 0;
-
-    while (true) {
-        system("cls");
-        std::cout << question << std::endl;
-        displayChoices(getOptions(), highlightIndex);
-        int key = _getch();
-
-        switch (key) {
-        case 0: // Handle special keys (arrows, function keys, etc.)
-        case 224:
-            key = _getch(); // Get the actual key code after the 0 or 224 prefix
-
-            switch (key) {
-            case 72: // Up arrow
-                if (highlightIndex > 0) highlightIndex--;
-                break;
-            case 80: // Down arrow
-                if (highlightIndex < options.size() - 1) highlightIndex++;
-                break;
-            }
-
-            break;
-
-        case 13: // Enter
-            system("cls");
-            return highlightIndex;
-
-            break;
-        }
-    }
+    return getChoice(getOptions(), question);
 }
 
 
@@ -80,7 +48,6 @@ size_t Menu::getChoice(const std::vector<std::string>& options, std::string ques
     int highlightIndex = 0;
 
     while (true) {
-        system("cls");
         std::cout << question << std::endl;
         displayChoices(options, highlightIndex);
         int key = _getch();
@@ -101,10 +68,8 @@ size_t Menu::getChoice(const std::vector<std::string>& options, std::string ques
         case 13: // Enter
             system("cls");
             return highlightIndex;
-
-            break;
         }
-        
+        system("cls");
     }
 }
 

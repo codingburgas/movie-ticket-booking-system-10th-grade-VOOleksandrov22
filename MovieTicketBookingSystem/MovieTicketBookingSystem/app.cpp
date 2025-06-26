@@ -137,6 +137,20 @@ App::App()
 }
 
 
+void printRedirect(const Redirect& r) {
+	system("cls");
+	switch (r.getType())
+	{
+	case MessageType::SUCCESS:
+		std::cout << GREEN; break;
+	case MessageType::WARNING:
+		std::cout << ORANGE; break;
+	case MessageType::ERROR:
+		std::cout << RED; break;
+	}
+
+	std::cout << r.getMessage() << RESET;
+}
 
 
 
@@ -170,6 +184,7 @@ void App::mainLoop() {
 		actions.push_back(redirect.first);
 	}
 
+	system("cls");
 	while (running) {
 		try {
 			size_t choice = menu->getChoice(actions, "Actions are:");
@@ -177,17 +192,7 @@ void App::mainLoop() {
 			redirects.at(choice).second();
 		}
 		catch (const Redirect& redirect) {
-			switch (redirect.getType())
-			{
-			case MessageType::SUCCESS:
-				std::cout << GREEN; break;
-			case MessageType::WARNING:
-				std::cout << ORANGE; break;
-			case MessageType::ERROR:
-				std::cout << RED; break;
-			}
-
-			std::cout << redirect.getMessage() << RESET;
+			printRedirect(redirect);
 			redirect.redirectFunction();
 		}
 		
@@ -198,8 +203,6 @@ void App::mainLoop() {
 
 
 void App::chooseCityMenu() {
-	system("cls");
-
 	auto cities = getCities();
 
 	std::vector<std::string> menuOptions = {};
@@ -223,7 +226,15 @@ void App::chooseCityMenu() {
 
 	std::string cityChosen = cities[choice];
 
-	chooseCinemaMenu(cityChosen);
+	
+	try {
+		chooseCinemaMenu(cityChosen);
+	}
+	catch (const Redirect& redirect) {
+		printRedirect(redirect);
+		redirect.redirectFunction();
+	}
+	
 
 }
 
@@ -252,13 +263,19 @@ void App::chooseCinemaMenu(const std::string& city) {
 
 	if (choice == menuOptions.size() - 1) return;
 	
-	chooseMovieMenu(std::stoul(cinemas[choice]["id"]));
 	
+	
+	try {
+		chooseMovieMenu(std::stoul(cinemas[choice]["id"]));
+	}
+	catch (const Redirect& redirect) {
+		printRedirect(redirect);
+		redirect.redirectFunction();
+	}
 
 }
 
 void App::chooseMovieMenu(const unsigned int& cinemaId) {
-	std::cout << cinemaId;
 	std::string sessionsQuery =
 		R"(select
 		ms.id,
@@ -297,7 +314,14 @@ void App::chooseMovieMenu(const unsigned int& cinemaId) {
 
 	if (choice == menuOptions.size() - 1) return;
 
-	bookTicket(sessions[choice]);
+	try {
+		bookTicket(sessions[choice]);
+	}
+	catch (const Redirect& redirect) {
+		printRedirect(redirect);
+		redirect.redirectFunction();
+	}
+	
 	
 
 	
@@ -397,7 +421,15 @@ void App::bookTicket(Row& session) {
 			else if (seatChosen.second == 1) { // deposit
 				throw Redirect(
 					std::format("Update balance for a \"{}\" at {}!\n\n", session["title"], session["startsAt"]),
-					[this, &user]() -> void { depositPage(user); });
+					[this, &user, session]() -> void { 
+						try {
+							depositPage(user, [this, &session]() -> void { bookTicket(const_cast<Row&>(session)); }); 
+						}
+						catch (const Redirect& redirect) {
+							printRedirect(redirect);
+							redirect.redirectFunction();
+						}
+					});
 			}
 			else if (seatChosen.second == 2) { // exit
 
@@ -485,10 +517,9 @@ void App::bookTicket(Row& session) {
 		if (currentSession->getUser().getBalance() < price) {
 			throw Redirect(
 				"You don't have enough money to book this ticket!\n\n",
-				[this, &user]() -> void { this->depositPage(user); },
+				[this, &user, &session]() -> void { this->depositPage(user, [this, &session]() { bookTicket(session); }); },
 				MessageType::ERROR
 			);	
-			return;
 		}
 
 		db->execute("INSERT INTO Transaction (sum, userId, movieSessionId, seatsData) VALUES (?, ?, ?, ?);",
