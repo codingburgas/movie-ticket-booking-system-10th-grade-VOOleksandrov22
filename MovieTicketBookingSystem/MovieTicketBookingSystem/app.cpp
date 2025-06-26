@@ -102,7 +102,8 @@ void App::defineHelperMethods() {
 	};
 
 	skipCheck = [this](json& data, const User& user) -> bool {
-		std::string debugInfo = data.dump(4);
+		if (data["data"].contains("isConfirmation")) return false;
+
 		double currentlyChosenSeatsPrice = 0.0;
 		json currentlyChosenSeats = json::array();
 		if (this->tempValues.contains("currentlyChosenSeats")) {
@@ -325,6 +326,33 @@ void App::bookTicket(Row& session) {
 
 	json seats = json::parse(session["seats"]);
 
+	auto buttons = json::parse(R"(
+		[
+			{
+			  "data": {
+				"text": "PAY",
+				"isConfirmation": 1
+			  }
+			},
+			{
+			"data": {
+				"text": "DEPOSIT",
+				"isConfirmation": 1
+			  }
+			},
+			{
+			  "data": {
+				"text": "EXIT",
+				"isConfirmation": 1
+			  }
+			}
+
+
+		]
+	)");
+
+	seats.push_back(buttons);
+
 	int itemSize[2] = { 10, 5 };
 
 
@@ -340,9 +368,22 @@ void App::bookTicket(Row& session) {
 			std::format("Choose a seat for a \"{}\" at {}!", session["title"], session["startsAt"])
 		);
 
-		if (skipCheckWithUser(seats[seatChosen.first][seatChosen.second])) { // if the seat is blank or booked
-			std::cout << "This seat is impossible to book, please contact us about the situation!\n";
-			tempValues.erase("currentlyChosenSeats"); // remove the temporary value for booked seats
+		if (seatChosen.first == seats.size() - 1) {
+			if (seatChosen.second == 0) { // pay
+				if (bookedSeats.size() == 0) {
+					std::cout << "You haven't chosen any seats yet!\n";
+					int x; std::cin >> x;
+					continue;
+				}
+				bookMoreSeats = false;
+			}
+			else if (seatChosen.second == 1) { // deposit
+				depositPage(user);
+				continue;
+			}
+			else if (seatChosen.second == 2) { // exit
+				return;
+			}
 			continue;
 		}
 
@@ -368,18 +409,6 @@ void App::bookTicket(Row& session) {
 			
 			continue;
 		}
-
-		std::vector<std::string> menuOptions = {
-			"Book another seat",
-			"Payment",
-			"<< Back"
-		};
-
-		size_t choice = menu->getChoice(menuOptions, getSeatData(seats[seatChosen.first][seatChosen.second]) + "\n\nChoose how to procede:");
-
-		if (choice == 2) { // back
-			continue;
-		}
 		
 		
 		seats[seatChosen.first][seatChosen.second]["data"]["bookedBy"] = user.getId();
@@ -389,10 +418,9 @@ void App::bookTicket(Row& session) {
 		price += bookedSeats[bookedSeats.size() - 1]["data"]["price"].get<double>();
 		tempValues["currentlyChosenSeats"] = bookedSeats.dump();
 
-		if (choice == 1) { // payment
-			bookMoreSeats = false;
-		}
 	}
+
+	seats.erase(seats.end() - 1); // remove buttons from the seats array
 
 	auto confirmationButtons = json::parse(R"(
 		[
@@ -460,7 +488,6 @@ void App::bookTicket(Row& session) {
 	else { // cancel
 		tempValues.erase("currentlyChosenSeats"); // remove the temporary value for booked seats
 		return;
-		
 	}
 	
 	
