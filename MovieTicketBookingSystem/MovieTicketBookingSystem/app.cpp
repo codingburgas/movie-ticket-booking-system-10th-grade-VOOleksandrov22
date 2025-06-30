@@ -195,6 +195,10 @@ void App::mainLoop() {
 			printRedirect(redirect);
 			redirect.redirectFunction();
 		}
+		catch (...) {
+			system("cls");
+			std::cout << RED << "UNEXPECTED ERROR OCCURED, PLEASE CONTACT US ABOUT THIS SITUATION\n\n" << RESET;
+		}
 		
 	}
 }

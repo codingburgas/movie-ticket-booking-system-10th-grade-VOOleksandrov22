@@ -22,8 +22,7 @@ public:
 		std::exception(message.c_str()),
 		message(message),
 		type(type),
-		redirectFunction(redirectFunction) {
-	}
+		redirectFunction(redirectFunction) {}
 
 	std::string getMessage() const {
 		return message;
@@ -34,5 +33,7 @@ public:
 	const char* what() const noexcept override {
 		return message.c_str();
 	}
+
+	void print(const Redirect& r);
 
 };
