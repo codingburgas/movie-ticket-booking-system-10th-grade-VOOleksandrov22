@@ -84,4 +84,8 @@ public:
 	void clear() {
 		data.clear();
 	}
+
+	void reserve(const size_t& amount = 0) {
+		data.reserve(0);
+	}
 };

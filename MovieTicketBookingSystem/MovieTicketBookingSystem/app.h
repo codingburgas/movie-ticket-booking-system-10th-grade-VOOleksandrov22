@@ -91,5 +91,7 @@ public:
 	void changePassword(const User& user);
 
 	void forgotPassword();
+
+	void adminPage();
 	
 };

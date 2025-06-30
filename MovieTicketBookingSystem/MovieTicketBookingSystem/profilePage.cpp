@@ -21,9 +21,11 @@ void App::profilePage() {
 		{"<< Back", [this, &running]() -> void { running = false; }}
 	};
 
-	std::vector<std::string> actions = {};
+	std::vector<std::string> actions;
+	actions.reserve(redirects.size());
+
 	for (const auto& redirect : redirects) {
-		actions.push_back(redirect.first);
+		actions.emplace_back(redirect.first);
 	}
 
 	while (running) {
