@@ -104,10 +104,13 @@ public:
 	void updateCinema();
 	void deleteCinema();
 
-	//// --- Hall CRUD Functions ---
-	//void createHall();
-	//void updateHall();
-	//void deleteHall();
+	// --- Hall CRUD Functions ---
+	void createHall();
+
+	void updateHall();
+	json createSeatLayoutMenu();
+
+	void deleteHall();
 
 	//// --- Movie CRUD Functions ---
 	//void createMovie();
@@ -115,3 +118,6 @@ public:
 	//void deleteMovie();
 	
 };
+
+
+std::string addLineUnderBlockIfHighlighted(const std::string& block, json& data, const App* app);

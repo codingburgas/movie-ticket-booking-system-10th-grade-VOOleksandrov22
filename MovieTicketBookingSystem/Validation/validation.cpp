@@ -362,6 +362,13 @@ void notEmptyStr(const std::string& value) {
 }
 
 
+void isBoolStr(const std::string& value) {
+	if (value != "t" && value != "f") {
+		throw std::runtime_error("This filed must represent boolean value");
+	}
+}
+
+
 
 void validateUsername(const FormResult& formData, const size_t& fieldIndex) {
 	validateUsernameStr(formData.at(fieldIndex).second);
@@ -416,4 +423,8 @@ void validateAmount(const FormResult& formData, const size_t& fieldIndex) {
 
 void notEmpty(const FormResult& formData, const size_t& fieldIndex) {
 	notEmptyStr(formData.at(fieldIndex).second);
+}
+
+void isBool(const FormResult& formData, const size_t& fieldIndex) {
+	isBoolStr(formData.at(fieldIndex).second);
 }

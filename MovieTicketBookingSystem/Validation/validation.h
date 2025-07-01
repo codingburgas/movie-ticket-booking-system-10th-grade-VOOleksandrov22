@@ -156,3 +156,6 @@ void validateAmount(const FormResult& formData, const size_t& fieldIndex);
  */
 void notEmptyStr(const std::string& value);
 void notEmpty(const FormResult& formData, const size_t& fieldIndex);
+
+void isBoolStr(const std::string& value);
+void isBool(const FormResult& formData, const size_t& fieldIndex);

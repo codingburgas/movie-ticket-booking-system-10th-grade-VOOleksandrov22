@@ -189,7 +189,7 @@ std::pair<size_t, size_t> Menu::getChoice(
     bool axesVisible
 ) {
 
-
+    std::string test = data.dump();
     // find first enabled
     size_t highlightPos[2] = { 0, 0 };
     bool set = false;

@@ -138,8 +138,6 @@ App::App()
 		redirect.print();
 		redirect.redirectFunction();
 	}
-	
-	mainMenu();
 }
 
 
@@ -175,9 +173,10 @@ void App::mainMenu() {
 		redirect.print();
 		redirect.redirectFunction();
 	}
-	catch (...) {
+	catch (const std::exception& e) {
 		system("cls");
-		std::cout << RED << "UNEXPECTED ERROR OCCURED, PLEASE CONTACT US ABOUT THIS SITUATION\n\n" << RESET;
+		std::cout << RED << std::format("UNEXPECTED ERROR OCCURED, PLEASE CONTACT US ABOUT THIS SITUATION. ERROR: {}\n\n", e.what()) << RESET;
+		mainMenu();
 	}
 }
 
@@ -403,9 +402,6 @@ void App::bookTicket(const Row& session) {
 	)");
 
 	seats.push_back(buttons);
-
-	int itemSize[2] = { 10, 5 };
-
 
 	auto bookedSeats = json::array();
 	bool bookMoreSeats = true;
