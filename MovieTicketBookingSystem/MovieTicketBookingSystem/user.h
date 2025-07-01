@@ -46,7 +46,7 @@ public:
         return *this;
     }
 
-    User(App* app, Row& data)
+    User(App* app, const Row& data)
         :
         app(app),
         id(std::stoul(data["id"])),
@@ -57,7 +57,9 @@ public:
         gender(data["gender"]),
         age(data["age"]),
         phone(data["phone"])
-    {}
+    {
+        std::cout << data["isAdmin"];
+    }
 
     std::string getUsername() const { return username; }
     unsigned int getId() const { return id; }
@@ -101,7 +103,7 @@ public:
         std::string insertQuery = "insert into User(username, password, isAdmin, email, gender, age, phone) values (?, ?, ?, ?, ?, ?, ?)";
         app->db->execute(
             insertQuery,
-            { username, password, (isAdmin ? "TRUE" : "FALSE"), email, const_cast<Config*>(app->config)->genders[gender[0]], age, phone.empty() ? "NULL" : "'" + phone + "'" });
+            { username, password, (isAdmin ? 1 : 0), email, const_cast<Config*>(app->config)->genders[gender[0]], age, phone.empty() ? "NULL" : "'" + phone + "'" });
 
 		return 1;
 	}

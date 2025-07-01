@@ -163,6 +163,9 @@
     <ProjectReference Include="..\menu\menu.vcxproj">
       <Project>{18589191-2cfd-4c78-a40f-ae02441cc03d}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\Redirect\Redirect.vcxproj">
+      <Project>{e1945af0-d10d-44c9-bad8-70d769068bcf}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\Utils\Utils.vcxproj">
       <Project>{2d8ea103-6d8b-4654-9090-7ed423719dbe}</Project>
     </ProjectReference>

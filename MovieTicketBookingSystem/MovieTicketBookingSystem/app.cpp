@@ -141,37 +141,31 @@ App::App()
 void App::mainLoop() {
 	bool running = true;
 
-	auto user = currentSession->getUser();
-
-
-	Dict<std::string, RedirectFunction> redirects = {
-		{"My profile", [this]() -> void { this->profilePage(); }},
-		{"Buy a ticket", [this]() -> void { this->bookTicket(); }},
-		{"Log out", [this]() -> void { this->logout(); } },
-		{"Exit",[]() -> void {
-			system("cls");
-			std::cout << "\nTill next time! (^///^)\n";
-			exit(0);
-		}}
-	};
-
-	if (user.getIsAdmin()) {
-		redirects.insert("Admin panel", 
-			[this]() -> void { this->adminPage(); },
-			redirects.size() - 2
-		);
-	}
-
-	std::vector<std::string> actions;
-	actions.reserve(redirects.size());
-	for (const auto& redirect : redirects) {
-		actions.emplace_back(redirect.first);
-	}
-
 	system("cls");
 	while (running) {
+		auto user = currentSession->getUser();
+
+
+		Dict<std::string, RedirectFunction> redirects = {
+			{"My profile", [this]() -> void { this->profilePage(); }},
+			{"Buy a ticket", [this]() -> void { this->bookTicket(); }},
+			{"Log out", [this]() -> void { this->logout(); } },
+			{"Exit",[]() -> void {
+				system("cls");
+				std::cout << "\nTill next time! (^///^)\n";
+				exit(0);
+			}}
+		};
+
+		if (user.getIsAdmin()) {
+			redirects.insert("Admin panel",
+				[this]() -> void { this->adminPage(); },
+				redirects.size() - 2
+			);
+		}
+
 		try {
-			size_t choice = menu->getChoice(actions, "Actions are:");
+			size_t choice = menu->getChoice(redirects.keys(), "Actions are:");
 
 			redirects.at(choice).second();
 		}
