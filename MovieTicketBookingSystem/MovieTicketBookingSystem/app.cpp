@@ -137,23 +137,6 @@ App::App()
 }
 
 
-void printRedirect(const Redirect& r) {
-	system("cls");
-	switch (r.getType())
-	{
-	case MessageType::SUCCESS:
-		std::cout << GREEN; break;
-	case MessageType::WARNING:
-		std::cout << ORANGE; break;
-	case MessageType::ERROR:
-		std::cout << RED; break;
-	}
-
-	std::cout << r.getMessage() << RESET;
-}
-
-
-
 
 void App::mainLoop() {
 	bool running = true;
@@ -193,7 +176,7 @@ void App::mainLoop() {
 			redirects.at(choice).second();
 		}
 		catch (const Redirect& redirect) {
-			printRedirect(redirect);
+			redirect.print();
 			redirect.redirectFunction();
 		}
 		catch (...) {
@@ -214,7 +197,7 @@ void App::bookTicket() {
 		bookTicket(movieSessionData);
 	}
 	catch (const Redirect& redirect) {
-		printRedirect(redirect);
+		redirect.print();
 		redirect.redirectFunction();
 	}
 
@@ -249,7 +232,7 @@ std::string App::chooseCityMenu() {
 					this->mainLoop();
 				}
 				catch (const Redirect& redirect) {
-					printRedirect(redirect);
+					redirect.print();
 					redirect.redirectFunction();
 				}
 			});
@@ -293,7 +276,7 @@ unsigned long App::chooseCinemaMenu(const std::string& city) {
 					this->mainLoop();
 				}
 				catch (const Redirect& redirect) {
-					printRedirect(redirect);
+					redirect.print();
 					redirect.redirectFunction();
 				}
 			});
@@ -348,7 +331,7 @@ Row App::chooseMovieMenu(const unsigned long& cinemaId) {
 					this->mainLoop();
 				}
 				catch (const Redirect& redirect) {
-					printRedirect(redirect);
+					redirect.print();
 					redirect.redirectFunction();
 				}
 			});
@@ -459,7 +442,7 @@ void App::bookTicket(const Row& session) {
 							depositPage(user, [this, &session]() -> void { bookTicket(const_cast<Row&>(session)); }); 
 						}
 						catch (const Redirect& redirect) {
-							printRedirect(redirect);
+							redirect.print();
 							redirect.redirectFunction();
 						}
 					});

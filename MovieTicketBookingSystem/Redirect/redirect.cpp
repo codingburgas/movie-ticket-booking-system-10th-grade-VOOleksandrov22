@@ -3,9 +3,9 @@
 #include "../Colors/colors.h"
 
 
-void Redirect::print(const Redirect& r) {
+void Redirect::print() const {
 	system("cls");
-	switch (r.getType())
+	switch (getType())
 	{
 	case MessageType::SUCCESS:
 		std::cout << GREEN; break;
@@ -15,5 +15,5 @@ void Redirect::print(const Redirect& r) {
 		std::cout << RED; break;
 	}
 
-	std::cout << r.getMessage() << RESET;
+	std::cout << getMessage() << RESET;
 }

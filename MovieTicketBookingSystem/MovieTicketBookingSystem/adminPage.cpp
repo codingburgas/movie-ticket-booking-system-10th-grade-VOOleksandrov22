@@ -127,7 +127,7 @@ void App::createCinema() {
 			}, "CREATE");
 	}
 	catch (const int& code) {
-		auth("The form submission was cancelled.\n\n");
+		throw Redirect("Form submission was cancelled\n\n", [this]() -> void { this->adminPage(); }, MessageType::WARNING);
 	}
 
 	const std::string& name = input.at(0).second;
@@ -139,6 +139,18 @@ void App::createCinema() {
 
 
 void App::updateCinema() {
+	try {
+		const std::string city = chooseCityMenu();
+		const unsigned long cinemaId = chooseCinemaMenu(city);
+		Row movieSessionData = chooseMovieMenu(cinemaId);
+
+		bookTicket(movieSessionData);
+	}
+	catch (const Redirect& redirect) {
+		redirect.print();
+		redirect.redirectFunction();
+	}
+
 	FormResult input;
 	try {
 		input = initForm({

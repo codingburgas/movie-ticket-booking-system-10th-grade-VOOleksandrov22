@@ -34,6 +34,6 @@ public:
 		return message.c_str();
 	}
 
-	void print(const Redirect& r);
+	void print() const;
 
 };
