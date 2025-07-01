@@ -133,51 +133,47 @@ App::App()
 {
 	loginBySavedSession();
 	defineHelperMethods();
-	mainLoop();
+	mainMenu();
 }
 
 
 
-void App::mainLoop() {
-	bool running = true;
-
+void App::mainMenu() {
 	system("cls");
-	while (running) {
-		auto user = currentSession->getUser();
+
+	auto user = currentSession->getUser();
 
 
-		Dict<std::string, RedirectFunction> redirects = {
-			{"My profile", [this]() -> void { this->profilePage(); }},
-			{"Buy a ticket", [this]() -> void { this->bookTicket(); }},
-			{"Log out", [this]() -> void { this->logout(); } },
-			{"Exit",[]() -> void {
-				system("cls");
-				std::cout << "\nTill next time! (^///^)\n";
-				exit(0);
-			}}
-		};
-
-		if (user.getIsAdmin()) {
-			redirects.insert("Admin panel",
-				[this]() -> void { this->adminPage(); },
-				redirects.size() - 2
-			);
-		}
-
-		try {
-			size_t choice = menu->getChoice(redirects.keys(), "Actions are:");
-
-			redirects.at(choice).second();
-		}
-		catch (const Redirect& redirect) {
-			redirect.print();
-			redirect.redirectFunction();
-		}
-		catch (...) {
+	Dict<std::string, RedirectFunction> redirects = {
+		{"My profile", [this]() -> void { this->profilePage(); }},
+		{"Buy a ticket", [this]() -> void { this->bookTicket(); }},
+		{"Log out", [this]() -> void { this->logout(); } },
+		{"Exit",[]() -> void {
 			system("cls");
-			std::cout << RED << "UNEXPECTED ERROR OCCURED, PLEASE CONTACT US ABOUT THIS SITUATION\n\n" << RESET;
-		}
-		
+			std::cout << "\nTill next time! (^///^)\n";
+			exit(0);
+		}}
+	};
+
+	if (user.getIsAdmin()) {
+		redirects.insert("Admin panel",
+			[this]() -> void { this->adminPage(); },
+			redirects.size() - 2
+		);
+	}
+
+	try {
+		size_t choice = menu->getChoice(redirects.keys(), "Actions are:");
+
+		redirects.at(choice).second();
+	}
+	catch (const Redirect& redirect) {
+		redirect.print();
+		redirect.redirectFunction();
+	}
+	catch (...) {
+		system("cls");
+		std::cout << RED << "UNEXPECTED ERROR OCCURED, PLEASE CONTACT US ABOUT THIS SITUATION\n\n" << RESET;
 	}
 }
 
@@ -223,7 +219,7 @@ std::string App::chooseCityMenu() {
 		throw Redirect("",
 			[this]() -> void {
 				try {
-					this->mainLoop();
+					this->mainMenu();
 				}
 				catch (const Redirect& redirect) {
 					redirect.print();
@@ -267,7 +263,7 @@ unsigned long App::chooseCinemaMenu(const std::string& city) {
 		throw Redirect("",
 			[this]() -> void {
 				try {
-					this->mainLoop();
+					this->mainMenu();
 				}
 				catch (const Redirect& redirect) {
 					redirect.print();
@@ -322,7 +318,7 @@ Row App::chooseMovieMenu(const unsigned long& cinemaId) {
 		throw Redirect("",
 			[this]() -> void {
 				try {
-					this->mainLoop();
+					this->mainMenu();
 				}
 				catch (const Redirect& redirect) {
 					redirect.print();
@@ -540,11 +536,14 @@ void App::bookTicket(const Row& session) {
 			{ seats.dump(), std::stoi(session["id"]) });
 
 		tempValues.erase("currentlyChosenSeats"); // remove the temporary value for booked seats
+
+		throw Redirect("Ticket was successfully booked", [this]() -> void { this->mainMenu(); }, MessageType::SUCCESS);
 		
 	}
 	else { // cancel
 		tempValues.erase("currentlyChosenSeats"); // remove the temporary value for booked seats
-		return;
+		
+		throw Redirect("", [this]() -> void { this->mainMenu(); });
 	}
 	
 	

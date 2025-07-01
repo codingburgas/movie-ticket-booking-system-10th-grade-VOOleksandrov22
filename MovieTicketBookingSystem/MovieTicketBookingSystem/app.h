@@ -69,7 +69,7 @@ public:
 
 	void logout();
 
-	void mainLoop();
+	void mainMenu();
 
 	void bookTicket();
 

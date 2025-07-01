@@ -17,7 +17,7 @@ void App::profilePage() {
 		{"Deposit Money", [this, &user]() -> void { this->depositPage(user, [this]() { this->profilePage(); }); }},
 		{"View Transactions", [this, &user]() -> void { this->printTransactions(user); }},
 		{"Change Password", [this, &user]() -> void { this->changePassword(user); }},
-		{"<< Back", [this]() -> void { this->mainLoop(); }}
+		{"<< Back", [this]() -> void { this->mainMenu(); }}
 	};
 
 	std::string data = std::format("Your profile data:\nUsername: {}\nEmail: {}\nBalance: {}$\nAdmin: {}\nGender: {}\nAge: {}\nPhone: {}\n\n",

@@ -57,9 +57,7 @@ public:
         gender(data["gender"]),
         age(data["age"]),
         phone(data["phone"])
-    {
-        std::cout << data["isAdmin"];
-    }
+    {}
 
     std::string getUsername() const { return username; }
     unsigned int getId() const { return id; }
