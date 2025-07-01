@@ -61,7 +61,7 @@ public:
 
 	void loginBySavedSession();
 
-	void auth(std::string message="");
+	void auth();
 
 	void login();
 

@@ -12,7 +12,6 @@ std::string addLineUnderBlockIfHighlighted(const std::string& block, json& data,
 
 
 void App::defineHelperMethods() {
-	auto user = currentSession->getUser();
 	// Define the helper methods for menu item rendering
 	regular = [this](json& data, const User& user) -> std::string {
 		std::string paintIn = RESET;
@@ -131,16 +130,21 @@ App::App()
 	db(new DB::Database(config->url, config->username, config->password, config->schema, config->debugMode)),
 	menu(new Menu())
 {
-	loginBySavedSession();
 	defineHelperMethods();
+	try {
+		loginBySavedSession();
+	}
+	catch (const Redirect& redirect) {
+		redirect.print();
+		redirect.redirectFunction();
+	}
+	
 	mainMenu();
 }
 
 
 
 void App::mainMenu() {
-	system("cls");
-
 	auto user = currentSession->getUser();
 
 

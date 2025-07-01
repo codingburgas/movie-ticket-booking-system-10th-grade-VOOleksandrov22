@@ -31,7 +31,14 @@ void App::profilePage() {
 	);
 	size_t choice = menu->getChoice(redirects.keys(), data + "Choose an action: ");
 
-	redirects.at(choice).second();
+	try {
+		redirects.at(choice).second();
+	}
+	catch (const Redirect& redirect) {
+		redirect.print();
+		redirect.redirectFunction();
+	}
+	
 }
 
 
@@ -137,7 +144,7 @@ void App::printTransactions(const User& user) {
 
 	std::cout << "Press any key to continue...\n";
 	_getch();
-	system("cls");
+	throw Redirect("", [this]() -> void { this->profilePage(); }, MessageType::INFO);
 }
 
 

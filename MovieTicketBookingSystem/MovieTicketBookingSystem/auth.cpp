@@ -39,24 +39,22 @@ void App::loginBySavedSession() {
 		}
 
 		currentSession = new Session(this, sessions[0]);
-		std::cout << "Logged in as " << currentSession->getUser().getUsername() << std::endl;
+		throw Redirect("Login was successful\n\n", [this]() -> void { this->mainMenu(); }, MessageType::SUCCESS);
 
 	}
 	catch (const std::exception& e) {
-		std::cout << "Error: " << e.what() << std::endl;
+		throw Redirect("Login was unsuccessful\n\n", [this]() -> void { this->auth(); }, MessageType::ERROR);
 	}
 }
 
 
 
 
-void App::auth(std::string message) {
-	system("cls");
+void App::auth() {
 	std::vector<std::string> loginOptions = { "Login", "Signup", "Forgot my password", "Exit" };
-	menu->setOptions(loginOptions);
 
 
-	int choice = menu->getChoice(message + "Choose an option:");
+	int choice = menu->getChoice(loginOptions, "Choose an option:");
 
 	switch (choice) {
 	case 0:
@@ -84,14 +82,14 @@ void App::login() {
 			}, "LOGIN");
 	}
 	catch (const int& code) {
-		auth("The form submission was cancelled.\n\n");
+		throw Redirect("The form submission was cancelled.\n\n", [this]() -> void { this->auth(); }, MessageType::WARNING);
 	}
 
 
 	bool success = Session::initSession(this, input.at(0).second, input.at(1).second);
 
 	if (!success) {
-		auth("Incorrect credentials entered\n\n");
+		throw Redirect("Incorrect credentials entered\n\n", [this]() -> void { this->auth(); }, MessageType::ERROR);
 	}
 
 	loginBySavedSession();
@@ -133,7 +131,7 @@ void App::signup() {
 		}, "SIGNUP");
 	}
 	catch (const int& code) {
-		auth("The form submission was cancelled.\n\n");
+		throw Redirect("The form submission was cancelled.\n\n", [this]() -> void { this->auth(); }, MessageType::WARNING);
 	}
 	
 	const std::string email = input.at(1).second;
@@ -154,12 +152,12 @@ void App::signup() {
 		}, "CHECK");
 	}
 	catch (const int& code) {
-		auth("The form submission was cancelled.\n\n");
+		throw Redirect("The form submission was cancelled.\n\n", [this]() -> void { this->auth(); }, MessageType::WARNING);
 	}
 	
 
 	if (std::stoi(input.at(0).second) != verificationCode) {
-		auth("Incorrect verification code entered\n\n");
+		throw Redirect("Incorrect verification code\n\n", [this]() -> void { this->auth(); }, MessageType::ERROR);
 		return;
 	}
 
@@ -171,10 +169,10 @@ void App::signup() {
 		loginBySavedSession();
 		break;
 	case 2:
-		auth("User with such username already exists!\n");
+		throw Redirect("User with such username exists.\n\n", [this]() -> void { this->auth(); }, MessageType::ERROR);
 		break;
 	default:
-		auth("Unknown error occured! \n");
+		throw Redirect("Unknown error occured.\n\n", [this]() -> void { this->auth(); }, MessageType::ERROR);
 		break;
 	}
 
@@ -194,13 +192,16 @@ void App::logout() {
 
 		bool successful = Utils::File::writeJsonToFile(config->pathToCache, cache);
 
-		if (!successful) std::cerr << "Failed to save cache" << std::endl;
+		if (!successful) {
+			throw Redirect("Failed to save cache\n\n", [this]() -> void { this->auth(); }, MessageType::ERROR);
+		}
 
-		auth();
+		throw Redirect("Logout was successful\n\n", [this]() -> void { this->auth(); }, MessageType::SUCCESS);
+
 
 	}
 	catch (const std::exception& e) {
-		std::cout << "Error: " << e.what() << std::endl;
+		throw Redirect("Failed to save cache\n\n", [this]() -> void { this->auth(); }, MessageType::ERROR);
 	}
 }
 
@@ -213,8 +214,7 @@ void App::forgotPassword() {
 			}, "SUBMIT");
 	}
 	catch (const int& code) {
-		auth("The form submission was cancelled.\n\n");
-		return;
+		throw Redirect("The form submission was cancelled.\n\n", [this]() -> void { this->auth(); }, MessageType::WARNING);
 	}
 	std::string email, credential = input.at(0).second;
 	try {
@@ -237,12 +237,12 @@ void App::forgotPassword() {
 			}, "CHECK");
 	}
 	catch (const int& code) {
-		auth("The form submission was cancelled.\n\n");
+		throw Redirect("The form submission was cancelled.\n\n", [this]() -> void { this->auth(); }, MessageType::WARNING);
 		return;
 	}
 
 	if (std::stoi(input.at(0).second) != verificationCode) {
-		auth("Incorrect verification code entered\n\n");
+		throw Redirect("Incorrect verification code entered.\n\n", [this]() -> void { this->auth(); }, MessageType::WARNING);
 		return;
 	}
 
@@ -257,10 +257,10 @@ void App::forgotPassword() {
 			}, "CHANGE");
 	}
 	catch (const int& code) {
-		auth("The form submission was cancelled.\n\n");
+		throw Redirect("The form submission was cancelled.\n\n", [this]() -> void { this->auth(); }, MessageType::WARNING);
 		return;
 	}
 
 	db->execute("UPDATE User SET password = ? WHERE email = ?", { input.at(0).second, email });
-	auth("Password changed successfully! You can now login with your new password.\n\n");
+	throw Redirect("Password changed successfully! You can now login with your new password.\n\n", [this]() -> void { this->auth(); }, MessageType::SUCCESS);
 }
