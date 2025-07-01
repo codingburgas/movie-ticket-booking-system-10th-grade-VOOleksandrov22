@@ -309,6 +309,7 @@ FormResult initForm(const std::vector<Field*>&& fields, const std::string&& subm
 		if (isCtrlPressed) {
             if (handleCtrlCommands(key, highlightData, windowRectBeforeRefresh, hConsole, csbi)) {
                 if (data.isValid()) {
+    
 					return normalizeData(data);
                 }
             }
