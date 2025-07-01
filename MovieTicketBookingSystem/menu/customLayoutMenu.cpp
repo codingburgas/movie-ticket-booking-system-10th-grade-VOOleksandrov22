@@ -59,7 +59,7 @@ std::string getYAxisString(const std::string& index, const int& itemHeight, cons
     return res;
 }
 
-void displayChoices(
+std::string displayChoices(
     json& data,
     const size_t* highlightPos,
     const std::array<int, 2>& itemSize,
@@ -108,7 +108,7 @@ void displayChoices(
 		}
 	}
 
-	std::cout << output;
+	return output;
 }
 
 
@@ -213,7 +213,7 @@ std::pair<size_t, size_t> Menu::getChoice(
     while (true) {
         system("cls");
         std::cout << question << std::endl;
-        displayChoices(data, highlightPos, itemSize, getHighlightedItemAsString, getRegularItemAsString, skipCheck, axesVisible);
+        std::cout << displayChoices(data, highlightPos, itemSize, getHighlightedItemAsString, getRegularItemAsString, skipCheck, axesVisible);
         int key = _getch();
 
         switch (key) {

@@ -265,7 +265,7 @@ json App::createSeatLayoutMenu() {
                 "isBlank": false,
                 "text": "A1",
                 "isVIP": false,
-                "price": 0
+                "price": 1
             }
         })");
 	json confirmButton = json::parse(R"({ "isConfirm": true })");
@@ -313,7 +313,7 @@ json App::createSeatLayoutMenu() {
 				"          \n"
 				"          \n"
 				"          \n"
-				"          \n", data, this);
+				"          ", data, this);
 		}
 
 
@@ -365,12 +365,11 @@ json App::createSeatLayoutMenu() {
 						if (!seats[row + 1][col].contains("data")) seats[row + 1][col] = addItem;
 						if (!seats[row][col - 1].contains("data")) seats[row][col - 1] = addItem;
 					}
-					else if (seat.contains("isAddIrtem")) {
-						bool seatNearby = false;
-						if (!seats[row - 1][col].contains("data")) continue;
-						if (!seats[row][col + 1].contains("data")) continue;
-						if (!seats[row + 1][col].contains("data")) continue;
-						if (!seats[row][col - 1].contains("data")) continue;
+					else if (seat.contains("isAddItem")) {
+						if (row - 1 < seats.size() && seats[row - 1][col].contains("data")) continue;
+						if (col + 1 < seats[row].size() - 1 && seats[row][col + 1].contains("data")) continue;
+						if (row + 1 < seats.size() && seats[row + 1][col].contains("data")) continue;
+						if (col - 1 < seats[row].size() && seats[row][col - 1].contains("data")) continue;
 
 						seat = spaceItem;
 					}
@@ -397,6 +396,12 @@ json App::createSeatLayoutMenu() {
 
 		layoutUpdated = false;
 
+		json confirmButtonRow = json::array();
+		confirmButtonRow.emplace_back(confirmButton);
+		for (size_t i = 0; i < seats.end().value().size(); i++) {
+			confirmButtonRow.emplace_back(spaceItem);
+		}
+		seats.emplace_back(confirmButtonRow);
 		
 
 		const std::pair<size_t, size_t> seatChoice = menu->getChoice(seats,
@@ -409,12 +414,13 @@ json App::createSeatLayoutMenu() {
 		json& seat = seats[seatChoice.first][seatChoice.second];
 
 		if (seat.contains("isConfirm")) {
-			for (size_t row = 0; row < seats.size(); row++) {
-				for (size_t col = 0; col < seats[row].size(); col++) {
-					if (!seats[row][col].contains("data")) seats[row][col] = json::parse(R"({"data": { "isBlank": true }})");
-				}
+			for (size_t row = seats.size(); row != std::string::npos; row--) {
 				if (!arrayContainsItemWithSpecificCriteria(seats[row], [](const json& data) -> bool { return data.contains("data"); })) {
 					seats.erase(row);
+					continue;
+				}
+				for (size_t col = 0; col < seats[row].size(); col++) {
+					if (!seats[row][col].contains("data")) seats[row][col] = json::parse(R"({"data": { "text": "", "isVIP": false, "price": 0, "isBlank": true }})");
 				}
 			}
 
@@ -457,12 +463,91 @@ void App::createHall() {
 		}
 
 		const std::string& name = input.at(0).second;
-		const std::string& isVip = input.at(1).second;
+		const bool isVip = input.at(1).second == "t";
 		
 		json seats = createSeatLayoutMenu();
 
-		db->execute("insert into Hall(name, seats, cinemaId, isVIP) values(?, ?, ?, ?);", { name, seats.dump(), cinemaId, isVip == "t" ? 1 : 0 });
-		throw Redirect("Hall was successfully created\n\n", [this]() -> void { this->adminPage(); }, MessageType::SUCCESS);
+
+		std::function<std::string(json&)> regularForCreate = [this](json& data) -> std::string {
+			std::string paintIn = RESET;
+			if (data.contains("isHighlighted")) {
+				paintIn = BLUE;
+			}
+			if (data.contains("isConfirm")) {
+				return addLineUnderBlockIfHighlighted(std::format(
+					"{}╭────────╮{}\n"
+					"{}|{:^8}|{}\n"
+					"{}|{:^8}|{}\n"
+					"{}|{:^8}|{}\n"
+					"{}╰────────╯{}",
+					paintIn, RESET,
+					paintIn, "", RESET,
+					paintIn, "CONFIRM", RESET,
+					paintIn, "", RESET,
+					paintIn, RESET
+				), data, this);
+			}
+			else if (data.contains("isAddItem")) {
+				return addLineUnderBlockIfHighlighted(std::format(
+					"{}╭────────╮{}\n"
+					"{}|{:^8}|{}\n"
+					"{}|{:^8}|{}\n"
+					"{}|{:^8}|{}\n"
+					"{}╰────────╯{}",
+					paintIn, RESET,
+					paintIn, "", RESET,
+					paintIn, "+", RESET,
+					paintIn, "", RESET,
+					paintIn, RESET
+				), data, this);
+			}
+			else if (data.contains("isSpaceItem") || (data.contains("data") && data["data"]["isBlank"].get<bool>())) {
+				return addLineUnderBlockIfHighlighted(
+					"          \n"
+					"          \n"
+					"          \n"
+					"          \n"
+					"          \n", data, this);
+			}
+
+
+			return addLineUnderBlockIfHighlighted(std::format(
+				"{}╭────────╮{}\n"
+				"{}|{:^8}|{}\n"
+				"{}|{:^8}|{}\n"
+				"{}|{:^8}|{}\n"
+				"{}╰────────╯{}",
+				paintIn, RESET,
+				paintIn, Utils::String::toString(data["data"]["price"].get<double>(), 2) + "$", RESET,
+				paintIn, data["data"]["text"].get<std::string>(), RESET,
+				paintIn,
+				data["data"]["isVIP"].get<bool>()
+				? std::format("{}{}{}", YELLOW, std::format("{:^8}", "VIP"), paintIn)
+				: std::format("{:^8}", ""),
+				RESET, paintIn, RESET
+			), data, this);
+			};
+
+		std::function<std::string(json&)> highlightForCreate = [this, &regularForCreate](json& data) -> std::string {
+			return regularForCreate(data);
+			};
+
+		std::function<bool(json&)> skipCheckForCreate = [this](json& data) -> bool {
+			return data.contains("isSpaceItem");
+			};
+
+		size_t highlightPos[2] = { 0, 0 };
+		const size_t choice = menu->getChoice({ "Yes", "No" }, std::format("The {}VIP hall is about to be created with name \"{}\" with the following seat struture: \n\n{}\n\n\nDo you confirm?", isVip ? "" : "non-", name, displayChoices(seats, highlightPos, config->customMenuLayoutItemSize, highlightForCreate, regularForCreate, skipCheckForCreate, true)));
+
+		if (choice == 0) {
+			db->execute("insert into Hall(name, seats, cinemaId, isVIP) values(?, ?, ?, ?);", { name, seats.dump(), cinemaId, isVip ? 1 : 0 });
+			throw Redirect("Hall was successfully created\n\n", [this]() -> void { this->adminPage(); }, MessageType::SUCCESS);
+		}
+		else {
+			throw Redirect("Form submission was cancelled", [this]() -> void { this->adminPage(); }, MessageType::WARNING);
+		}
+
+		
 	}
 	catch (const Redirect& redirect) {
 		redirect.print();
