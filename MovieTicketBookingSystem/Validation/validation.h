@@ -11,6 +11,12 @@ const std::string SPECIAL_CHARACTERS = "!@#$%^&*()-_=+[]{}|;:,.<>?/~";
 const int MIN_USERNAME_LENGTH = 3;
 const int MAX_USERNAME_LENGTH = 20;
 
+using ValidationFunction = std::function<void(const FormResult& formData, const size_t& fieldIndex)>;
+
+
+ValidationFunction validAll(const std::vector<ValidationFunction>& conditions);
+
+
 
 /**
  * @brief Validates if a username meets specified complexity and character requirements.
@@ -141,3 +147,12 @@ void validateExpiryDate(const FormResult& formData, const size_t& fieldIndex);
  */
 void validateAmountStr(const std::string& value);
 void validateAmount(const FormResult& formData, const size_t& fieldIndex);
+
+/**
+ * @brief Validates if a string is not empty
+ * @param formData The collected form data.
+ * @param fieldIndex The index of the string field in formData.
+ * @throws std::runtime_error if the username fails any validation rule.
+ */
+void notEmptyStr(const std::string& value);
+void notEmpty(const FormResult& formData, const size_t& fieldIndex);

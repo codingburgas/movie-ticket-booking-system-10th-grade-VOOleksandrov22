@@ -65,6 +65,26 @@ public:
 		throw std::out_of_range("Key not found in const Dict access");
 	}
 
+	const std::vector<F> keys() const {
+		std::vector<F> keys;
+		keys.reserve(data.size());
+
+		for (const auto& pair : data) {
+			keys.emplace_back(pair.first);
+		}
+		return keys;
+	}
+
+	const std::vector<S> values() const {
+		std::vector<S> values;
+		values.reserve(data.size());
+
+		for (const auto& pair : data) {
+			values.emplace_back(pair.second);
+		}
+		return values;
+	}
+
 	auto begin() { return data.begin(); }
 	auto end() { return data.end(); }
 

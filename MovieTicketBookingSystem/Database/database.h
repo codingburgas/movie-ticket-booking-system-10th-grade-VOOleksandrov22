@@ -16,7 +16,10 @@
 #include <cppconn/statement.h>
 #include <cppconn/resultset.h>
 
-using Row = std::map<std::string, std::string>;
+#include "../Dict/dict.h"
+
+
+using Row = Dict<std::string, std::string>;
 
 using ParamVariant = std::variant<std::string, int, unsigned int, double, bool>;
 

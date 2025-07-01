@@ -136,6 +136,11 @@
   <ItemGroup>
     <ClCompile Include="database.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Dict\Dict.vcxproj">
+      <Project>{d4aa2f47-7cc4-444f-853c-9d2195aa10a1}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

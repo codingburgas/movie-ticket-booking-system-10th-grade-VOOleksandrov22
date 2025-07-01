@@ -70,6 +70,8 @@ void displayChoices(
 ) {
     std::string output;
     output.reserve(itemSize[0] * data.size() * itemSize[1] * data[0].size());
+
+
     size_t longestYIndexSize;
     for (size_t i = 0; i < data.size(); i++) {
         std::vector<std::string> row;

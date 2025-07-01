@@ -163,7 +163,7 @@ void App::mainLoop() {
 
 	Dict<std::string, RedirectFunction> redirects = {
 		{"My profile", [this]() -> void { this->profilePage(); }},
-		{"Buy a ticket", [this]() -> void { this->chooseCityMenu(); }},
+		{"Buy a ticket", [this]() -> void { this->bookTicket(); }},
 		{"Log out", [this]() -> void { this->logout(); } },
 		{"Exit",[]() -> void {
 			system("cls");
@@ -174,14 +174,15 @@ void App::mainLoop() {
 
 	if (user.getIsAdmin()) {
 		redirects.insert("Admin panel", 
-			[this]() -> void { std::cout << "TO DO: make admin page"; },
+			[this]() -> void { this->adminPage(); },
 			redirects.size() - 2
 		);
 	}
 
-	std::vector<std::string> actions = {};
+	std::vector<std::string> actions;
+	actions.reserve(redirects.size());
 	for (const auto& redirect : redirects) {
-		actions.push_back(redirect.first);
+		actions.emplace_back(redirect.first);
 	}
 
 	system("cls");
@@ -204,9 +205,24 @@ void App::mainLoop() {
 }
 
 
+void App::bookTicket() {
+	try {
+		const std::string city = chooseCityMenu();
+		const unsigned long cinemaId = chooseCinemaMenu(city);
+		Row movieSessionData = chooseMovieMenu(cinemaId);
+
+		bookTicket(movieSessionData);
+	}
+	catch (const Redirect& redirect) {
+		printRedirect(redirect);
+		redirect.redirectFunction();
+	}
 
 
-void App::chooseCityMenu() {
+}
+
+
+std::string App::chooseCityMenu() {
 	auto cities = getCities();
 
 	std::vector<std::string> menuOptions = {};
@@ -226,23 +242,28 @@ void App::chooseCityMenu() {
 
 
 	size_t choice = menu->getChoice(menuOptions, (menuOptions.size() != 1) ? "Choose city:" : "Sorry, no cities found :(");
-	if (choice == menuOptions.size() - 1) return;
+	if (choice == menuOptions.size() - 1) {
+		throw Redirect("",
+			[this]() -> void {
+				try {
+					this->mainLoop();
+				}
+				catch (const Redirect& redirect) {
+					printRedirect(redirect);
+					redirect.redirectFunction();
+				}
+			});
+	}
 
 	std::string cityChosen = cities[choice];
 
 	
-	try {
-		chooseCinemaMenu(cityChosen);
-	}
-	catch (const Redirect& redirect) {
-		printRedirect(redirect);
-		redirect.redirectFunction();
-	}
+	return cityChosen;
 	
 
 }
 
-void App::chooseCinemaMenu(const std::string& city) {
+unsigned long App::chooseCinemaMenu(const std::string& city) {
 	auto cinemas = DB::resultSetToVector(db->execute("select * from Cinema where city = ?;", { city }));
 
 
@@ -265,21 +286,25 @@ void App::chooseCinemaMenu(const std::string& city) {
 
 	size_t choice = menu->getChoice(menuOptions, (menuOptions.size() != 1) ? std::format("Choose a cinema in {}", city) : "Sorry, no cinemas available :(");
 
-	if (choice == menuOptions.size() - 1) return;
-	
-	
-	
-	try {
-		chooseMovieMenu(std::stoul(cinemas[choice]["id"]));
+	if (choice == menuOptions.size() - 1) {
+		throw Redirect("",
+			[this]() -> void {
+				try {
+					this->mainLoop();
+				}
+				catch (const Redirect& redirect) {
+					printRedirect(redirect);
+					redirect.redirectFunction();
+				}
+			});
 	}
-	catch (const Redirect& redirect) {
-		printRedirect(redirect);
-		redirect.redirectFunction();
-	}
+	
+	
+	return std::stoul(cinemas[choice]["id"]);
 
 }
 
-void App::chooseMovieMenu(const unsigned int& cinemaId) {
+Row App::chooseMovieMenu(const unsigned long& cinemaId) {
 	std::string sessionsQuery =
 		R"(select
 		ms.id,
@@ -316,17 +341,21 @@ void App::chooseMovieMenu(const unsigned int& cinemaId) {
 
 	size_t choice = menu->getChoice(menuOptions, (menuOptions.size() != 1) ? "Choose a movie:" : "Sorry, no movies available :(");
 
-	if (choice == menuOptions.size() - 1) return;
+	if (choice == menuOptions.size() - 1) {
+		throw Redirect("",
+			[this]() -> void {
+				try {
+					this->mainLoop();
+				}
+				catch (const Redirect& redirect) {
+					printRedirect(redirect);
+					redirect.redirectFunction();
+				}
+			});
+	}
 
-	try {
-		bookTicket(sessions[choice]);
-	}
-	catch (const Redirect& redirect) {
-		printRedirect(redirect);
-		redirect.redirectFunction();
-	}
 	
-	
+	return sessions[choice];
 
 	
 }
@@ -351,7 +380,7 @@ std::string getSeatData(const json& seatData) {
 	return std::format("Position: {},\nVIP: {},\nPrice: {}", seatData["data"]["text"].get<std::string>(), seatData["data"]["isVIP"].get<bool>() ? "yes" : "no", Utils::String::toString(seatData["data"]["price"].get<double>()));
 }
 
-void App::bookTicket(Row& session) {
+void App::bookTicket(const Row& session) {
 
 	double price = 0;
 	auto user = currentSession->getUser();

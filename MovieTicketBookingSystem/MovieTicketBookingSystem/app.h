@@ -36,6 +36,9 @@ const std::string passwordInstructions = R"(
 )";
 
 
+enum class Action;
+
+
 class App {
 private:
 	std::function<std::string(json&, const User&)> regular;
@@ -68,14 +71,16 @@ public:
 
 	void mainLoop();
 
-	void chooseCityMenu();
+	void bookTicket();
 
-	void chooseCinemaMenu(const std::string& city);
+	std::string chooseCityMenu();
 
-	void chooseMovieMenu(const unsigned int& cinemaId);
+	unsigned long chooseCinemaMenu(const std::string& city);
+
+	Row chooseMovieMenu(const unsigned long& cinemaId);
 
 
-	void bookTicket(Row& movie);
+	void bookTicket(const Row& movie);
 
 
 	std::vector<std::string> getCities();
@@ -93,5 +98,21 @@ public:
 	void forgotPassword();
 
 	void adminPage();
+
+	// --- Cinema CRUD Functions ---
+	void createCinema();
+	void updateCinema();
+	
+	//void deleteCinema();
+
+	//// --- Hall CRUD Functions ---
+	//void createHall();
+	//void updateHall();
+	//void deleteHall();
+
+	//// --- Movie CRUD Functions ---
+	//void createMovie();
+	//void updateMovie();
+	//void deleteMovie();
 	
 };

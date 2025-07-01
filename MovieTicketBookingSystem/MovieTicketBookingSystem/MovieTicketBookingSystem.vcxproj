@@ -171,6 +171,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="adminPage.cpp" />
     <ClCompile Include="app.cpp" />
     <ClCompile Include="auth.cpp" />
     <ClCompile Include="dataFetch.cpp" />

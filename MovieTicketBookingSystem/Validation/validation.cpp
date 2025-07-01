@@ -14,6 +14,15 @@ const int MAX_FUTURE_CARD_YEARS = 15;
 const std::string specialCharacters = "!@#$%^&*()-_=+[]{}|;:,.<>?/~";
 
 
+ValidationFunction validAll(const std::vector<ValidationFunction>& conditions) {
+	return [&conditions](const FormResult& formData, const size_t& fieldIndex) -> void {
+		for (const auto& condition : conditions) {
+			condition(formData, fieldIndex);
+		}
+		};
+}
+
+
 void validateUsernameStr(const std::string& value) {
 	const std::string& username = value;
 
@@ -340,6 +349,19 @@ void validateAmountStr(const std::string& value) {
 }
 
 
+/**
+ * @brief Validates if a string is not empty
+ * @param formData The collected form data.
+ * @param fieldIndex The index of the string field in formData.
+ * @throws std::runtime_error if the username fails any validation rule.
+ */
+void notEmptyStr(const std::string& value) {
+	if (value.empty()) {
+		throw std::runtime_error("This field cannot be empty");
+	}
+}
+
+
 
 void validateUsername(const FormResult& formData, const size_t& fieldIndex) {
 	validateUsernameStr(formData.at(fieldIndex).second);
@@ -389,4 +411,9 @@ void validateExpiryDate(const FormResult& formData, const size_t& fieldIndex) {
 
 void validateAmount(const FormResult& formData, const size_t& fieldIndex) {
 	validateAmountStr(formData.at(fieldIndex).second);
+}
+
+
+void notEmpty(const FormResult& formData, const size_t& fieldIndex) {
+	notEmptyStr(formData.at(fieldIndex).second);
 }
