@@ -102,8 +102,7 @@ public:
 	// --- Cinema CRUD Functions ---
 	void createCinema();
 	void updateCinema();
-	
-	//void deleteCinema();
+	void deleteCinema();
 
 	//// --- Hall CRUD Functions ---
 	//void createHall();

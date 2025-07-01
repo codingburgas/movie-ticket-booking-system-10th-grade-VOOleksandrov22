@@ -56,7 +56,6 @@ void App::adminPage() {
 	bool running = true;
 
 	while (running) {
-		system("cls");
 		size_t choice = menu->getChoice(actionOptions.keys(), "Choose an action: ");
 		const Action& action = actionOptions.at(choice).second;
 
@@ -95,7 +94,7 @@ void App::adminPage() {
 
 		case Action::DELETE:
 		switch (dataToAlter) {
-		//	case DataToAlter::CINEMA: deleteCinema(); break;
+		case DataToAlter::CINEMA: deleteCinema(); break;
 		//	case DataToAlter::HALL:   deleteHall();   break;
 		//	case DataToAlter::MOVIE:  deleteMovie();  break;
 		//	case DataToAlter::USER:   deleteUser();   break;
@@ -115,6 +114,8 @@ void App::adminPage() {
 			running = false; // Exit on unexpected action
 			break;
 		}
+
+		system("cls");
 	}
 }
 
@@ -163,6 +164,43 @@ void App::updateCinema() {
 		const std::string& address = input.at(2).second;
 
 		db->execute("update Cinema set name = ?, city = ?, street = ? where id = ?;", { name, city, address, cinemaId });
+		throw Redirect("Cinema was successfully updated", [this]() -> void { this->adminPage(); }, MessageType::SUCCESS);
+	}
+	catch (const Redirect& redirect) {
+		redirect.print();
+		redirect.redirectFunction();
+	}
+
+}
+
+
+void App::deleteCinema() {
+	try {
+		const unsigned long cinemaId = chooseCinemaMenu(chooseCityMenu());
+
+		FormResult input;
+		try {
+			input = initForm({
+				new Field({"Confirmation", "", "y/n", "", false, [](const FormResult& formData, const size_t& fieldIndex) -> void {
+					const std::string& val = formData.at(fieldIndex).second;
+					if (val != "y" && val != "n") throw std::runtime_error("Input can be only 'y' or 'n'");
+					}}),
+				}, "UPDATE");
+		}
+		catch (const int& code) {
+			throw Redirect("Form submission was cancelled\n\n", [this]() -> void { this->adminPage(); }, MessageType::WARNING);
+		}
+
+		const std::string& confirm = input.at(0).second;
+
+		if (confirm == "y") {
+			db->execute("delete from Cinema where id = ?;", { cinemaId });
+			throw Redirect("Cinema was successfully deleted", [this]() -> void { this->adminPage(); }, MessageType::SUCCESS);
+		}
+		else {
+			throw Redirect("", [this]() -> void { this->adminPage(); });
+		}
+		
 	}
 	catch (const Redirect& redirect) {
 		redirect.print();

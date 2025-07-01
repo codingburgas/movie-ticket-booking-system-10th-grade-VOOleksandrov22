@@ -8,7 +8,6 @@
 
 
 void App::profilePage() {
-	bool running = true;
 
 	auto user = currentSession->getUser();
 
@@ -18,30 +17,21 @@ void App::profilePage() {
 		{"Deposit Money", [this, &user]() -> void { this->depositPage(user, [this]() { this->profilePage(); }); }},
 		{"View Transactions", [this, &user]() -> void { this->printTransactions(user); }},
 		{"Change Password", [this, &user]() -> void { this->changePassword(user); }},
-		{"<< Back", [this, &running]() -> void { running = false; }}
+		{"<< Back", [this]() -> void { this->mainLoop(); }}
 	};
 
-	std::vector<std::string> actions;
-	actions.reserve(redirects.size());
+	std::string data = std::format("Your profile data:\nUsername: {}\nEmail: {}\nBalance: {}$\nAdmin: {}\nGender: {}\nAge: {}\nPhone: {}\n\n",
+		user.getUsername(),
+		user.getEmail(),
+		Utils::String::toString(user.getBalance()),
+		(user.getIsAdmin() ? "true" : "false"),
+		user.getGender(),
+		user.getAge(),
+		(user.getPhone().empty() ? "Undefined" : user.getPhone())
+	);
+	size_t choice = menu->getChoice(redirects.keys(), data + "Choose an action: ");
 
-	for (const auto& redirect : redirects) {
-		actions.emplace_back(redirect.first);
-	}
-
-	while (running) {
-		std::string data = std::format("Your profile data:\nUsername: {}\nEmail: {}\nBalance: {}$\nAdmin: {}\nGender: {}\nAge: {}\nPhone: {}\n\n",
-			user.getUsername(),
-			user.getEmail(),
-			Utils::String::toString(user.getBalance()),
-			(user.getIsAdmin() ? "true" : "false"),
-			user.getGender(),
-			user.getAge(),
-			(user.getPhone().empty() ? "Undefined" : user.getPhone())
-		);
-		size_t choice = menu->getChoice(actions, data + "Choose an action: ");
-
-		redirects.at(choice).second();
-	}
+	redirects.at(choice).second();
 }
 
 
@@ -147,6 +137,7 @@ void App::printTransactions(const User& user) {
 
 	std::cout << "Press any key to continue...\n";
 	_getch();
+	system("cls");
 }
 
 
@@ -184,9 +175,13 @@ void App::updateProfileDataPage(User& user) {
 
 
 		user = currentSession->getUser();
+		
+		throw Redirect("Profile data was successfully updated\n\n", [this]() -> void { this->profilePage(); }, MessageType::SUCCESS);
 
 	}
-	catch (const int& code) {}
+	catch (const int& code) {
+		throw Redirect("Form submission was cancelled\n\n", [this]() -> void { this->profilePage(); }, MessageType::WARNING);
+	}
 }
 
 
@@ -220,8 +215,9 @@ void App::depositPage(User& user, const std::function<void()>& redirectTo) {
 			new Field({"amount", "", std::format("Enter the amount to deposit. Your current balance is {}", Utils::String::toString(user.getBalance())), "Must be a positive number. (e.g. 100 or 100.50)", false, validateAmount})
 			}, "DEPOSIT");
 	}
-	catch (const int& code) {}
-
+	catch (const int& code) {
+		throw Redirect("Form submission was cancelled\n\n", [this]() -> void { this->profilePage(); }, MessageType::WARNING);
+	}
 
 	const double amount = std::stod(input.at(4).second);
 
@@ -230,7 +226,7 @@ void App::depositPage(User& user, const std::function<void()>& redirectTo) {
 	user = currentSession->getUser(); // update user data after deposit
 
 	throw Redirect(
-		std::format("{}$ were successfully deposited to your account!", amount),
+		std::format("{}$ were successfully deposited to your account!\n\n", amount),
 		redirectTo,
 		MessageType::SUCCESS
 	);
@@ -257,7 +253,10 @@ void App::changePassword(const User& user) {
 			throw std::runtime_error("Current password is incorrect");
 		}
 		db->execute("update User set password = ? where id = ?", { input.at(1).second, currentSession->getUser().getId() });
-		std::cout << "Password changed successfully.\n";
+		
+		throw Redirect("Password was successfully updated\n\n", [this]() -> void { this->profilePage(); }, MessageType::SUCCESS);
 	}
-	catch (const int& code) {}
+	catch (const int& code) {
+		throw Redirect("Form submission was cancelled\n\n", [this]() -> void { this->profilePage(); }, MessageType::WARNING);
+	}
 }
