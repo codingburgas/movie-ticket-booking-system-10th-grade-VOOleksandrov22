@@ -42,38 +42,6 @@ void App::profilePage() {
 }
 
 
-enum class TimeRelation {
-	InPast,
-	InFuture,
-	InvalidFormat
-};
-
-
-TimeRelation checkTimeRelation(const std::string& time_str) {
-	const auto now = std::chrono::system_clock::now();
-
-
-	std::chrono::system_clock::time_point parsed_time_point;
-	std::istringstream ss(time_str);
-
-	ss >> std::chrono::parse("%Y-%m-%d %H:%M:%S", parsed_time_point);
-
-	if (ss.fail()) {
-		return TimeRelation::InvalidFormat;
-	}
-
-
-
-
-	if (parsed_time_point > now) {
-		return TimeRelation::InFuture;
-	}
-	else {
-		return TimeRelation::InPast;
-	}
-	
-}
-
 
 void App::printTransactions(const User& user) {
 	auto transactions = DB::resultSetToVector(db->execute("select * from transaction where userId = ? order by createdAt desc;",
@@ -101,7 +69,7 @@ void App::printTransactions(const User& user) {
 					WHERE
 					ms.id = ?;)"
 				, { transaction["movieSessionId"] }))[0];
-				if (checkTimeRelation(movie["startsAt"]) == TimeRelation::InFuture) {
+				if (Utils::String::checkTimeRelation(movie["startsAt"]) == Utils::String::TimeRelation::InFuture) {
 					std::cout << ORANGE;
 				}
 				std::cout << std::format("Transaction ID: {}\nPrice: {}$\nMovie: {}\n",

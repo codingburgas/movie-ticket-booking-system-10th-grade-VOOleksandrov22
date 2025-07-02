@@ -286,6 +286,7 @@ Row App::chooseMovieMenu(const unsigned long& cinemaId) {
 		ms.id,
 		ms.startsAt,
 		ms.seats,
+		ms.updatedAt,
 		m.title,
 		m.rating,
 		m.description,
@@ -374,6 +375,7 @@ void App::bookTicket(const Row& session) {
 		};
 
 
+
 	json seats = json::parse(session["seats"]);
 
 	auto buttons = json::parse(R"(
@@ -407,6 +409,31 @@ void App::bookTicket(const Row& session) {
 	bool bookMoreSeats = true;
 
 	while (bookMoreSeats) {
+		const std::string newestUpdatedAtValue = DB::resultSetToVector(db->execute("select updatedAt from moviesession where id = ?", { session["id"] }))[0]["updatedAt"];
+		Utils::String::TimeRelation rel = Utils::String::checkTimeRelation(session["updatedAt"], newestUpdatedAtValue);
+		if (rel == Utils::String::TimeRelation::InPast) {
+			std::string sessionUpdateQuery = R"(
+			select
+			ms.id,
+			ms.startsAt,
+			ms.seats as seats,
+			ms.updatedAt,
+			m.title,
+			m.rating,
+			m.description,
+			m.duration,
+			h.id as hallId
+			from moviesession ms
+			join hall h on h.id = ms.hallId
+			join movie m on ms.movieId = m.id
+			where ms.id = ?)";
+
+			const Row newSession = DB::resultSetToVector(db->execute(sessionUpdateQuery, { session["id"] }))[0];
+			if (tempValues.contains("currentlyChosenSeats")) tempValues.erase("currentlyChosenSeats");
+			throw Redirect("The movie was updated, thus all the changes you made are discarded", [this, &newSession]() -> void { this->bookTicket(newSession); });
+		}
+
+
 		std::pair<size_t, size_t> seatChosen = menu->getChoice(seats,
 			highlightWithUser,
 			regularWithUser,
@@ -418,9 +445,7 @@ void App::bookTicket(const Row& session) {
 		if (seatChosen.first == seats.size() - 1) {
 			if (seatChosen.second == 0) { // pay
 				if (bookedSeats.size() == 0) {
-					std::cout << "You haven't chosen any seats yet!\n";
-					int x; std::cin >> x;
-					continue;
+					throw Redirect("You haven't choosen any seats yet\n\n", [this, &session]() -> void { this->bookTicket(session); }, MessageType::WARNING);
 				}
 				bookMoreSeats = false;
 			}
@@ -438,9 +463,7 @@ void App::bookTicket(const Row& session) {
 					});
 			}
 			else if (seatChosen.second == 2) { // exit
-
-				// TO DO: Add redirect to movie choosing
-				return;
+				throw Redirect("Form submission was cancelled\n\n", [this]() -> void { this->mainMenu(); }, MessageType::WARNING);
 			}
 			continue;
 		}
@@ -545,6 +568,5 @@ void App::bookTicket(const Row& session) {
 		
 		throw Redirect("", [this]() -> void { this->mainMenu(); });
 	}
-	
 	
 }

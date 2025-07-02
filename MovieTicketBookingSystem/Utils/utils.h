@@ -31,6 +31,15 @@ namespace Utils {
 
 		std::string right(const std::string str, const int width, const std::string& fillSpaceWith);
 	
+		enum class TimeRelation {
+			InPast,
+			InFuture,
+			NOW,
+			InvalidFormat
+		};
+
+
+		Utils::String::TimeRelation checkTimeRelation(const std::string& timeStr1, const std::string& timeStr2 = "");
 	}
 
 	int generateRandomSixDigitNumber();

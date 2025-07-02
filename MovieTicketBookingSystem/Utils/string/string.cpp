@@ -84,3 +84,37 @@ std::string Utils::String::right(const std::string str, const int width, const s
 	int padding = width - size;
 	return Utils::String::stringRepeater(fillSpaceWith, padding) + str;
 }
+
+
+
+Utils::String::TimeRelation Utils::String::checkTimeRelation(const std::string& timeStr1, const std::string& timeStr2) {
+
+	std::chrono::system_clock::time_point parsedTimePoint1;
+	std::istringstream ss1(timeStr1);
+
+	ss1 >> std::chrono::parse("%Y-%m-%d %H:%M:%S", parsedTimePoint1);
+
+	if (ss1.fail()) {
+		return Utils::String::TimeRelation::InvalidFormat;
+	}
+
+	std::chrono::system_clock::time_point parsedTimePoint2;
+	std::istringstream ss2(timeStr2);
+
+	ss2 >> std::chrono::parse("%Y-%m-%d %H:%M:%S", parsedTimePoint1);
+
+	if (timeStr2.empty() || ss2.fail()) {
+		 parsedTimePoint2 = std::chrono::system_clock::now();
+	}
+
+	if (parsedTimePoint1 == parsedTimePoint2) {
+		return Utils::String::TimeRelation::NOW;
+	}
+	if (parsedTimePoint1 > parsedTimePoint2) {
+		return Utils::String::TimeRelation::InFuture;
+	}
+	else {
+		return Utils::String::TimeRelation::InPast;
+	}
+
+}
