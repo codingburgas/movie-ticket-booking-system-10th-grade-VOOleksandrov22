@@ -15,6 +15,7 @@ enum class DataToAlter {
 	CINEMA,
 	HALL,
 	MOVIE,
+	MOVIESESSION,
 	USER,
 	NONE
 };
@@ -49,6 +50,7 @@ void App::adminPage() {
 		{"Cinema", DataToAlter::CINEMA},
 		{"Hall", DataToAlter::HALL},
 		{"Movie", DataToAlter::MOVIE},
+		{"Movie session", DataToAlter::MOVIESESSION},
 		{"User", DataToAlter::USER},
 		{"<< Back", DataToAlter::NONE}
 	};
@@ -64,7 +66,8 @@ void App::adminPage() {
 	const DataToAlter& dataToAlter = dataToAlterOptions.at(choice).second;
 
 	if (dataToAlter == DataToAlter::NONE) {
-		throw Redirect("", [this]() -> void { this->adminPage(); });
+		//throw Redirect("", [this]() -> void { this->adminPage(); });
+		this->adminPage();
 	}
 
 	switch (action) {
@@ -72,7 +75,8 @@ void App::adminPage() {
 		switch (dataToAlter) {
 		case DataToAlter::CINEMA: createCinema(); break;
 		case DataToAlter::HALL:   createHall();   break;
-		//	case DataToAlter::MOVIE:  createMovie();  break;
+		case DataToAlter::MOVIE:  createMovie();  break;
+		case DataToAlter::MOVIESESSION: createMovieSession(); break;
 		//	case DataToAlter::USER:   createUser();   break;
 		//	default: /* Should not happen if NONE is handled above */ break;
 		}
@@ -265,7 +269,9 @@ json App::createSeatLayoutMenu() {
                 "isBlank": false,
                 "text": "A1",
                 "isVIP": false,
-                "price": 1
+                "price": 1,
+				"bookedBy": 0
+
             }
         })");
 	json confirmButton = json::parse(R"({ "isConfirm": true })");
@@ -396,9 +402,12 @@ json App::createSeatLayoutMenu() {
 
 		layoutUpdated = false;
 
+		//seats.emplace_back(json(seats[seats.size() - 1].size(), spaceItem));
+
+
 		json confirmButtonRow = json::array();
 		confirmButtonRow.emplace_back(confirmButton);
-		for (size_t i = 0; i < seats.end().value().size(); i++) {
+		for (size_t i = 0; i < seats[seats.size() - 1].size(); i++) {
 			confirmButtonRow.emplace_back(spaceItem);
 		}
 		seats.emplace_back(confirmButtonRow);
@@ -420,7 +429,7 @@ json App::createSeatLayoutMenu() {
 					continue;
 				}
 				for (size_t col = 0; col < seats[row].size(); col++) {
-					if (!seats[row][col].contains("data")) seats[row][col] = json::parse(R"({"data": { "text": "", "isVIP": false, "price": 0, "isBlank": true }})");
+					if (!seats[row][col].contains("data")) seats[row][col] = json::parse(R"({"data": { "text": "", "isVIP": false, "price": 0, "isBlank": true, "bookedBy": 0 }})");
 				}
 			}
 
@@ -442,6 +451,8 @@ json App::createSeatLayoutMenu() {
 				break;
 			}
 		}
+
+		seats.erase(seats.size() - 1); // remove confirm row
 	}
 	
 }
@@ -544,7 +555,7 @@ void App::createHall() {
 			throw Redirect("Hall was successfully created\n\n", [this]() -> void { this->adminPage(); }, MessageType::SUCCESS);
 		}
 		else {
-			throw Redirect("Form submission was cancelled", [this]() -> void { this->adminPage(); }, MessageType::WARNING);
+			throw Redirect("Form submission was cancelled\n\n", [this]() -> void { this->adminPage(); }, MessageType::WARNING);
 		}
 
 		
@@ -622,4 +633,134 @@ void App::deleteHall() {
 		redirect.redirectFunction();
 	}
 
+}
+
+
+void App::createMovie() {
+
+	FormResult input;
+	try {
+		input = initForm({
+			new Field({"Title", "", "Enter the title of the movie", "", false, notEmpty}),
+			new Field({"Description", "", "Enter a description for the movie", "", false, notEmpty}),
+			new Field({"Duration", "", "Enter the movie duration in minutes (integer)", "", false, notEmpty}),
+			new Field({"Rating", "", "Enter the movie rating (e.g., 8.5)", "", false, notEmpty}),
+			new Field({"Genre", "", "Enter the genre of the movie", "", false, notEmpty}),
+			new Field({"Audio", "", "Enter the audio type (e.g., Dolby Atmos)", "", false, notEmpty}),
+			}, "CREATE");
+	}
+	catch (const int& code) {
+		throw Redirect("Form submission was cancelled\n\n", [this]() -> void { this->adminPage(); }, MessageType::WARNING);
+	}
+
+
+	const std::string& title = input.at(0).second;
+	const std::string& description = input.at(1).second;
+	const std::string& durationStr = input.at(2).second;
+	const std::string& ratingStr = input.at(3).second;
+	const std::string& genre = input.at(4).second;
+	const std::string& audio = input.at(5).second;
+
+
+	int duration = std::stoi(durationStr);
+	double rating = std::stod(ratingStr);
+
+	db->execute("INSERT INTO movie(title, description, duration, rating, genre, audio) VALUES(?, ?, ?, ?, ?, ?);",
+		{ title, description, duration, rating, genre, audio });
+
+	throw Redirect("Movie was successfully created\n\n", [this]() -> void { this->adminPage(); }, MessageType::SUCCESS);
+}
+
+
+void App::updateMovie() {
+	try {
+		const unsigned long cinemaId = chooseCinemaMenu(chooseCityMenu());
+
+		Row cinemaData = DB::resultSetToVector(db->execute("select * from Cinema where id = ?;", { cinemaId }))[0];
+
+		FormResult input;
+		try {
+			input = initForm({
+				new Field({"Name", cinemaData["name"], "Enter the name of the cinema", "", false, notEmpty}),
+				new Field({"City", cinemaData["city"], "Enter the name of the city", "", false, notEmpty}),
+				new Field({"Address", cinemaData["street"], "Enter the address of the cinema", "", false, notEmpty}),
+				}, "UPDATE");
+		}
+		catch (const int& code) {
+			throw Redirect("Form submission was cancelled\n\n", [this]() -> void { this->adminPage(); }, MessageType::WARNING);
+		}
+
+		const std::string& name = input.at(0).second;
+		const std::string& city = input.at(1).second;
+		const std::string& address = input.at(2).second;
+
+		db->execute("update Cinema set name = ?, city = ?, street = ? where id = ?;", { name, city, address, cinemaId });
+		throw Redirect("Cinema was successfully updated\n\n", [this]() -> void { this->adminPage(); }, MessageType::SUCCESS);
+	}
+	catch (const Redirect& redirect) {
+		redirect.print();
+		redirect.redirectFunction();
+	}
+
+}
+
+
+void App::deleteMovie() {
+	try {
+		const unsigned long cinemaId = chooseCinemaMenu(chooseCityMenu());
+
+		FormResult input;
+		try {
+			input = initForm({
+				new Field({"Confirmation", "", "y/n", "", false, [](const FormResult& formData, const size_t& fieldIndex) -> void {
+					const std::string& val = formData.at(fieldIndex).second;
+					if (val != "y" && val != "n") throw std::runtime_error("Input can be only 'y' or 'n'");
+					}}),
+				}, "UPDATE");
+		}
+		catch (const int& code) {
+			throw Redirect("Form submission was cancelled\n\n", [this]() -> void { this->adminPage(); }, MessageType::WARNING);
+		}
+
+		const std::string& confirm = input.at(0).second;
+
+		if (confirm == "y") {
+			db->execute("delete from Cinema where id = ?;", { cinemaId });
+			throw Redirect("Cinema was successfully deleted\n\n", [this]() -> void { this->adminPage(); }, MessageType::SUCCESS);
+		}
+		else {
+			throw Redirect("", [this]() -> void { this->adminPage(); });
+		}
+
+	}
+	catch (const Redirect& redirect) {
+		redirect.print();
+		redirect.redirectFunction();
+	}
+
+}
+
+
+void App::createMovieSession() {
+	const unsigned int hallId = chooseHallMenu(chooseCinemaMenu(chooseCityMenu()));
+	const unsigned int movieId = chooseMovieFromAll();
+
+
+	FormResult input;
+	try {
+		input = initForm({
+			new Field({"Starts At", "", "Enter the session start time (YYYY-MM-DD HH:MM)", "YYYY-MM-DD HH:MM", false, notEmpty}),
+			}, "CREATE");
+	}
+	catch (const int& code) {
+		throw Redirect("Form submission was cancelled\n\n", [this]() -> void { this->adminPage(); }, MessageType::WARNING);
+	}
+
+	const std::string& startsAt = input.at(0).second + ":00";
+	const std::string initialSeatsJson = DB::resultSetToVector(db->execute("select seats from hall where id = ?", {hallId}))[0]["seats"];
+
+	db->execute("INSERT INTO moviesession(startsAt, hallId, movieId, seats) VALUES(?, ?, ?, ?);",
+		{ startsAt, static_cast<int>(hallId), static_cast<int>(movieId), initialSeatsJson });
+
+	throw Redirect("Movie session was successfully created\n\n", [this]() -> void { this->adminPage(); }, MessageType::SUCCESS);
 }

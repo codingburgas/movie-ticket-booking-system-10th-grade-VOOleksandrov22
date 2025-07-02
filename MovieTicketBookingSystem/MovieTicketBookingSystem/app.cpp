@@ -280,6 +280,89 @@ unsigned long App::chooseCinemaMenu(const std::string& city) {
 
 }
 
+
+unsigned long App::chooseHallMenu(const unsigned long& cinemaId) {
+	auto halls = DB::resultSetToVector(db->execute("SELECT * FROM Hall WHERE cinemaId = ?;", { cinemaId }));
+
+	std::vector<std::string> menuOptions = {};
+
+	// Populate menu options with details for each hall
+	for (auto& hall : halls) {
+		// Construct the option string for each hall
+		// Example: "Hall 1: Capacity 100 (VIP)" or "Hall 2: Capacity 50 (Standard)"
+		std::string option = std::format("Hall {} ({})",
+			hall["name"],
+			hall["isVIP"] == "1" ? "VIP" : "Standard");
+		menuOptions.push_back(option);
+	}
+
+	// Add the "Back" option to navigate to the previous menu
+	menuOptions.push_back("<< Back");
+
+	// Determine the menu title based on whether halls are available
+	std::string menuTitle = (halls.empty())
+		? std::format("Sorry, no halls available for Cinema ID: {}", cinemaId)
+		: std::format("Choose a hall for Cinema ID: {}", cinemaId);
+
+	// Get the user's choice from the menu
+	size_t choice = menu->getChoice(menuOptions, menuTitle);
+
+
+	if (choice == menuOptions.size() - 1) {
+		throw Redirect("",
+			[this]() -> void {
+				try {
+					this->mainMenu();
+				}
+				catch (const Redirect& redirect) {
+					redirect.print();
+					redirect.redirectFunction();
+				}
+			});
+	}
+
+	return std::stoul(halls[choice]["id"]);
+}
+
+
+unsigned long App::chooseMovieFromAll() {
+	auto movies = DB::resultSetToVector(db->execute("SELECT * FROM movie;"));
+
+	std::vector<std::string> menuOptions = {};
+
+	for (auto& movie : movies) {
+		std::string option = std::format("{} ({} min, Rating: {}) - Genre: {}",
+			movie["title"],
+			movie["duration"],
+			movie["rating"],
+			movie["genre"]);
+		menuOptions.push_back(option);
+	}
+
+	menuOptions.push_back("<< Back");
+
+	std::string menuTitle = (movies.empty())
+		? "Sorry, no movies available :("
+		: "Choose a movie:";
+
+	size_t choice = menu->getChoice(menuOptions, menuTitle);
+
+	if (choice == menuOptions.size() - 1) {
+		throw Redirect("",
+			[this]() -> void {
+				try {
+					this->adminPage();
+				}
+				catch (const Redirect& redirect) {
+					redirect.print();
+					redirect.redirectFunction();
+				}
+			});
+	}
+
+	return std::stoul(movies[choice]["id"]);
+}
+
 Row App::chooseMovieMenu(const unsigned long& cinemaId) {
 	std::string sessionsQuery =
 		R"(select
@@ -296,6 +379,7 @@ Row App::chooseMovieMenu(const unsigned long& cinemaId) {
 		join moviesession ms on ms.hallId = h.id and ms.startsAt > now()
 		join movie m on ms.movieId = m.id
 		where h.cinemaId = ?;)";
+	
 
 	auto sessions = DB::resultSetToVector(db->execute(sessionsQuery, { static_cast<int>(cinemaId) }));
 
@@ -560,7 +644,7 @@ void App::bookTicket(const Row& session) {
 
 		tempValues.erase("currentlyChosenSeats"); // remove the temporary value for booked seats
 
-		throw Redirect("Ticket was successfully booked", [this]() -> void { this->mainMenu(); }, MessageType::SUCCESS);
+		throw Redirect("Ticket was successfully booked\n\n", [this]() -> void { this->mainMenu(); }, MessageType::SUCCESS);
 		
 	}
 	else { // cancel

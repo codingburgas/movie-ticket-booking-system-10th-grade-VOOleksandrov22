@@ -77,6 +77,10 @@ public:
 
 	unsigned long chooseCinemaMenu(const std::string& city);
 
+	unsigned long chooseHallMenu(const unsigned long& cinemaId);
+
+	unsigned long chooseMovieFromAll();
+
 	Row chooseMovieMenu(const unsigned long& cinemaId);
 
 
@@ -113,9 +117,12 @@ public:
 	void deleteHall();
 
 	//// --- Movie CRUD Functions ---
-	//void createMovie();
-	//void updateMovie();
-	//void deleteMovie();
+	void createMovie();
+	void updateMovie();
+	void deleteMovie();
+
+	//// --- MovieSession CRUD Functions ---
+	void createMovieSession();
 	
 };
 

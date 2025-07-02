@@ -101,7 +101,7 @@ public:
         std::string insertQuery = "insert into User(username, password, isAdmin, email, gender, age, phone) values (?, ?, ?, ?, ?, ?, ?)";
         app->db->execute(
             insertQuery,
-            { username, password, (isAdmin ? 1 : 0), email, const_cast<Config*>(app->config)->genders[gender[0]], age, phone.empty() ? "NULL" : "'" + phone + "'" });
+            { username, password, (isAdmin ? 1 : 0), email, const_cast<Config*>(app->config)->genders[gender[0]], age, phone.empty() });
 
 		return 1;
 	}

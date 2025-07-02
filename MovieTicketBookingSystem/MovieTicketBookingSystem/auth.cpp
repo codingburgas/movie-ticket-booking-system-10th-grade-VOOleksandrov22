@@ -97,83 +97,97 @@ void App::login() {
 }
 
 void App::signup() {
-	auto validateUsernameWithUniqueness = [this](const FormResult& formData, const size_t& fieldIndex) {
+	try {
+
+
+		auto validateUsernameWithUniqueness = [this](const FormResult& formData, const size_t& fieldIndex) {
 			validateUsername(formData, fieldIndex);
 			const std::string& username = formData.at(fieldIndex).second;
 
 			if (DB::resultSetToVector(db->execute(
 				"SELECT id FROM User WHERE username = ?",
-				{username})).size() > 0) {
+				{ username })).size() > 0) {
 				throw std::runtime_error("User with such username already exists");
 			}
-		};
-	auto validateEmailWithUniqueness = [this](const FormResult& formData, const size_t& fieldIndex) {
-		validateEmail(formData, fieldIndex);
-		const std::string& email = formData.at(fieldIndex).second;
+			};
+		auto validateEmailWithUniqueness = [this](const FormResult& formData, const size_t& fieldIndex) {
+			validateEmail(formData, fieldIndex);
+			const std::string& email = formData.at(fieldIndex).second;
 
-		if (DB::resultSetToVector(db->execute(
-			"SELECT id FROM User WHERE email = ?",
-			{email})).size() > 0) {
-			throw std::runtime_error("User with such email already exists");
+			if (DB::resultSetToVector(db->execute(
+				"SELECT id FROM User WHERE email = ?",
+				{ email })).size() > 0) {
+				throw std::runtime_error("User with such email already exists");
+			}
+			};
+
+		FormResult input;
+		try {
+			input = initForm({
+				new Field({"username", "", "Enter username", "Any quote symbols are forbidden", false, validateUsernameWithUniqueness}),
+				new Field({"email", "@gmail.com", "Enter email", "Any quote symbols are forbidden", false, validateEmailWithUniqueness}),
+				new Field({"password", "", "Enter password", passwordInstructions, true, validatePassword}),
+				new Field({"password", "", "Reenter the password", "", true, passwordMatch}),
+				new Field({"gender", "", "Enter your gender - Choose from predefined options", "M(Male), F(Female), O(Other), P(Prefer not to say)", false, validateGender}),
+				new Field({"age", "", "Enter your age", "Must be a number between 0 and 150.", false, validateAge}),
+				new Field({"phone", "", "Enter your phone number", "Digits, spaces, hyphens, and a leading plus sign are allowed.", false, validatePhone})
+				}, "SIGNUP");
 		}
-		};
+		catch (const int& code) {
+			throw Redirect("The form submission was cancelled.\n\n", [this]() -> void { this->auth(); }, MessageType::WARNING);
+		}
 
-	FormResult input;
-	try {
-		input = initForm({
-			new Field({"username", "", "Enter username", "Any quote symbols are forbidden", false, validateUsernameWithUniqueness}),
-			new Field({"email", "@gmail.com", "Enter email", "Any quote symbols are forbidden", false, validateEmailWithUniqueness}),
-			new Field({"password", "", "Enter password", passwordInstructions, true, validatePassword}),
-			new Field({"password", "", "Reenter the password", "", true, passwordMatch}),
-			new Field({"gender", "", "Enter your gender - Choose from predefined options", "M(Male), F(Female), O(Other), P(Prefer not to say)", false, validateGender}),
-			new Field({"age", "", "Enter your age", "Must be a number between 0 and 150.", false, validateAge}),
-			new Field({"phone", "", "Enter your phone number", "Digits, spaces, hyphens, and a leading plus sign are allowed.", false, validatePhone})
-		}, "SIGNUP");
+		const std::string email = input.at(1).second;
+
+		system("cls");
+		std::cout << GREEN << "SENDING EMAIL WITH VERIFICATION CODE" << RESET;
+
+		int verificationCode = Utils::generateRandomSixDigitNumber();
+		send(config, email, "Verification code for movie ticket booking system", std::format("Your verification code is <b>{}</b>", verificationCode));
+
+		system("cls");
+
+		std::string username = input.at(0).second;
+		const std::string password = input.at(2).second;
+		const std::string gender = input.at(4).second;
+		const std::string age = input.at(5).second;
+		const std::string phone = input.at(6).second;
+
+
+		try {
+			input = initForm({
+				new Field({"Verification code", "", "Enter verification code", "6 digits", false, validateVerificationCode})
+				}, "CHECK");
+		}
+		catch (const int& code) {
+			throw Redirect("The form submission was cancelled.\n\n", [this]() -> void { this->auth(); }, MessageType::WARNING);
+		}
+
+
+		if (std::stoi(input.at(0).second) != verificationCode) {
+			throw Redirect("Incorrect verification code\n\n", [this]() -> void { this->auth(); }, MessageType::ERROR);
+			return;
+		}
+
+		int status = User::initUser(this, username, password, email, gender, age, phone);
+		switch (status) {
+		case 1:
+			Session::initSession(this, username, password);
+
+			loginBySavedSession();
+
+			break;
+		case 2:
+			throw Redirect("User with such username exists.\n\n", [this]() -> void { this->auth(); }, MessageType::ERROR);
+			break;
+		default:
+			throw Redirect("Unknown error occured.\n\n", [this]() -> void { this->auth(); }, MessageType::ERROR);
+			break;
+		}
 	}
-	catch (const int& code) {
-		throw Redirect("The form submission was cancelled.\n\n", [this]() -> void { this->auth(); }, MessageType::WARNING);
-	}
-	
-	const std::string email = input.at(1).second;
-
-	int verificationCode = Utils::generateRandomSixDigitNumber();
-	send(config, email, "Verification code for movie ticket booking system", std::format("Your verification code is <b>{}</b>", verificationCode));
-
-	std::string username = input.at(0).second;
-	const std::string password = input.at(2).second;
-	const std::string gender = input.at(4).second;
-	const std::string age = input.at(5).second;
-	const std::string phone = input.at(6).second;
-	
-
-	try {
-		input = initForm({
-			new Field({"Verification code", "", "Enter verification code", "6 digits", false, validateVerificationCode})
-		}, "CHECK");
-	}
-	catch (const int& code) {
-		throw Redirect("The form submission was cancelled.\n\n", [this]() -> void { this->auth(); }, MessageType::WARNING);
-	}
-	
-
-	if (std::stoi(input.at(0).second) != verificationCode) {
-		throw Redirect("Incorrect verification code\n\n", [this]() -> void { this->auth(); }, MessageType::ERROR);
-		return;
-	}
-
-	int status = User::initUser(this, username, password, email, gender, age, phone);
-	switch (status) {
-	case 1:
-		Session::initSession(this, username, password);
-
-		loginBySavedSession();
-		break;
-	case 2:
-		throw Redirect("User with such username exists.\n\n", [this]() -> void { this->auth(); }, MessageType::ERROR);
-		break;
-	default:
-		throw Redirect("Unknown error occured.\n\n", [this]() -> void { this->auth(); }, MessageType::ERROR);
-		break;
+	catch (const Redirect& redirect) {
+		redirect.print();
+		redirect.redirectFunction();
 	}
 
 }
